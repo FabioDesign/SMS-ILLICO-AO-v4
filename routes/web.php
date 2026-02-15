@@ -22,3 +22,7 @@ Route::fallback(function() {
   ];
   return response()->json($response, 404);
 });
+//Login
+Route::controller(LoginController::class)->group(function(){
+    Route::get('/', 'login');
+});

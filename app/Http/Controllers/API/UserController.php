@@ -36,7 +36,7 @@ class UserController extends BaseController
     *             @OA\Property(property="website", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Création de compte éffectuée avec succès."),
+    *   @OA\Response(response=201, description="Création de compte éffectuée avec succès."),
     *   @OA\Response(response=401, description="Echec de Création de compte."),
     *   @OA\Response(response=404, description="Page introuvable."),
     * )
@@ -53,7 +53,7 @@ class UserController extends BaseController
             'email' => 'required|email|unique:users,email',
             'town_id' => 'required|integer|min:1',
             'accountyp_id' => 'required|integer|min:1',
-            // 'g_recaptcha_response' => 'required',
+            'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         //Error field
@@ -76,7 +76,6 @@ class UserController extends BaseController
                 return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
             }
         }
-        /*
         // Paramètre de Recapcha
         $url = 'https://www.google.com/recaptcha/api/siteverify';
         $data = [
@@ -95,7 +94,6 @@ class UserController extends BaseController
         $result = file_get_contents($url, false, $context);
         $resultJson = json_decode($result);
         if ($resultJson->success == true) {
-        */
             // Formatage du nom et prénoms
             $email = Str::lower($request->email);
             $set = [
@@ -111,7 +109,7 @@ class UserController extends BaseController
                 'address' => $request->address ?? '',
                 'website' => $request->website ?? '',
                 'password_at' => now(),
-                'password' => Hash::make("Azerty@2025"),
+                'password' => Hash::make("Azerty@123"),
             ];
             DB::beginTransaction(); // Démarrer une transaction
             try {
@@ -170,12 +168,10 @@ class UserController extends BaseController
                 Log::warning("User::store - Erreur enregistrement de l'utilisateur : " . $e->getMessage() . " " . json_encode($set));
                 return $this->sendError(__('message.saveusrerr'));
             }
-        /*
         } else {
             Log::warning("User::store - Recaptcha : " . json_encode($resultJson));
             return $this->sendError("Recaptcha erroné, veuillez réessayer svp.");
         }
-        */
     }
     //Modification
     /**
