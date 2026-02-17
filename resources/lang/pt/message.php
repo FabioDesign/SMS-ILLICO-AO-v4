@@ -22,6 +22,7 @@ return [
     'saveusrerr' => "Erro ao registar o utilizador.",
     'profilsucc' => "Perfil do utilizador alterado com sucesso.",
     'profilerr' => "Erro ao alterar o perfil do utilizador.",
+    'recaptcha' => "Recaptcha incorreto, tente novamente.",
 
     // Senha
     'forgotpwd' => "Esqueci a senha.",

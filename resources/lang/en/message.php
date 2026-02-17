@@ -22,6 +22,7 @@ return [
     'saveusrerr' => "Error during user registration.",
     'profilsucc' => "User profile successfully modified.",
     'profilerr' => "Error while modifying User Profile.",
+    'recaptcha' => "Incorrect Recaptcha, please try again.",
 
     // Password
     'forgotpwd' => "Forgot password.",

@@ -21,9 +21,10 @@ class PasswordController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"lg", "email"},
+    *         required={"lg", "email", "g_recaptcha_response"},
     *         @OA\Property(property="lg", type="string"),
     *         @OA\Property(property="email", type="string", example="fabio@yopmail.com"),
+    *         @OA\Property(property="g_recaptcha_response", type="string"),
     *      )
     *   ),
     *   @OA\Response(response=200, description="Vérification de l'email."),
@@ -36,6 +37,7 @@ class PasswordController extends BaseController
         $validator = Validator::make($request->all(), [
             'lg' => 'required|in:en,pt',
             'email' => 'required|email|exists:users,email',
+            'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         //Error field
@@ -43,36 +45,58 @@ class PasswordController extends BaseController
             Log::warning("Password::verifemail - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
-        try {
-            // Récupérer les données
-            $user = User::where('email', $request->email)->first();
-            // Générer l'OTP sécurisé
-            $otp = random_int(100, 999) . ' ' . random_int(100, 999);
-            //subject
-            $subject = __('message.forgotpwd');
-            $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>"
-            . __('message.dear') . " " . $user->lastname . ",<br><br>"
-            . __('message.otp') . " : <b>" . $otp . "</b><br><br>
-            <hr style='color:#156082;'>"
-            . __('message.bestregard') . " !<br>"
-            . env('MAIL_SIGNATURE')
-            . "</div>";
+        // Paramètre de Recapcha
+        $url = 'https://www.google.com/recaptcha/api/siteverify';
+        $data = [
+            'remoteip' => $request->ip(),
+            'secret' => env('RECAPTCHAV3_SECRET'),
+            'response' => $_POST['g_recaptcha_response'],
+        ];
+        $options = [
+            'http' => [
+                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method' => 'POST',
+                'content' => http_build_query($data),
+            ]
+        ];
+        $context = stream_context_create($options);
+        $result = file_get_contents($url, false, $context);
+        $resultJson = json_decode($result);
+        if ($resultJson->success == true) {
             try {
-                // Envoi de l'email
-                $this->sendMail($request->email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
-                // Mettre à jour l'utilisateur avec l'OTP et l'horodatage
-                $user->update([
-                    'otp' => str_replace(' ', '', $otp),
-                    'otp_at' => now(),
-                ]);
-                return $this->sendSuccess(__('message.sendmailsucc'), [], 201);
+                // Récupérer les données
+                $user = User::where('email', $request->email)->first();
+                // Générer l'OTP sécurisé
+                $otp = random_int(100, 999) . ' ' . random_int(100, 999);
+                //subject
+                $subject = __('message.forgotpwd');
+                $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>"
+                . __('message.dear') . " " . $user->lastname . ",<br><br>"
+                . __('message.otp') . " : <b>" . $otp . "</b><br><br>
+                <hr style='color:#156082;'>"
+                . __('message.bestregard') . " !<br>"
+                . env('MAIL_SIGNATURE')
+                . "</div>";
+                try {
+                    // Envoi de l'email
+                    $this->sendMail($request->email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
+                    // Mettre à jour l'utilisateur avec l'OTP et l'horodatage
+                    $user->update([
+                        'otp' => str_replace(' ', '', $otp),
+                        'otp_at' => now(),
+                    ]);
+                    return $this->sendSuccess(__('message.sendmailsucc'), [], 201);
+                } catch(\Exception $e) {
+                    Log::warning("Password::verifemail - Erreur d'envoi de mail : " . $e->getMessage());
+                    return $this->sendError(__('message.sendmailerr'));
+                }
             } catch(\Exception $e) {
-                Log::warning("Erreur d'envoi de mail : " . $e->getMessage());
-                return $this->sendError(__('message.sendmailerr'));
+                Log::warning("Password::verifemail - Erreur de récupération de l'utilisateur : " . $e->getMessage());
+                return $this->sendError(__('message.error'));
             }
-        } catch(\Exception $e) {
-            Log::warning("Erreur de récupération de l'utilisateur : " . $e->getMessage());
-            return $this->sendError(__('message.error'));
+        } else {
+            Log::warning("Password::verifemail - Recaptcha : " . json_encode($resultJson));
+            return $this->sendError(__('message.recaptcha'));
         }
     }
     //Vérification du Code OTP
