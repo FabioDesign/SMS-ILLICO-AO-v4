@@ -16,11 +16,11 @@ return new class extends Migration
             $table->uuid('uid');
             $table->string('label', 255);
             $table->string('number', 20);
-            $table->string('gender', 1);
-            $table->date('date_at');
-            $table->string('field1', 255);
-            $table->string('field2', 255);
-            $table->string('field3', 255);
+            $table->string('gender', 1)->nullable();
+            $table->date('date_at')->nullable();
+            $table->string('field1', 255)->nullable();
+            $table->string('field2', 255)->nullable();
+            $table->string('field3', 255)->nullable();
             $table->tinyInteger('blacklist')->default('0');
             $table->tinyInteger('publipostage')->default('0');
             $table->tinyInteger('status')->default('0');

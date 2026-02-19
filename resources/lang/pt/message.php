@@ -36,6 +36,10 @@ return [
     'photoerr' => "Erro ao atualizar a foto do perfil.",
     'photodown' => "Erro ao descarregar a foto.",
 
+    // Phonebooks
+    'listcontact' => "Lista de contactos.",
+    'displayerr' => "Erro na exibição do contacto.",
+
     // Configurações
     'userlist' => "Lista de utilizadores.",
     'townlist' => "Lista de cidades.",

@@ -2,7 +2,7 @@
 
 return [
     // Users
-    'login' => "Email ou téléphone",
+    'login' => "Email or phone",
     'password' => "Password",
     'active' => "active",
     'inactive' => "inactive",
@@ -35,6 +35,11 @@ return [
     'photosucc' => "Profile photo successfully updated.",
     'photoerr' => "Error updating profile photo.",
     'photodown' => "Error downloading photo.",
+
+    // Phonebooks
+    'listcontact' => "Contact list.",
+    'displayerr' => "Contacts display error.",
+
     // Settings
     'userlist' => "List of users.",
     'townlist' => "List of cities.",

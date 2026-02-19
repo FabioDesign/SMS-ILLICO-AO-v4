@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\{
     ListsController,
     PasswordController,
+    PhonebookController,
     RegisterController,
     UserController,
 };
@@ -57,4 +58,7 @@ Route::middleware(['auth:api'])->group(function () {
   });
   // Route pour les mots de passe
   Route::post('password/editpass', [PasswordController::class, 'editpass']);
+  Route::resources([
+    'phonebook' => PhonebookController::class,
+  ]);
 });
