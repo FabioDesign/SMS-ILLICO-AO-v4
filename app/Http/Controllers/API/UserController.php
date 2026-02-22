@@ -12,6 +12,112 @@ use App\Http\Controllers\API\BaseController as BaseController;
 
 class UserController extends BaseController
 {
+    //Authentification
+    /**
+    * @OA\Post(
+    *   path="/api/users/auth",
+    *   tags={"Users"},
+    *   operationId="login",
+    *   description="Authenticate Platform and Generate JWT",
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\JsonContent(
+    *         required={"lg", "login", "password", "g_recaptcha_response"},
+    *         @OA\Property(property="lg", type="string"),
+    *         @OA\Property(property="login", type="string"),
+    *         @OA\Property(property="password", type="string"),
+    *         @OA\Property(property="g_recaptcha_response", type="string"),
+    *      )
+    *   ),
+    *   @OA\Response(response=200, description="Authentification éffectuée avec succès."),
+    *   @OA\Response(response=401, description="Echec d'authentification."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function login(Request $request): JsonResponse
+    {
+        //Validator
+        $validator = Validator::make($request->all(), [
+          'lg' => 'required',
+          'login' => 'required',
+          'password' => 'required',
+          'g_recaptcha_response' => 'required',
+        ]);
+		App::setLocale($request->lg);
+        //Error field
+        if ($validator->fails()) {
+            Log::warning("User::login - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+          return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+        }
+        try {
+            // Paramètre de Recapcha
+            $url = 'https://www.google.com/recaptcha/api/siteverify';
+            $data = [
+                'remoteip' => $request->ip(),
+                'secret' => env('RECAPTCHAV3_SECRET'),
+                'response' => $_POST['g_recaptcha_response'],
+            ];
+            $options = [
+                'http' => [
+                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method' => 'POST',
+                    'content' => http_build_query($data),
+                ]
+            ];
+            $context = stream_context_create($options);
+            $result = file_get_contents($url, false, $context);
+            $resultJson = json_decode($result);
+            if ($resultJson->success == true) {
+                $credentialNum = [
+                    'number' => $request->login,
+                    'password' => $request->password,
+                    'status' => 1,
+                ];
+                $credentialEml = [
+                    'email' => $request->login,
+                    'password' => $request->password,
+                    'status' => 1,
+                ];
+                if ((Auth::attempt($credentialNum))||(Auth::attempt($credentialEml))) {
+                    try {
+                        $user = Auth::user();
+                        // Test si la photo est vide
+                        if ($user->photo != '') $photo = $user->photo;
+                        else $photo = 'avatar.jpg';
+                        // Ajouter les informations de l'utilisateur et du profil dans la réponse
+                        $data = [
+                            'access_token' =>  $user->createToken('MyApp')->accessToken,
+                            'infos' => [
+                                'lastname' => $user->lastname,
+                                'firstname' => $user->firstname,
+                                'number' => $user->number,
+                                'email' => $user->email,
+                                'photo' => env('APP_URL') . '/assets/photos/' . $photo,
+                            ]
+                        ];
+                        User::findOrFail($user->id)->update([
+                            'login_at' => now(),
+                            'lg' => $request->lg,
+                        ]);
+                        // Logs::createLog('Connexion', $user->id, 1);
+                        return $this->sendSuccess(__('message.authsucc'), $data);
+                    } catch (\Exception $e) {
+                        Log::warning("Echec de connexion à la base de données : " . $e->getMessage());
+                        return $this->sendError(__('message.error'));
+                    }
+                } else {
+                    Log::warning("Authentication : " . json_encode($request->all()));
+                    return $this->sendError(__('message.autherr'), [], 401);
+                }
+            } else {
+                Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
+                return $this->sendError(__('message.recaptcha'));
+            }
+        } catch (\Exception $e) {
+            Log::warning("User::login - Recaptcha : " . $e->getMessage() . "  " . json_encode($request->all()));
+            return $this->sendError(__('message.error'));
+        }
+    }
     //Account creation
     /**
     * @OA\Post(
@@ -60,7 +166,7 @@ class UserController extends BaseController
         //Error field
         if ($validator->fails()) {
             Log::warning("User::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
-            return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Test sur DID
         if ($request->accountyp_id != 1) {
@@ -163,11 +269,11 @@ class UserController extends BaseController
                     'number' => $request->number,
                     'email' => $email,
                 ];
-                return $this->sendSuccess(__('message.saveusrsucc'), $data, 201);
+                return $this->sendSuccess(__('message.usersucc'), $data, 201);
             } catch (\Exception $e) {
                 DB::rollBack(); // Annuler la transaction en cas d'erreur
                 Log::warning("User::store - Erreur enregistrement de l'utilisateur : " . $e->getMessage() . " " . json_encode($set));
-                return $this->sendError(__('message.saveusrerr'));
+                return $this->sendError(__('message.error'));
             }
         } else {
             Log::warning("User::store - Recaptcha : " . json_encode($resultJson));
@@ -262,7 +368,7 @@ class UserController extends BaseController
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("User::profile - Erreur lors de la modification de Profil utilisateur : " . $e->getMessage() . " " . json_encode($set));
-            return $this->sendError(__('message.profilerr'));
+            return $this->sendError(__('message.error'));
         }
 	}
     //Photo de profil
@@ -318,108 +424,7 @@ class UserController extends BaseController
             return $this->sendSuccess(__('message.photosucc'), [], 201);
         } catch(\Exception $e) {
             Log::warning("Photo::store - Erreur de modification de la photo de profil : " . $e->getMessage());
-            return $this->sendError(__('message.photoerr'));
-        }
-    }
-    //Authentification
-    /**
-    * @OA\Post(
-    *   path="/api/users/auth",
-    *   tags={"Users"},
-    *   operationId="login",
-    *   description="Authenticate Platform and Generate JWT",
-    *   @OA\RequestBody(
-    *      required=true,
-    *      @OA\JsonContent(
-    *         required={"lg", "login", "password", "g_recaptcha_response"},
-    *         @OA\Property(property="lg", type="string"),
-    *         @OA\Property(property="login", type="string"),
-    *         @OA\Property(property="password", type="string"),
-    *         @OA\Property(property="g_recaptcha_response", type="string"),
-    *      )
-    *   ),
-    *   @OA\Response(response=200, description="Authentification éffectuée avec succès."),
-    *   @OA\Response(response=401, description="Echec d'authentification."),
-    *   @OA\Response(response=404, description="Page introuvable.")
-    * )
-    */
-    public function login(Request $request): JsonResponse
-    {
-        //Validator
-        $validator = Validator::make($request->all(), [
-          'lg' => 'required',
-          'login' => 'required',
-          'password' => 'required',
-          'g_recaptcha_response' => 'required',
-        ]);
-		App::setLocale($request->lg);
-        //Error field
-        if ($validator->fails()) {
-            Log::warning("User::login - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
-          return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
-        }
-        // Paramètre de Recapcha
-        $url = 'https://www.google.com/recaptcha/api/siteverify';
-        $data = [
-            'remoteip' => $request->ip(),
-            'secret' => env('RECAPTCHAV3_SECRET'),
-            'response' => $_POST['g_recaptcha_response'],
-        ];
-        $options = [
-            'http' => [
-                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-                'method' => 'POST',
-                'content' => http_build_query($data),
-            ]
-        ];
-        $context = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
-        $resultJson = json_decode($result);
-        if ($resultJson->success == true) {
-            $credentialNum = [
-                'number' => $request->login,
-                'password' => $request->password,
-                'status' => 1,
-            ];
-            $credentialEml = [
-                'email' => $request->login,
-                'password' => $request->password,
-                'status' => 1,
-            ];
-            if ((Auth::attempt($credentialNum))||(Auth::attempt($credentialEml))) {
-                try {
-                    $user = Auth::user();
-                    // Test si la photo est vide
-                    if ($user->photo != '') $photo = $user->photo;
-                    else $photo = 'avatar.jpg';
-                    // Ajouter les informations de l'utilisateur et du profil dans la réponse
-                    $data = [
-                        'access_token' =>  $user->createToken('MyApp')->accessToken,
-                        'infos' => [
-                            'lastname' => $user->lastname,
-                            'firstname' => $user->firstname,
-                            'number' => $user->number,
-                            'email' => $user->email,
-                            'photo' => env('APP_URL') . '/assets/photos/' . $photo,
-                        ]
-                    ];
-                    User::findOrFail($user->id)->update([
-                        'login_at' => now(),
-                        'lg' => $request->lg,
-                    ]);
-                    // Logs::createLog('Connexion', $user->id, 1);
-                    return $this->sendSuccess(__('message.authsucc'), $data);
-                } catch (\Exception $e) {
-                    Log::warning("Echec de connexion à la base de données : " . $e->getMessage());
-                    return $this->sendError(__('message.error'));
-                }
-            } else {
-                Log::warning("Authentication : " . json_encode($request->all()));
-                return $this->sendError(__('message.autherr'), [], 401);
-            }
-        } else {
-            Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
-            return $this->sendError(__('message.recaptcha'));
+            return $this->sendError(__('message.error'));
         }
     }
     //Déconnexion

@@ -18,10 +18,8 @@ return [
     'actifaccount' => "Account activation",
     'nodata' => "No data found.",
     'fielderr' => "Invalid fields.",
-    'saveusrsucc' => "User successfully registered.",
-    'saveusrerr' => "Error during user registration.",
+    'usersucc' => "User successfully registered.",
     'profilsucc' => "User profile successfully modified.",
-    'profilerr' => "Error while modifying User Profile.",
     'recaptcha' => "Incorrect Recaptcha, please try again.",
 
     // Password
@@ -33,12 +31,14 @@ return [
 
     // Photo
     'photosucc' => "Profile photo successfully updated.",
-    'photoerr' => "Error updating profile photo.",
     'photodown' => "Error downloading photo.",
 
     // Phonebooks
     'listcontact' => "Contact list.",
     'displayerr' => "Contacts display error.",
+    'addcontact' => "Contact successfully registered.",
+    'editcontact' => "Contact successfully modified.",
+    'delcontact' => "Contact successfully deleted.",
 
     // Settings
     'userlist' => "List of users.",

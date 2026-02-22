@@ -18,10 +18,8 @@ return [
     'actifaccount' => "Ativação de conta",
     'nodata' => "Nenhum dado encontrado.",
     'fielderr' => "Campos inválidos.",
-    'saveusrsucc' => "Utilizador registado com sucesso.",
-    'saveusrerr' => "Erro ao registar o utilizador.",
+    'usersucc' => "Utilizador registado com sucesso.",
     'profilsucc' => "Perfil do utilizador alterado com sucesso.",
-    'profilerr' => "Erro ao alterar o perfil do utilizador.",
     'recaptcha' => "Recaptcha incorreto, tente novamente.",
 
     // Senha
@@ -33,12 +31,14 @@ return [
 
     // Photo
     'photosucc' => "Foto do perfil atualizada com sucesso.",
-    'photoerr' => "Erro ao atualizar a foto do perfil.",
     'photodown' => "Erro ao descarregar a foto.",
 
     // Phonebooks
     'listcontact' => "Lista de contactos.",
     'displayerr' => "Erro na exibição do contacto.",
+    'addcontact' => "Contacto registado com sucesso.",
+    'editcontact' => "Contacto alterado com sucesso.",
+    'delcontact' => "Contacto eliminado com sucesso.",
 
     // Configurações
     'userlist' => "Lista de utilizadores.",

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use \Carbon\Carbon;
 use App\Models\Contact;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
 use App\Http\Controllers\API\BaseController as BaseController;
@@ -64,49 +65,6 @@ class PhonebookController extends BaseController
             return $this->sendError(__('message.displayerr'));
         }
     }
-    //Détail d'un Contact
-    /**
-    * @OA\Get(
-    *   path="/api/phonebooks/{uid}",
-    *   tags={"Phonebooks"},
-    *   operationId="showContact",
-    *   description="Détail d'un Contact",
-    *   security={{"bearer":{}}},
-    *   @OA\Response(response=200, description="Détail d'un Contact."),
-    *   @OA\Response(response=400, description="Serveur indisponible."),
-    *   @OA\Response(response=404, description="Page introuvable.")
-    * )
-    */
-    public function show($uid): JsonResponse {
-        //User
-        $user = Auth::user();
-		App::setLocale($user->lg);
-        try {
-            // Vérifier si l'ID est présent et valide
-            $query = Contact::select('label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3', 'blacklist', 'publipostage')
-            ->where('uid', $uid)
-            ->first();
-            if (!$query) {
-                Log::warning("Contact::show - Aucun Contact trouvé pour l'ID : " . $uid);
-                return $this->sendSuccess(__('message.nodata'));
-            }
-            // Retourner les détails du Contact avec les files
-            return $this->sendSuccess('Détails sur le Contact', [
-                'label' => $query->label,
-                'number' => $query->number,
-                'gender' => $query->gender,
-                'date_at' => Carbon::parse($query->date_at)->format('d/m/Y'),
-                'field1' => $query->field1,
-                'field2' => $query->field2,
-                'field3' => $query->field3,
-                'blacklist' => $query->blacklist,
-                'publipostage' => $query->publipostage,
-            ]);
-        } catch(\Exception $e) {
-            Log::warning("Contact::show - Erreur d'affichage de Contacts : ".$e->getMessage());
-            return $this->sendError(__('message.displayerr'));
-        }
-    }
     //Enregistrement
     /**
     * @OA\Post(
@@ -128,7 +86,7 @@ class PhonebookController extends BaseController
     *         @OA\Property(property="field3", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Contact enregisté avec succès."),
+    *   @OA\Response(response=201, description="Contact enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -140,57 +98,45 @@ class PhonebookController extends BaseController
         //Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
-            'number' => 'required|number|unique:contacts,number,' . $user->id . ',user_id',
+            'number' => [
+                'required',
+                'numeric',
+                Rule::unique('contacts')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id)->where('publipostage', 0);
+                }),
+            ],
             'gender' => 'present',
-            'date_at' => 'present|date_format:Y-m-d',
+            'date_at' => 'nullable|date|date_format:Y-m-d',
             'field1' => 'present',
             'field2' => 'present',
             'field3' => 'present',
         ]);
         //Error field
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning("Contact::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
-            return $this->sendError('Champs invalides.', $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Création de la reclamation
         $set = [
+            'user_id' => $user->id,
             'label' => $request->label,
-            'fr' => $request->fr,
-            'code' => $request->code,
-            'created_user' => $user->id,
-            'amount' => $request->amount ?? '',
-            'number' => $request->number ?? '',
-            'period_id' => $request->period_id ?? 0,
-            'description_en' => $request->description_en,
-            'description_fr' => $request->description_fr,
+            'number' => $request->number,
+            'gender' => $request->gender,
+            'date_at' => $request->date_at,
+            'field1' => $request->field1,
+            'field2' => $request->field2,
+            'field3' => $request->field3,
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
             $Contact = Contact::create($set);
             // Valider la transaction
             DB::commit();
-            // Si des fichiers sont fournies, les associer au Contact
-            if ($request->has('docs') && is_array($request->docs)) {
-                foreach ($request->docs as $docs) {
-                    $file = Str::of($docs)->explode('|');
-                    $requestdoc = Requestdoc::where('uid', $file[0])->first();
-                    // Enregistrer le fichier
-                    File::firstOrCreate([
-                        'requestdoc_id' => $requestdoc->id,
-                        'Contact_id' => $Contact->id,
-                        'required' => $file[1],
-                    ]);
-                }
-            }
-            return $this->sendSuccess("Contact enregistré avec succès.", [
-                'code' => $request->code,
-                'en' => $request->en,
-                'fr' => $request->fr,
-            ], 201);
+            return $this->sendSuccess(__('message.addcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Contact::store : " . $e->getMessage() . " " . json_encode($set));
-            return $this->sendError("Erreur lors de l'enregistrement du Contact.");
+            return $this->sendError(__('message.error'));
         }
     }
     // Modification
@@ -204,25 +150,17 @@ class PhonebookController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"code", "en", "fr", "description_en", "description_fr", "docs", "status"},
-    *         @OA\Property(property="code", type="string"),
-    *         @OA\Property(property="en", type="string"),
-    *         @OA\Property(property="fr", type="string"),
-    *         @OA\Property(property="amount", type="string"),
-    *         @OA\Property(property="number", type="string"),
-    *         @OA\Property(property="period_id", type="integer"),
-    *         @OA\Property(property="description_en", type="string"),
-    *         @OA\Property(property="description_fr", type="string"),
-    *         @OA\Property(property="status", type="integer"),
-    *         @OA\Property(property="docs", type="array", @OA\Items(
-    *               @OA\Property(property="requestdoc_id", type="integer"),
-    *               @OA\Property(property="required", type="integer"),
-    *               example="[1|1, 2|1, 3|0]"
-    *           )
-    *         ),
+    *         required={"label", "number"},
+    *         @OA\Property(property="label", type="string"),
+    *         @OA\Property(property="number", type="integer"),
+    *         @OA\Property(property="gender", type="string"),
+    *         @OA\Property(property="date_at", type="date"),
+    *         @OA\Property(property="field1", type="string"),
+    *         @OA\Property(property="field2", type="string"),
+    *         @OA\Property(property="field3", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Contact modifié avec succès."),
+    *   @OA\Response(response=201, description="Contact modifié avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -231,25 +169,26 @@ class PhonebookController extends BaseController
         //User
         $user = Auth::user();
 		App::setLocale($user->lg);
-        //Data
-        Log::notice("Contact::update - ID User : {$user->id} - Requête : " . json_encode($request->all()));
         //Validator
         $validator = Validator::make($request->all(), [
-            'code' => 'required|string|max:5|unique:contacts,code,' . $uid . ',uid',
-            'en' => 'required|string|max:255|unique:contacts,en,' . $uid . ',uid',
-            'fr' => 'required|string|max:255|unique:contacts,fr,' . $uid . ',uid',
-            'amount' => 'present',
-            'number' => 'present',
-            'period_id' => 'present',
-            'description_en' => 'required',
-            'description_fr' => 'required',
-            'docs' => 'required|array',
-            'status' => 'required|integer|in:0,1',
+            'label' => 'required',
+            'number' => [
+                'required',
+                'numeric',
+                Rule::unique('contacts')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id)->where('publipostage', 0);
+                }),
+            ],
+            'gender' => 'present',
+            'date_at' => 'nullable|date|date_format:Y-m-d',
+            'field1' => 'present',
+            'field2' => 'present',
+            'field3' => 'present',
         ]);
         //Error field
         if($validator->fails()){
             Log::warning("Contact::update - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
-            return $this->sendError('Champs invalides.', $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier si l'ID est présent et valide
         $Contact = Contact::where('uid', $uid)->first();
@@ -259,46 +198,24 @@ class PhonebookController extends BaseController
         }
         // Création de la reclamation
         $set = [
-            'en' => $request->en,
-            'fr' => $request->fr,
-            'code' => $request->code,
-            'updated_user' => $user->id,
-            'status' => $request->status,
-            'amount' => $request->amount ?? '',
-            'number' => $request->number ?? '',
-            'period_id' => $request->period_id ?? 0,
-            'description_en' => $request->description_en,
-            'description_fr' => $request->description_fr,
+            'label' => $request->label,
+            'number' => $request->number,
+            'gender' => $request->gender,
+            'date_at' => $request->date_at,
+            'field1' => $request->field1,
+            'field2' => $request->field2,
+            'field3' => $request->field3,
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
             $Contact->update($set);
             // Valider la transaction
             DB::commit();
-            // Si des fichiers sont fournies, les associer au profil
-            if ($request->has('docs') && is_array($request->docs)) {
-                // Supprimer les fichiers existantes pour ce Contact
-                File::where('Contact_id', $Contact->id)->delete();
-                foreach ($request->docs as $docs) {
-                    $file = Str::of($docs)->explode('|');
-                    $requestdoc = Requestdoc::where('uid', $file[0])->first();
-                    // Enregistrer le fichier
-                    File::firstOrCreate([
-                        'requestdoc_id' => $requestdoc->id,
-                        'Contact_id' => $Contact->id,
-                        'required' => $file[1],
-                    ]);
-                }
-            }
-            return $this->sendSuccess("Contact modifié avec succès.", [
-                'code' => $request->code,
-                'en' => $request->en,
-                'fr' => $request->fr,
-            ], 201);
+            return $this->sendSuccess(__('message.editcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Contact::update : " . $e->getMessage() . " " . json_encode($set));
-            return $this->sendError("Erreur lors de l'enregistrement du Contact.");
+            return $this->sendError(__('message.error'));
         }
 	}
     // Suppression d'un Contact
@@ -309,7 +226,7 @@ class PhonebookController extends BaseController
     *   operationId="deleteDocs",
     *   description="Suppression d'un Contact",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=200, description="Contact supprimé avec succès."),
+    *   @OA\Response(response=201, description="Contact supprimé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -318,29 +235,19 @@ class PhonebookController extends BaseController
         //User
         $user = Auth::user();
 		App::setLocale($user->lg);
-        //Data
-        Log::notice("Contact::destroy - ID User : {$user->id} - Requête : " . $uid);
         try {
             // Vérification si le Contact est attribué à une demande
-            $Contact = Contact::select('contacts.id', 'Contact_id')
-            ->where('contacts.uid', $uid)
-            ->leftJoin('demands', 'demands.Contact_id','=','contacts.id')
-            ->first();
-            if ($Contact->Contact_id != null) {
-                Log::warning("Contact::destroy - Tentative de suppression d'un Contact déjà attribué à une demande : " . $uid);
-                return $this->sendError("Contact est déjà attribué à une demande.", [], 403);
-            }
+            $Contact = Contact::where('uid', $uid)->first();
             // Suppression
             $deleted = Contact::destroy($Contact->id);
             if (!$deleted) {
                 Log::warning("Contact::destroy - Tentative de suppression d'un Contact inexistante : " . $uid);
                 return $this->sendError("Impossible de supprimer le Contact.", [], 403);
             }
-            File::where('Contact_id', $Contact->id)->delete();
-            return $this->sendSuccess("Contact supprimé avec succès.");
+            return $this->sendSuccess(__('message.delcontact'), [], 201);
         } catch(\Exception $e) {
             Log::warning("Contact::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
-            return $this->sendError("Erreur lors de la suppression d'un Contact.");
+            return $this->sendError(__('message.error'));
         }
     }
 }
