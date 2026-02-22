@@ -57,15 +57,24 @@ class UserController extends BaseController
                 'secret' => env('RECAPTCHAV3_SECRET'),
                 'response' => $request->input('g_recaptcha_response'),
             ];
-            $options = [
-                'http' => [
-                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-                    'method' => 'POST',
-                    'content' => http_build_query($data),
-                ]
-            ];
-            $context = stream_context_create($options);
-            $result = file_get_contents($url, false, $context);
+            // Initialiser cURL
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // À éviter en production
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+
+            $result = curl_exec($curl);
+
+            // Vérifier les erreurs cURL
+            if (curl_error($curl)) {
+                Log::warning("User::store - cURL Error : " . curl_error($curl));
+                return $this->sendError(__('message.error'));
+            }
+            curl_close($curl);
+
             $resultJson = json_decode($result);
             if ($resultJson->success == true) {
                 $credentialNum = [
