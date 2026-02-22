@@ -228,7 +228,10 @@ class GroupController extends BaseController
                 Log::warning("Group::destroy - Tentative de suppression d'un Groupe inexistante : " . $uid);
                 return $this->sendError(__('message.error'), [], 403);
             }
-            GroupGroup::where('group_id', $group->id)->delete();
+            $find = GroupContact::where('group_id', $group->id)->first();
+            if ($find) {
+                GroupContact::where('group_id', $group->id)->delete();
+            }
             return $this->sendSuccess(__('message.delgroup'), [], 201);
         } catch(\Exception $e) {
             Log::warning("Group::destroy - Erreur lors de la suppression d'un Groupe : " . $e->getMessage());

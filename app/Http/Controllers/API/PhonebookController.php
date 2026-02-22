@@ -243,7 +243,10 @@ class PhonebookController extends BaseController
                 Log::warning("Contact::destroy - Tentative de suppression d'un Contact inexistante : " . $uid);
                 return $this->sendError(__('message.error'), [], 403);
             }
-            GroupContact::where('contact_id', $contact->id)->delete();
+            $find = GroupContact::where('contact_id', $contact->id)->first();
+            if ($find) {
+                GroupContact::where('contact_id', $contact->id)->delete();
+            }
             return $this->sendSuccess(__('message.delcontact'), [], 201);
         } catch(\Exception $e) {
             Log::warning("Contact::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
