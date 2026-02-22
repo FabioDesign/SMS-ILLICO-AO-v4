@@ -55,7 +55,7 @@ class UserController extends BaseController
             $data = [
                 'remoteip' => $request->ip(),
                 'secret' => env('RECAPTCHAV3_SECRET'),
-                'response' => $_POST['g_recaptcha_response'],
+                'response' => $request->input('g_recaptcha_response'),
             ];
             $options = [
                 'http' => [
@@ -188,7 +188,7 @@ class UserController extends BaseController
         $data = [
             'remoteip' => $request->ip(),
             'secret' => env('RECAPTCHAV3_SECRET'),
-            'response' => $_POST['g_recaptcha_response'],
+            'response' => $request->input('g_recaptcha_response'),
         ];
         $options = [
             'http' => [
