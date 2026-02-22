@@ -35,10 +35,15 @@ return [
 
     // Phonebooks
     'listcontact' => "Lista de contactos.",
-    'displayerr' => "Erro na exibição do contacto.",
     'addcontact' => "Contacto registado com sucesso.",
     'editcontact' => "Contacto alterado com sucesso.",
     'delcontact' => "Contacto eliminado com sucesso.",
+
+    // Groups
+    'listgroup' => "Lista de grupos.",
+    'addgroup' => "Groupo registado com sucesso.",
+    'editgroup' => "Groupo alterado com sucesso.",
+    'delgroup' => "Groupo eliminado com sucesso.",
 
     // Configurações
     'userlist' => "Lista de utilizadores.",

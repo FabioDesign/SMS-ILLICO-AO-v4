@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\API;
 
 use \Carbon\Carbon;
+use App\Models\Contact;
 use Illuminate\Validation\Rule;
-use App\Models\{Contact, GroupContact};
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
 use App\Http\Controllers\API\BaseController as BaseController;
 
-class PhonebookController extends BaseController
+class PublipostageController extends BaseController
 {
     //Liste des contacts
     /**
     * @OA\Get(
-    *   path="/api/phonebooks?num=1&limit=10&search=''",
-    *   tags={"Phonebooks"},
-    *   operationId="listContact",
+    *   path="/api/publipostage?num=1&limit=10&search=''",
+    *   tags={"Publipostage"},
+    *   operationId="listPub",
     *   description="Liste des contacts",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Liste des contacts."),
@@ -36,15 +36,14 @@ class PhonebookController extends BaseController
             $query = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3');
             if ($search) $query->where('label', 'LIKE', '%'.$search.'%');
             $query->where('status', 0)
-            ->where('blacklist', 0)
-            ->where('publipostage', 0)
+            ->where('publipostage', 1)
             ->orderByDesc('created_at')
             ->get();
             $total = $query->count();
             $contacts = $query->paginate($limit, ['*'], 'page', $num);
             // Vérifier si les données existent
             if ($contacts->isEmpty()) {
-                Log::warning("Contact::index - Aucun Contact trouvé.");
+                Log::warning("Publipostage::index - Aucun Contact trouvé.");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Transformer les données
@@ -60,17 +59,17 @@ class PhonebookController extends BaseController
             ]);
             return $this->sendSuccess(__('message.listcontact'), $data);
         } catch (\Exception $e) {
-            Log::warning("Contact::index - Erreur d'affichage de Contacts: " . $e->getMessage());
+            Log::warning("Publipostage::index - Erreur d'affichage de Contacts: " . $e->getMessage());
             return $this->sendError(__('message.error'));
         }
     }
     //Enregistrement
     /**
     * @OA\Post(
-    *   path="/api/phonebooks",
-    *   tags={"Phonebooks"},
-    *   operationId="storeContact",
-    *   description="Enregistrement d'un Contact",
+    *   path="/api/publipostage",
+    *   tags={"Publipostage"},
+    *   operationId="storePub",
+    *   description="Enregistrement d'un Publipostage",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -101,10 +100,10 @@ class PhonebookController extends BaseController
                 'required',
                 'numeric',
                 Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 0)->where('status', 0);
+                    return $query->where('user_id', $user->id)->where('publipostage', 1);
                 }),
             ],
-            'gender' => 'present',
+            'gender' => 'required|in:M,F',
             'date_at' => 'nullable|date|date_format:Y-m-d',
             'field1' => 'present',
             'field2' => 'present',
@@ -112,7 +111,7 @@ class PhonebookController extends BaseController
         ]);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Contact::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Publipostage::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Création de la reclamation
@@ -134,17 +133,17 @@ class PhonebookController extends BaseController
             return $this->sendSuccess(__('message.addcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Contact::store : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("Publipostage::store : " . $e->getMessage() . " " . json_encode($set));
             return $this->sendError(__('message.error'));
         }
     }
     // Modification
     /**
     * @OA\Put(
-    *   path="/api/phonebooks/{uid}",
-    *   tags={"Phonebooks"},
-    *   operationId="editContact",
-    *   description="Modification d'un Contact",
+    *   path="/api/publipostage/{uid}",
+    *   tags={"Publipostage"},
+    *   operationId="editPub",
+    *   description="Modification d'un Publipostage",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -175,10 +174,10 @@ class PhonebookController extends BaseController
                 'required',
                 'numeric',
                 Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 0)->where('status', 0);
+                    return $query->where('user_id', $user->id)->where('publipostage', 1);
                 }),
             ],
-            'gender' => 'present',
+            'gender' => 'required|in:M,F',
             'date_at' => 'nullable|date|date_format:Y-m-d',
             'field1' => 'present',
             'field2' => 'present',
@@ -186,13 +185,13 @@ class PhonebookController extends BaseController
         ]);
         //Error field
         if($validator->fails()){
-            Log::warning("Contact::update - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Publipostage::update - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier si l'ID est présent et valide
         $contact = Contact::where('uid', $uid)->first();
         if (!$contact) {
-            Log::warning("Contact::update - Aucun Contact trouvé pour l'ID : " . $uid);
+            Log::warning("Publipostage::update - Aucun Contact trouvé pour l'ID : " . $uid);
             return $this->sendSuccess(__('message.nodata'));
         }
         // Création de la reclamation
@@ -213,17 +212,17 @@ class PhonebookController extends BaseController
             return $this->sendSuccess(__('message.editcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Contact::update : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("Publipostage::update : " . $e->getMessage() . " " . json_encode($set));
             return $this->sendError(__('message.error'));
         }
 	}
     // Suppression d'un Contact
     /**
     *   @OA\Delete(
-    *   path="/api/phonebooks/{uid}",
-    *   tags={"Phonebooks"},
-    *   operationId="deleteContact",
-    *   description="Suppression d'un Contact",
+    *   path="/api/publipostage/{uid}",
+    *   tags={"Publipostage"},
+    *   operationId="deletePub",
+    *   description="Suppression d'un Publipostage",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=201, description="Contact supprimé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -240,13 +239,12 @@ class PhonebookController extends BaseController
             // Suppression
             $deleted = Contact::destroy($contact->id);
             if (!$deleted) {
-                Log::warning("Contact::destroy - Tentative de suppression d'un Contact inexistante : " . $uid);
+                Log::warning("Publipostage::destroy - Tentative de suppression d'un Contact inexistante : " . $uid);
                 return $this->sendError(__('message.error'), [], 403);
             }
-            GroupContact::where('contact_id', $contact->id)->delete();
             return $this->sendSuccess(__('message.delcontact'), [], 201);
         } catch(\Exception $e) {
-            Log::warning("Contact::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
+            Log::warning("Publipostage::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
             return $this->sendError(__('message.error'));
         }
     }

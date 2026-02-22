@@ -4,9 +4,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\{
+    GroupController,
     ListsController,
     PasswordController,
     PhonebookController,
+    PublipostageController,
     RegisterController,
     UserController,
 };
@@ -48,6 +50,11 @@ Route::controller(ListsController::class)->group(function () {
 });
 
 Route::middleware(['auth:api'])->group(function () {
+  Route::resources([
+    'groups' => GroupController::class,
+    'phonebook' => PhonebookController::class,
+    'publipostage' => PublipostageController::class,
+  ]);
   // Route pour la modification du profil utilisateur
   Route::controller(UserController::class)->group(function () {
     Route::post('users/profile', 'profile');
@@ -58,7 +65,7 @@ Route::middleware(['auth:api'])->group(function () {
   });
   // Route pour les mots de passe
   Route::post('password/editpass', [PasswordController::class, 'editpass']);
-  Route::resources([
-    'phonebook' => PhonebookController::class,
-  ]);
+  // Route pour retirer un contact d'un groupe
+  Route::post('groups/addgroup', [GroupController::class, 'addgroup']);
+  Route::post('groups/delgroup', [GroupController::class, 'delgroup']);
 });

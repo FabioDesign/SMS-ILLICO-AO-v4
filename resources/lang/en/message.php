@@ -35,10 +35,15 @@ return [
 
     // Phonebooks
     'listcontact' => "Contact list.",
-    'displayerr' => "Contacts display error.",
     'addcontact' => "Contact successfully registered.",
     'editcontact' => "Contact successfully modified.",
     'delcontact' => "Contact successfully deleted.",
+
+    // Groups
+    'listgroup' => "Group list.",
+    'addgroup' => "Group successfully registered.",
+    'editgroup' => "Group successfully modified.",
+    'delgroup' => "Group successfully deleted.",
 
     // Settings
     'userlist' => "List of users.",
