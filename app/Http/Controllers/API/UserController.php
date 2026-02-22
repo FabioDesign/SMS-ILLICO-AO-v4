@@ -63,7 +63,6 @@ class UserController extends BaseController
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false); // À éviter en production
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 
             $result = curl_exec($curl);
@@ -192,101 +191,114 @@ class UserController extends BaseController
                 return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
             }
         }
-        // Paramètre de Recapcha
-        $url = 'https://www.google.com/recaptcha/api/siteverify';
-        $data = [
-            'remoteip' => $request->ip(),
-            'secret' => env('RECAPTCHAV3_SECRET'),
-            'response' => $request->input('g_recaptcha_response'),
-        ];
-        $options = [
-            'http' => [
-                'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-                'method' => 'POST',
-                'content' => http_build_query($data),
-            ]
-        ];
-        $context = stream_context_create($options);
-        $result = file_get_contents($url, false, $context);
-        $resultJson = json_decode($result);
-        if ($resultJson->success == true) {
-            // Formatage du nom et prénoms
-            $email = Str::lower($request->email);
-            $set = [
-                'lg' => $request->lg,
-                'lastname' => $request->lastname,
-                'firstname' => $request->firstname,
-                'number' => $request->number,
-                'email' => $email,
-                'town_id' => $request->town_id,
-                'accountyp_id' => $request->accountyp_id,
-                'company' => $request->company ?? '',
-                'nif' => $request->nif ?? '',
-                'address' => $request->address ?? '',
-                'website' => $request->website ?? '',
-                'password_at' => now(),
-                'password' => Hash::make("Azerty@123"),
+        try {
+            // Paramètre de Recapcha
+            $url = 'https://www.google.com/recaptcha/api/siteverify';
+            $data = [
+                'remoteip' => $request->ip(),
+                'secret' => env('RECAPTCHAV3_SECRET'),
+                'response' => $request->input('g_recaptcha_response'),
             ];
-            DB::beginTransaction(); // Démarrer une transaction
-            try {
-                // Création de l'utilisateur
-                $user = User::create($set);
-                DB::commit(); // Valider la transaction
-                // Username
-                $username = $request->firstname . " " . $request->lastname;
-                // Subject
-                $subject = __('message.creataccount');
-                // Send SMS to LogicMind
-                $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
-                Dear Mr.,<br /><br />
-                Confirmation mail of registration of <b>" . $username . "</b><br />
-                Contact : <b>" . $request->number . "</b><br />
-                Email : <b>" . $email . "</b><br />
-                Business Name : <b>" . $request->company . "</b><br />";
-                $message .=  "<br />
-                <hr style='color:#156082;'>"
-                . __('message.bestregard')
-                . env('MAIL_SIGNATURE')
-                . "<hr style='color:#156082;'></div>";
-                // Envoi de l'email
-                $this->sendMail(env('MAIL_FROM_ADDRESS'), $email, $username, env('MAIL_CC'), $subject, $message);
+            // Initialiser cURL
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 
-                //send SMS to Customer
-                if ($request->lg == 'en') {
-                    $content = "Dear M./Mrs. " . $username . "<br /><br />
-                    Thank you for your registration on SMS illico, our platform of sending SMS through the web.<br />
-                    Your registration has been taken into account and will be validated within 48 hours maximum after verification of provided information.<br />
-                    You will receive an SMS and a mail after the activation of your account.<br /><br />";
-                } else {
-                    $content = "Prezado(a) Sr.(a) " . $username . "<br /><br />
-                    Obrigado pelo seu registo no SMS illico, a nossa plataforma de envio de SMS através da web.<br />
-                    O seu registo foi registado e será validado no prazo máximo de 48 horas após a verificação das informações fornecidas.<br />
-                    Receberá um SMS e um e-mail após a ativação da sua conta.<br /><br />";
-                }
-                $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
-                " . $content
-                . "<hr style='color:#156082;'>"
-                . __('message.bestregard')
-                . env('MAIL_SIGNATURE')
-                . "<hr style='color:#156082;'></div>";
-                // Envoi de l'email
-                $this->sendMail($email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
-                // Retourner les données de l'utilisateur
-                $data = [
+            $result = curl_exec($curl);
+
+            // Vérifier les erreurs cURL
+            if (curl_error($curl)) {
+                Log::warning("User::store - cURL Error : " . curl_error($curl));
+                return $this->sendError(__('message.error'));
+            }
+            curl_close($curl);
+
+            $resultJson = json_decode($result);
+            if ($resultJson->success == true) {
+                // Formatage du nom et prénoms
+                $email = Str::lower($request->email);
+                $set = [
+                    'lg' => $request->lg,
                     'lastname' => $request->lastname,
                     'firstname' => $request->firstname,
                     'number' => $request->number,
                     'email' => $email,
+                    'town_id' => $request->town_id,
+                    'accountyp_id' => $request->accountyp_id,
+                    'company' => $request->company ?? '',
+                    'nif' => $request->nif ?? '',
+                    'address' => $request->address ?? '',
+                    'website' => $request->website ?? '',
+                    'password_at' => now(),
+                    'password' => Hash::make("Azerty@123"),
                 ];
-                return $this->sendSuccess(__('message.usersucc'), $data, 201);
-            } catch (\Exception $e) {
-                DB::rollBack(); // Annuler la transaction en cas d'erreur
-                Log::warning("User::store - Erreur enregistrement de l'utilisateur : " . $e->getMessage() . " " . json_encode($set));
-                return $this->sendError(__('message.error'));
+                DB::beginTransaction(); // Démarrer une transaction
+                try {
+                    // Création de l'utilisateur
+                    $user = User::create($set);
+                    DB::commit(); // Valider la transaction
+                    // Username
+                    $username = $request->firstname . " " . $request->lastname;
+                    // Subject
+                    $subject = __('message.creataccount');
+                    // Send SMS to LogicMind
+                    $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
+                    Dear Mr.,<br /><br />
+                    Confirmation mail of registration of <b>" . $username . "</b><br />
+                    Contact : <b>" . $request->number . "</b><br />
+                    Email : <b>" . $email . "</b><br />
+                    Business Name : <b>" . $request->company . "</b><br />";
+                    $message .=  "<br />
+                    <hr style='color:#156082;'>"
+                    . __('message.bestregard')
+                    . env('MAIL_SIGNATURE')
+                    . "<hr style='color:#156082;'></div>";
+                    // Envoi de l'email
+                    $this->sendMail(env('MAIL_FROM_ADDRESS'), $email, $username, env('MAIL_CC'), $subject, $message);
+
+                    //send SMS to Customer
+                    if ($request->lg == 'en') {
+                        $content = "Dear M./Mrs. " . $username . "<br /><br />
+                        Thank you for your registration on SMS illico, our platform of sending SMS through the web.<br />
+                        Your registration has been taken into account and will be validated within 48 hours maximum after verification of provided information.<br />
+                        You will receive an SMS and a mail after the activation of your account.<br /><br />";
+                    } else {
+                        $content = "Prezado(a) Sr.(a) " . $username . "<br /><br />
+                        Obrigado pelo seu registo no SMS illico, a nossa plataforma de envio de SMS através da web.<br />
+                        O seu registo foi registado e será validado no prazo máximo de 48 horas após a verificação das informações fornecidas.<br />
+                        Receberá um SMS e um e-mail após a ativação da sua conta.<br /><br />";
+                    }
+                    $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
+                    " . $content
+                    . "<hr style='color:#156082;'>"
+                    . __('message.bestregard')
+                    . env('MAIL_SIGNATURE')
+                    . "<hr style='color:#156082;'></div>";
+                    // Envoi de l'email
+                    $this->sendMail($email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
+                    // Retourner les données de l'utilisateur
+                    $data = [
+                        'lastname' => $request->lastname,
+                        'firstname' => $request->firstname,
+                        'number' => $request->number,
+                        'email' => $email,
+                    ];
+                    return $this->sendSuccess(__('message.usersucc'), $data, 201);
+                } catch (\Exception $e) {
+                    DB::rollBack(); // Annuler la transaction en cas d'erreur
+                    Log::warning("User::store - Erreur enregistrement de l'utilisateur : " . $e->getMessage() . " " . json_encode($set));
+                    return $this->sendError(__('message.error'));
+                }
+            } else {
+                Log::warning("User::store - Recaptcha : " . json_encode($resultJson));
+                return $this->sendError(__('message.recaptcha'));
             }
-        } else {
-            Log::warning("User::store - Recaptcha : " . json_encode($resultJson));
-            return $this->sendError(__('message.recaptcha'));
+        } catch (\Exception $e) {
+            Log::warning("User::store - Recaptcha : " . $e->getMessage() . "  " . json_encode($request->all()));
+            return $this->sendError(__('message.error'));
         }
     }
     //Modification
