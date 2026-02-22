@@ -83,8 +83,7 @@ class GroupController extends BaseController
         $validator = Validator::make($request->all(), [
             'label' => [
                 'required',
-                'label',
-                Rule::unique('groupes')->where(function ($query) use ($user) {
+                Rule::unique('groups')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id);
                 }),
             ],
@@ -139,8 +138,7 @@ class GroupController extends BaseController
         $validator = Validator::make($request->all(), [
             'label' => [
                 'required',
-                'label',
-                Rule::unique('groupes')->where(function ($query) use ($user) {
+                Rule::unique('groups')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id);
                 }),
             ],
