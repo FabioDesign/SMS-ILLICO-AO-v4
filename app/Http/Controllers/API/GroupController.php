@@ -10,17 +10,17 @@ use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
 use App\Http\Controllers\API\BaseController as BaseController;
 
-class PhonebookController extends BaseController
+class GroupController extends BaseController
 {
-    //Liste des contacts
+    //Liste des groupes
     /**
     * @OA\Get(
-    *   path="/api/phonebooks?num=1&limit=10&search=''",
-    *   tags={"Phonebooks"},
-    *   operationId="listContact",
-    *   description="Liste des contacts",
+    *   path="/api/groups?num=1&limit=10&search=''",
+    *   tags={"Groups"},
+    *   operationId="listGroup",
+    *   description="Liste des groupes",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=200, description="Liste des contacts."),
+    *   @OA\Response(response=200, description="Liste des groupes."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -33,8 +33,8 @@ class PhonebookController extends BaseController
             $num = isset($request->num) ? (int) $request->num:1;
             $limit = isset($request->limit) ? (int) $request->limit:10;
             $search = isset($request->search) ? (int) $request->search:'';
-            // Code to list contacts
-            $query = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3');
+            // Code to list groupes
+            $query = Group::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3');
             if ($search) $query->where('label', 'LIKE', '%'.$search.'%');
             $query->where('status', 0)
             ->where('blacklist', 0)
@@ -42,14 +42,14 @@ class PhonebookController extends BaseController
             ->orderByDesc('created_at')
             ->get();
             $total = $query->count();
-            $contacts = $query->paginate($limit, ['*'], 'page', $num);
+            $groupes = $query->paginate($limit, ['*'], 'page', $num);
             // Vérifier si les données existent
-            if ($contacts->isEmpty()) {
-                Log::warning("Contact::index - Aucun Contact trouvé.");
+            if ($groupes->isEmpty()) {
+                Log::warning("Group::index - Aucun Contact trouvé.");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Transformer les données
-            $data = $contacts->map(fn($data) => [
+            $data = $groupes->map(fn($data) => [
                 'uid' => $data->uid,
                 'label' => $data->label,
                 'number' => $data->number,
@@ -61,17 +61,17 @@ class PhonebookController extends BaseController
             ]);
             return $this->sendSuccess(__('message.listcontact'), $data);
         } catch (\Exception $e) {
-            Log::warning("Contact::index - Erreur d'affichage de Contacts: " . $e->getMessage());
+            Log::warning("Group::index - Erreur d'affichage de groupes: " . $e->getMessage());
             return $this->sendError(__('message.displayerr'));
         }
     }
     //Enregistrement
     /**
     * @OA\Post(
-    *   path="/api/phonebooks",
-    *   tags={"Phonebooks"},
-    *   operationId="storeContact",
-    *   description="Enregistrement d'un Contact",
+    *   path="/api/groups",
+    *   tags={"Groups"},
+    *   operationId="storeGroup",
+    *   description="Enregistrement d'un Group",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -101,7 +101,7 @@ class PhonebookController extends BaseController
             'number' => [
                 'required',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
+                Rule::unique('groupes')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id)->where('publipostage', 0)->where('status', 0);
                 }),
             ],
@@ -113,7 +113,7 @@ class PhonebookController extends BaseController
         ]);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Contact::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Group::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Création de la reclamation
@@ -129,23 +129,23 @@ class PhonebookController extends BaseController
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
-            Contact::create($set);
+            $group = Group::create($set);
             // Valider la transaction
             DB::commit();
             return $this->sendSuccess(__('message.addcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Contact::store : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("Group::store : " . $e->getMessage() . " " . json_encode($set));
             return $this->sendError(__('message.error'));
         }
     }
     // Modification
     /**
     * @OA\Put(
-    *   path="/api/phonebooks/{uid}",
-    *   tags={"Phonebooks"},
+    *   path="/api/groups/{uid}",
+    *   tags={"Groups"},
     *   operationId="editDocs",
-    *   description="Modification d'un Contact",
+    *   description="Modification d'un Group",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -175,7 +175,7 @@ class PhonebookController extends BaseController
             'number' => [
                 'required',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
+                Rule::unique('groupes')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id)->where('publipostage', 0)->where('status', 0);
                 }),
             ],
@@ -187,13 +187,13 @@ class PhonebookController extends BaseController
         ]);
         //Error field
         if($validator->fails()){
-            Log::warning("Contact::update - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Group::update - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier si l'ID est présent et valide
-        $contact = Contact::where('uid', $uid)->first();
-        if (!$contact) {
-            Log::warning("Contact::update - Aucun Contact trouvé pour l'ID : " . $uid);
+        $group = Group::where('uid', $uid)->first();
+        if (!$group) {
+            Log::warning("Group::update - Aucun Contact trouvé pour l'ID : " . $uid);
             return $this->sendSuccess(__('message.nodata'));
         }
         // Création de la reclamation
@@ -208,23 +208,23 @@ class PhonebookController extends BaseController
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
-            $contact->update($set);
+            $group->update($set);
             // Valider la transaction
             DB::commit();
             return $this->sendSuccess(__('message.editcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Contact::update : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("Group::update : " . $e->getMessage() . " " . json_encode($set));
             return $this->sendError(__('message.error'));
         }
 	}
     // Suppression d'un Contact
     /**
     *   @OA\Delete(
-    *   path="/api/phonebooks/{uid}",
-    *   tags={"Phonebooks"},
+    *   path="/api/groups/{uid}",
+    *   tags={"Groups"},
     *   operationId="deleteDocs",
-    *   description="Suppression d'un Contact",
+    *   description="Suppression d'un Group",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=201, description="Contact supprimé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -237,17 +237,17 @@ class PhonebookController extends BaseController
 		App::setLocale($user->lg);
         try {
             // Vérification si le Contact est attribué à une demande
-            $contact = Contact::where('uid', $uid)->first();
+            $group = Group::where('uid', $uid)->first();
             // Suppression
-            $deleted = Contact::destroy($contact->id);
+            $deleted = Group::destroy($group->id);
             if (!$deleted) {
-                Log::warning("Contact::destroy - Tentative de suppression d'un Contact inexistante : " . $uid);
+                Log::warning("Group::destroy - Tentative de suppression d'un Contact inexistante : " . $uid);
                 return $this->sendError(__('message.error'), [], 403);
             }
-            GroupContact::where('contact_id', $contact->id)->delete();
+            GroupGroup::where('contact_id', $group->id)->delete();
             return $this->sendSuccess(__('message.delcontact'), [], 201);
         } catch(\Exception $e) {
-            Log::warning("Contact::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
+            Log::warning("Group::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
             return $this->sendError(__('message.error'));
         }
     }

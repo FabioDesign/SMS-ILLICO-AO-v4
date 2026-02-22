@@ -248,6 +248,230 @@
                 ]
             }
         },
+        "/api/phonebooks?num=1&limit=10&search=''": {
+            "get": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Liste des contacts",
+                "operationId": "listContact",
+                "responses": {
+                    "200": {
+                        "description": "Liste des contacts."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/phonebooks": {
+            "post": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Enregistrement d'un Contact",
+                "operationId": "storeContact",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "label",
+                                    "number"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "number": {
+                                        "type": "integer"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "date_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "field1": {
+                                        "type": "string"
+                                    },
+                                    "field2": {
+                                        "type": "string"
+                                    },
+                                    "field3": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/phonebooks/{uid}": {
+            "put": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Modification d'un Contact",
+                "operationId": "editDocs",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "label",
+                                    "number"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "number": {
+                                        "type": "integer"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "date_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "field1": {
+                                        "type": "string"
+                                    },
+                                    "field2": {
+                                        "type": "string"
+                                    },
+                                    "field3": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact modifié avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Suppression d'un Contact",
+                "operationId": "deleteDocs",
+                "responses": {
+                    "201": {
+                        "description": "Contact supprimé avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/users/auth": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Authenticate Platform and Generate JWT",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "lg",
+                                    "login",
+                                    "password",
+                                    "g_recaptcha_response"
+                                ],
+                                "properties": {
+                                    "lg": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "g_recaptcha_response": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentification éffectuée avec succès."
+                    },
+                    "401": {
+                        "description": "Echec d'authentification."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                }
+            }
+        },
         "/api/users/register": {
             "post": {
                 "tags": [
@@ -445,56 +669,6 @@
                 ]
             }
         },
-        "/api/users/auth": {
-            "post": {
-                "tags": [
-                    "Users"
-                ],
-                "description": "Authenticate Platform and Generate JWT",
-                "operationId": "login",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "lg",
-                                    "login",
-                                    "password",
-                                    "g_recaptcha_response"
-                                ],
-                                "properties": {
-                                    "lg": {
-                                        "type": "string"
-                                    },
-                                    "login": {
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "type": "string"
-                                    },
-                                    "g_recaptcha_response": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Authentification éffectuée avec succès."
-                    },
-                    "401": {
-                        "description": "Echec d'authentification."
-                    },
-                    "404": {
-                        "description": "Page introuvable."
-                    }
-                }
-            }
-        },
         "/api/users/logout": {
             "post": {
                 "tags": [
@@ -526,6 +700,10 @@
         {
             "name": "Password",
             "description": "Password"
+        },
+        {
+            "name": "Phonebooks",
+            "description": "Phonebooks"
         },
         {
             "name": "Users",
