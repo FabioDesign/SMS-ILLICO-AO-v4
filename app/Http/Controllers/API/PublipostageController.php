@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use \Carbon\Carbon;
-use App\Models\Contact;
 use Illuminate\Validation\Rule;
+use App\Models\{Contact, Prefix};
 use Illuminate\Http\{Request, JsonResponse};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
 use App\Http\Controllers\API\BaseController as BaseController;
@@ -37,6 +37,7 @@ class PublipostageController extends BaseController
             if ($search) $query->where('label', 'LIKE', '%'.$search.'%');
             $query->where('status', 0)
             ->where('publipostage', 1)
+            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
             $total = $query->count();
@@ -116,8 +117,7 @@ class PublipostageController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier du préfixe téléphonique
-        $prefix = substr($request->number, 0, 2);
-        $prefix = Prefix::where('label', $prefix)->first();
+        $prefix = Prefix::where('label', substr($request->number, 0, 2))->first();
         if (!$prefix) {
             Log::warning("Publipostage::store - Validator number : ".json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
@@ -198,8 +198,7 @@ class PublipostageController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier du préfixe téléphonique
-        $prefix = substr($request->number, 0, 2);
-        $prefix = Prefix::where('label', $prefix)->first();
+        $prefix = Prefix::where('label', substr($request->number, 0, 2))->first();
         if (!$prefix) {
             Log::warning("Publipostage::update - Validator number : ".json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);

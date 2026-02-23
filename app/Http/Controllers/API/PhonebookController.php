@@ -41,6 +41,7 @@ class PhonebookController extends BaseController
             $query->where('status', 0)
             ->where('blacklist', 0)
             ->where('publipostage', 0)
+            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
             $total = $query->count();
@@ -120,8 +121,7 @@ class PhonebookController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier du préfixe téléphonique
-        $prefix = substr($request->number, 0, 2);
-        $prefix = Prefix::where('label', $prefix)->first();
+        $prefix = Prefix::where('label', substr($request->number, 0, 2))->first();
         if (!$prefix) {
             Log::warning("Contact::store - Validator number : ".json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
@@ -202,8 +202,7 @@ class PhonebookController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier du préfixe téléphonique
-        $prefix = substr($request->number, 0, 2);
-        $prefix = Prefix::where('label', $prefix)->first();
+        $prefix = Prefix::where('label', substr($request->number, 0, 2))->first();
         if (!$prefix) {
             Log::warning("Contact::update - Validator number : ".json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
@@ -308,143 +307,20 @@ class PhonebookController extends BaseController
             Log::warning("Contact::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
-        $dir = 'assets/imports';
-        $files = $request->file('files');
-        $filename = date('YmdHis') . substr(microtime(), 2, 6) . '.' . $files->getClientOriginalExtension();
-        if (!($files->move($dir, $filename))) {
-            Log::warning("Contact::import - Erreur lors du téléchargement du fichier : " . $filename);
-            return $this->sendError(__('message.error'));
-        }
-        $path = public_path($dir . '/' . $filename);
-        $fileImport = new ContactImport;
-        Excel::import($fileImport, $path);
-        $data = $fileImport->data;
-        $insert_data = [];
-        if (!empty($data)) {
-            $i = 1;
-            $msg = "0|".__('message.errorline');
-            foreach($data as $value):
-                //Validator
-                $validator = Validator::make($value, [
-                    'lastname' => 'required',
-                    'firstname' => 'required',
-                    'gender' => 'bail|required|in:M,F',
-                    'phone' => 'bail|required|regex:/^[0-9\s]+$/',
-                    'email' => 'bail|required|email',
-                    'birthdate' => 'bail|required|date_format:Y-m-d',
-                    'country' => 'bail|required|regex:/^[0-9\s]+$/',
-                    'nationality' => 'bail|required|regex:/^[0-9\s]+$/',
-                    'university' => 'required',
-                    'diploma' => 'required',
-                    'diploma1' => 'bail|required|numeric|max:'.date("Y"),
-                    'diploma2' => 'bail|required|numeric|max:'.date("Y"),
-                    'mention' => 'bail|required|regex:/^[0-9\s]+$/',
-                    'publication' => 'bail|required|regex:/^[0-9\s]+$/',
-                    'background' => 'required',
-                ], [
-                    'lastname.required' => __('message.lastnamenull'),
-                    'firstname.required' => __('message.firstnamenull'),
-                    'gender.*' => __('message.gendernot'),
-                    'phone.*' => __('message.numbernot'),
-                    'email.*' => __('message.emailnot'),
-                    'birthdate.*' => __('message.birthdaynot'),
-                    'country.required' => __('message.countrynot'),
-                    'nationality.required' => __('message.nationalitynot'),
-                    'university.required' => __('message.schoolnull'),
-                    'diploma.required' => __('message.diplomanull'),
-                    'diploma1.*' => __('message.diploma1'),
-                    'diploma2.*' => __('message.diploma2'),
-                    'mention.*' => __('message.mentionnot'),
-                    'publication.*' => __('message.publicationnot'),
-                    'background.required' => __('message.background'),
-                ]);
-                //Error field
-                if ($validator->fails()) {
-                    $errors = $validator->errors();
-                    if ($errors->has('lastname'))
-                    return $msg." ".$i." : "." ".$errors->first('lastname');
-                    else if ($errors->has('firstname'))
-                    return $msg." ".$i." : "." ".$errors->first('firstname');
-                    else if ($errors->has('gender'))
-                    return $msg." ".$i." : "." ".$errors->first('gender')." ".$value['gender'];
-                    else if ($errors->has('phone'))
-                    return $msg." ".$i." : "." ".$errors->first('phone')." ".$value['phone'];
-                    else if ($errors->has('email'))
-                    return $msg." ".$i." : "." ".$errors->first('email')." ".$value['email'];
-                    else if ($errors->has('birthdate'))
-                    return $msg." ".$i." : "." ".$errors->first('birthdate')." ".$value['birthdate'];
-                    else if ($errors->has('country'))
-                    return $msg." ".$i." : "." ".$errors->first('country')." ".$value['country'];
-                    else if ($errors->has('nationality'))
-                    return $msg." ".$i." : "." ".$errors->first('nationality')." ".$value['nationality'];
-                    else if ($errors->has('university'))
-                    return $msg." ".$i." : "." ".$errors->first('university');
-                    else if ($errors->has('diploma'))
-                    return $msg." ".$i." : "." ".$errors->first('diploma');
-                    else if ($errors->has('diploma1'))
-                    return $msg." ".$i." : "." ".$errors->first('diploma1')." ".$value['diploma1'];
-                    else if ($errors->has('diploma2'))
-                    return $msg." ".$i." : "." ".$errors->first('diploma2')." ".$value['diploma2'];
-                    else if ($errors->has('mention'))
-                    return $msg." ".$i." : "." ".$errors->first('mention')." ".$value['mention'];
-                    else if ($errors->has('publication'))
-                    return $msg." ".$i." : "." ".$errors->first('publication')." ".$value['publication'];
-                    else if ($errors->has('background'))
-                    return $msg." ".$i." : "." ".$errors->first('background');
-                }
-                //Test Number
-                $number = $value['phone'];
-                $count = Student::where([
-                    ['number', $number],
-                    ['program_id', $idPgm],
-                ])->count();
-                if ($count != 0) return $msg." ".$i." : "." ".__('message.usenumber');
-                //Test Email
-                $email = Str::lower($value['email']);
-                $count = Student::where([
-                    ['email', $email],
-                    ['program_id', $idPgm],
-                ])->count();
-                if ($count != 0) return $msg." ".$i." : "." ".__('message.usemail');
-                //Test sur le Pays d'origine
-                $count = School::whereCountryId($value['country'])->count();
-                if ($count == 0)
-                    $status = '0';
-                else
-                    $status = '1';
-                $insert_data[] = [
-                    'bgstd' => '0',
-                    'email' => $email,
-                    'status' => $status,
-                    'number' => $number,
-                    'program_id' => $idPgm,
-                    'director' => $director,
-                    'gender' => $value['gender'],
-                    'diploma' => $value['diploma'],
-                    'comment' => $value['comment'],
-                    'school' => $value['university'],
-                    'diploma1' => $value['diploma1'],
-                    'diploma2' => $value['diploma2'],
-                    'country_id' => $value['country'],
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'birthday_at' => $value['birthdate'],
-                    'background' => $value['background'],
-                    'publication' => $value['publication'],
-                    'certifmention_id' => $value['mention'],
-                    'nationality_id' => $value['nationality'],
-                    'lastname' => mb_convert_case($value['lastname'], MB_CASE_UPPER, "UTF-8"),
-                    'firstname' => mb_convert_case(Str::lower($value['firstname']), MB_CASE_TITLE, "UTF-8"),
-                ];
-                $i++;
-            endforeach;
-        }
-        try{
-            DB::table('students')->insert($insert_data);
-            Log::info('Student : '.serialize($insert_data));
-            $msg = __('message.studadd');
-        }catch(\Exception $e) {
-            Log::warning("Student::create : ".$e->getMessage());
-            return "0|".$msg;
+        $import = new ContactImport($user);
+    
+        try {
+            Excel::import($import, $request->file('files'));
+            
+            $errors = $import->getErrors();
+            
+            if (!empty($errors)) {
+                return $this->sendError("Certaines lignes n'ont pas pu être importées", $errors, 422);
+            }
+            
+            return $this->sendSuccess('Import réussi', [], 201);
+        } catch (\Exception $e) {
+            return $this->sendError("Erreur lors de l'import", $e->getMessage(), 400);
         }
     }
 }

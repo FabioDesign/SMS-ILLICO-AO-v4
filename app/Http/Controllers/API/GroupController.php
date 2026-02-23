@@ -35,7 +35,8 @@ class GroupController extends BaseController
             // Code to list groupes
             $query = Group::select('uid', 'label');
             if ($search) $query->where('label', 'LIKE', '%'.$search.'%');
-            $query->orderByDesc('created_at')
+            $query->where('user_id', $user->id)
+            ->orderByDesc('created_at')
             ->get();
             $total = $query->count();
             $groupes = $query->paginate($limit, ['*'], 'page', $num);
