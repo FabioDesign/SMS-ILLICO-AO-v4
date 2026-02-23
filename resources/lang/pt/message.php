@@ -1,7 +1,7 @@
 <?php
 
 return [
-    // Utilizadores
+    // Users
     'login' => "E-mail ou telefone",
     'password' => "Senha",
     'active' => "ativo",
@@ -16,13 +16,12 @@ return [
     'logouterr' => "Erro ao sair.",
     'creataccount' => "Criação de conta",
     'actifaccount' => "Ativação de conta",
-    'nodata' => "Nenhum dado encontrado.",
     'fielderr' => "Campos inválidos.",
     'usersucc' => "Utilizador registado com sucesso.",
     'profilsucc' => "Perfil do utilizador alterado com sucesso.",
     'recaptcha' => "Recaptcha incorreto, tente novamente.",
 
-    // Senha
+    // Password
     'forgotpwd' => "Esqueci a senha.",
     'otp' => "O código OTP é",
     'otpsucc' => "Código OTP validado com sucesso.",
@@ -35,6 +34,7 @@ return [
 
     // Phonebooks
     'listcontact' => "Lista de contactos.",
+    'numbernot' => "Número de telefone inválido.",
     'addcontact' => "Contacto registado com sucesso.",
     'editcontact' => "Contacto alterado com sucesso.",
     'delcontact' => "Contacto eliminado com sucesso.",
@@ -45,14 +45,18 @@ return [
     'editgroup' => "Groupo alterado com sucesso.",
     'delgroup' => "Groupo eliminado com sucesso.",
 
-    // Configurações
+    // Files
+    'fileformat' => "O tipo de anexo não é permitido, use o formato recomendado",
+    "filesize" => "O tamanho do ficheiro carregado deve ser menor ou igual a 2 MB",
+    
+    // Settings
     'userlist' => "Lista de utilizadores.",
     'townlist' => "Lista de cidades.",
     'townlisterr' => "Erro ao recuperar cidades.",
     'accountlist' => "Lista de tipos de conta.",
     'accountlisterr' => "Erro ao recuperar tipos de conta.",
     
-    // E-mail
+    // Mail
     'dear' => "Prezado",
     'bestregard' => "Atenciosamente",
     'verifeml' => "Verificação de e-mail.",
@@ -64,6 +68,7 @@ return [
     'stataccount' => "A sua conta acaba de ser ",
     'paraconn' => "Encontre os seus dados de login abaixo :<br>",
 
-    // Mensagem
+    // Message
+    'nodata' => "Nenhum dado encontrado.",
     'error' => "Ocorreu um erro, tente novamente mais tarde !",
 ];

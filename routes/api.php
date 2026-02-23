@@ -57,14 +57,19 @@ Route::middleware(['auth:api'])->group(function () {
   ]);
   // Route pour la modification du profil utilisateur
   Route::controller(UserController::class)->group(function () {
-    Route::post('users/profile', 'profile');
+    Route::post('users/profiles', 'profiles');
     // Route pour la photo de profil
-    Route::post('users/photo', 'photo');
+    Route::post('users/photos', 'photos');
     // Route pour la deconnexion
     Route::post('users/logout', 'logout');
   });
   // Route pour les mots de passe
   Route::post('password/editpass', [PasswordController::class, 'editpass']);
+  // Route pour les contacts
+  Route::controller(PhonebookController::class)->group(function () {
+    // Route pour importation
+    Route::post('phonebook/imports', 'imports');
+  });
   // Route pour retirer un contact d'un groupe
   Route::post('groups/addgroup', [GroupController::class, 'addgroup']);
   Route::post('groups/delgroup', [GroupController::class, 'delgroup']);

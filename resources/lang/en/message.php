@@ -16,7 +16,6 @@ return [
     'logouterr' => "Error while logging out.",
     'creataccount' => "Account creation",
     'actifaccount' => "Account activation",
-    'nodata' => "No data found.",
     'fielderr' => "Invalid fields.",
     'usersucc' => "User successfully registered.",
     'profilsucc' => "User profile successfully modified.",
@@ -35,6 +34,7 @@ return [
 
     // Phonebooks
     'listcontact' => "Contact list.",
+    'numbernot' => "Invalid telephone number.",
     'addcontact' => "Contact successfully registered.",
     'editcontact' => "Contact successfully modified.",
     'delcontact' => "Contact successfully deleted.",
@@ -45,6 +45,10 @@ return [
     'editgroup' => "Group successfully modified.",
     'delgroup' => "Group successfully deleted.",
 
+    // Files
+    'fileformat' => "The type of attachment is not allowed, use the recommended format",
+    'filesize' => "The size of the uploaded file must be less than or equal to 2MB",
+    
     // Settings
     'userlist' => "List of users.",
     'townlist' => "List of cities.",
@@ -65,5 +69,6 @@ return [
     'paraconn' => "Please find your login details below :<br>",
 
     // Message
+    'nodata' => "No data found.",
     'error' => "An error has occurred, please try again later !",
 ];

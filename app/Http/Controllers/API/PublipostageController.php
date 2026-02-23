@@ -98,6 +98,7 @@ class PublipostageController extends BaseController
             'label' => 'required',
             'number' => [
                 'required',
+                'digits:9',
                 'numeric',
                 Rule::unique('contacts')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id)->where('publipostage', 1);
@@ -113,6 +114,13 @@ class PublipostageController extends BaseController
         if ($validator->fails()) {
             Log::warning("Publipostage::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
+        }
+        // Vérifier du préfixe téléphonique
+        $prefix = substr($request->number, 0, 2);
+        $prefix = Prefix::where('label', $prefix)->first();
+        if (!$prefix) {
+            Log::warning("Publipostage::store - Validator number : ".json_encode($request->all()));
+            return $this->sendError(__('message.numbernot'), [], 422);
         }
         // Création de la reclamation
         $set = [
@@ -172,6 +180,7 @@ class PublipostageController extends BaseController
             'label' => 'required',
             'number' => [
                 'required',
+                'digits:9',
                 'numeric',
                 Rule::unique('contacts')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id)->where('publipostage', 1);
@@ -187,6 +196,13 @@ class PublipostageController extends BaseController
         if($validator->fails()){
             Log::warning("Publipostage::update - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+        }
+        // Vérifier du préfixe téléphonique
+        $prefix = substr($request->number, 0, 2);
+        $prefix = Prefix::where('label', $prefix)->first();
+        if (!$prefix) {
+            Log::warning("Publipostage::update - Validator number : ".json_encode($request->all()));
+            return $this->sendError(__('message.numbernot'), [], 422);
         }
         // Vérifier si l'ID est présent et valide
         $contact = Contact::where('uid', $uid)->first();

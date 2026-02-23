@@ -41,7 +41,7 @@ class UserController extends BaseController
           'lg' => 'required',
           'login' => 'required',
           'password' => 'required',
-          'g_recaptcha_response' => 'required',
+        //   'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         //Error field
@@ -51,31 +51,31 @@ class UserController extends BaseController
         }
         try {
             // Paramètre de Recapcha
-            $url = 'https://www.google.com/recaptcha/api/siteverify';
-            $data = [
-                'remoteip' => $request->ip(),
-                'secret' => env('RECAPTCHAV3_SECRET'),
-                'response' => $request->input('g_recaptcha_response'),
-            ];
-            // Initialiser cURL
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $url);
-            curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+            // $url = 'https://www.google.com/recaptcha/api/siteverify';
+            // $data = [
+            //     'remoteip' => $request->ip(),
+            //     'secret' => env('RECAPTCHAV3_SECRET'),
+            //     'response' => $request->input('g_recaptcha_response'),
+            // ];
+            // // Initialiser cURL
+            // $curl = curl_init();
+            // curl_setopt($curl, CURLOPT_URL, $url);
+            // curl_setopt($curl, CURLOPT_POST, true);
+            // curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+            // curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            // curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 
-            $result = curl_exec($curl);
+            // $result = curl_exec($curl);
 
-            // Vérifier les erreurs cURL
-            if (curl_error($curl)) {
-                Log::warning("User::store - cURL Error : " . curl_error($curl));
-                return $this->sendError(__('message.error'));
-            }
-            curl_close($curl);
+            // // Vérifier les erreurs cURL
+            // if (curl_error($curl)) {
+            //     Log::warning("User::store - cURL Error : " . curl_error($curl));
+            //     return $this->sendError(__('message.error'));
+            // }
+            // curl_close($curl);
 
-            $resultJson = json_decode($result);
-            if ($resultJson->success == true) {
+            // $resultJson = json_decode($result);
+            // if ($resultJson->success == true) {
                 $credentialNum = [
                     'number' => $request->login,
                     'password' => $request->password,
@@ -100,7 +100,7 @@ class UserController extends BaseController
                                 'firstname' => $user->firstname,
                                 'number' => $user->number,
                                 'email' => $user->email,
-                                'photo' => env('APP_URL') . '/assets/photos/' . $photo,
+                                'photo' => env('APP_URL') . '/assets/avatars/' . $photo,
                             ]
                         ];
                         User::findOrFail($user->id)->update([
@@ -117,10 +117,10 @@ class UserController extends BaseController
                     Log::warning("Authentication : " . json_encode($request->all()));
                     return $this->sendError(__('message.autherr'), [], 401);
                 }
-            } else {
-                Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
-                return $this->sendError(__('message.recaptcha'));
-            }
+            // } else {
+            //     Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
+            //     return $this->sendError(__('message.recaptcha'));
+            // }
         } catch (\Exception $e) {
             Log::warning("User::login - Recaptcha : " . $e->getMessage() . "  " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
@@ -304,7 +304,7 @@ class UserController extends BaseController
     //Modification
     /**
     * @OA\Post(
-    *   path="/api/users/profile",
+    *   path="/api/users/profiles",
     *   tags={"Users"},
     *   operationId="profilUser",
     *   description="Modification du profil utilisateur",
@@ -330,11 +330,11 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function profile(Request $request): JsonResponse {
+    public function profiles(Request $request): JsonResponse {
         //User
         $user = Auth::user();
         //Data
-        Log::notice("User::profile - ID User : {$user->id} - Requête : " . json_encode($request->all()));
+        Log::notice("User::profiles - ID User : {$user->id} - Requête : " . json_encode($request->all()));
         //Validator
         $validator = Validator::make($request->all(), [
             'lastname' => 'required',
@@ -347,7 +347,7 @@ class UserController extends BaseController
 		App::setLocale($user->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::profile - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Test sur DID
@@ -361,7 +361,7 @@ class UserController extends BaseController
             ]);
             // Error field
             if ($validator->fails()) {
-                Log::warning("User::profile - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+                Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
                 return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
             }
         }
@@ -388,16 +388,16 @@ class UserController extends BaseController
             return $this->sendSuccess(__('message.profilsucc'), $set, 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("User::profile - Erreur lors de la modification de Profil utilisateur : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("User::profiles - Erreur lors de la modification de Profil utilisateur : " . $e->getMessage() . " " . json_encode($set));
             return $this->sendError(__('message.error'));
         }
 	}
     //Photo de profil
     /**
      * @OA\Post(
-     *   path="/api/users/photo",
+     *   path="/api/users/avatars",
      *   tags={"Users"},
-     *   operationId="photo",
+     *   operationId="avatars",
      *   description="Modification de la photo de profil",
      *   security={{"bearer":{}}},
      *   @OA\RequestBody(
@@ -415,7 +415,7 @@ class UserController extends BaseController
      *   @OA\Response(response=404, description="Page introuvable."),
      * )
      */
-    public function photo(Request $request)
+    public function avatars(Request $request)
     {
         $user = Auth::user();
         //Validator
@@ -425,16 +425,16 @@ class UserController extends BaseController
 		App::setLocale($user->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::photo - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("User::avatars - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Upload photo
-        $dir = 'assets/photos';
+        $dir = 'assets/avatars';
         $image = $request->file('photo');
         $ext = $image->getClientOriginalExtension();
         $photo = User::filenameUnique($ext);
         if (!($image->move($dir, $photo))) {
-            Log::warning("User::photo - Erreur de téléchargement de la photo : " . $e->getMessage());
+            Log::warning("User::avatars - Erreur de téléchargement de la photo : " . $e->getMessage());
             return $this->sendError(__('message.photodown'));
         }
         try {
