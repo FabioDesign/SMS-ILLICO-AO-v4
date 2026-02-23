@@ -52,7 +52,7 @@ Route::controller(ListsController::class)->group(function () {
 Route::middleware(['auth:api'])->group(function () {
   Route::resources([
     'groups' => GroupController::class,
-    'phonebook' => PhonebookController::class,
+    'phonebooks' => PhonebookController::class,
     'publipostage' => PublipostageController::class,
   ]);
   // Route pour la modification du profil utilisateur
@@ -68,7 +68,7 @@ Route::middleware(['auth:api'])->group(function () {
   // Route pour les contacts
   Route::controller(PhonebookController::class)->group(function () {
     // Route pour importation
-    Route::post('phonebook/imports', 'imports');
+    Route::post('phonebooks/imports', 'imports');
   });
   // Route pour retirer un contact d'un groupe
   Route::post('groups/addgroup', [GroupController::class, 'addgroup']);
