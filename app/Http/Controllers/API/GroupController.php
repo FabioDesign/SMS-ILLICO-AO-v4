@@ -329,7 +329,6 @@ class GroupController extends BaseController
                 ->where('user_id', $user->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
-
             if ($contactIds->isEmpty()) {
                 DB::rollBack();
                 Log::warning("Group::addcontact - Aucun Contacts trouvés : " . json_encode($request->contacts));
@@ -401,7 +400,6 @@ class GroupController extends BaseController
                 ->where('user_id', $user->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
-
             if ($contactIds->isEmpty()) {
                 DB::rollBack();
                 Log::warning("Group::blacklist - Aucun Contacts trouvés : " . json_encode($request->contacts));

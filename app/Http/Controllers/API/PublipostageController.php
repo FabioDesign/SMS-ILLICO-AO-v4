@@ -260,35 +260,41 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(request $request): JsonResponse {
+    public function destroy(Request $request): JsonResponse
+    {
         // User
         $user = Auth::user();
 		App::setLocale($user->lg);
-        // Validator
+        // Validator        
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
+            'contacts.*' => 'required|integer'
         ]);
-        // Error field
-        if($validator->fails()){
-            Log::warning("Publipostage::destroy - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+        if ($validator->fails()) {
+            Log::warning("Publipostage::destroy - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all())
+            );
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
+
         try {
-            foreach ($request->contacts as $number) :
-                // Vérification si le Contact est attribué à une demande
-                $contact = Contact::where('number', $number)
+            DB::beginTransaction();
+            // Récupérer tous les contacts en une seule requête
+            $contactIds = Contact::whereIn('number', $request->contacts)
                 ->where('user_id', $user->id)
                 ->where('publipostage', 1)
-                ->first();
-                // Suppression
-                $deleted = Contact::destroy($contact->id);
-                if ($deleted) {
-                    $find = GroupContact::where('contact_id', $contact->id)->first();
-                    if ($find) $find->delete();
-                }
-            endforeach;
-            return $this->sendSuccess(__('message.delcontact'), [], 201);
-        } catch(\Exception $e) {
+                ->pluck('id');
+            if ($contactIds->isEmpty()) {
+                DB::rollBack();
+                Log::warning("Publipostage::destroy - Aucun Contacts trouvés : " . json_encode($request->contacts));
+                return $this->sendSuccess(__('message.nodata'));
+            }
+
+            // Supprimer tous les contacts en masse
+            Contact::whereIn('id', $contactIds)->delete();
+            DB::commit();
+            return $this->sendSuccess(__('message.delcontact'), [], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
             Log::warning("Publipostage::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
             return $this->sendError(__('message.error'));
         }
