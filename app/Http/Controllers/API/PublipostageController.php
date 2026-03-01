@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\API;
 
+use Excel;
 use \Carbon\Carbon;
+use App\Imports\ContactImport;
 use Illuminate\Validation\Rule;
 use App\Models\{Contact, Prefix};
 use Illuminate\Http\{Request, JsonResponse};
@@ -25,7 +27,7 @@ class PublipostageController extends BaseController
     * )
     */
     public function index(Request $request): JsonResponse {
-        //User
+        // User
         $user = Auth::user();
 		App::setLocale($user->lg);
         try {
@@ -35,12 +37,10 @@ class PublipostageController extends BaseController
             // Code to list contacts
             $query = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3');
             if ($search) $query->where('label', 'LIKE', '%'.$search.'%');
-            $query->where('status', 0)
+            $query->where('user_id', $user->id)
             ->where('publipostage', 1)
-            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
-            $total = $query->count();
             $contacts = $query->paginate($limit, ['*'], 'page', $num);
             // Vérifier si les données existent
             if ($contacts->isEmpty()) {
@@ -53,12 +53,17 @@ class PublipostageController extends BaseController
                 'label' => $data->label,
                 'number' => $data->number,
                 'gender' => $data->gender,
-                'date_at' => Carbon::parse($data->date_at)->format('d/m/Y'),
-                'field1' => $data->field1,
-                'field2' => $data->field2,
-                'field3' => $data->field3,
+                'date_at' => $data->date_at != null ? Carbon::parse($data->date_at)->format('d/m/Y'):'',
+                'field1' => $data->field1 ?? '',
+                'field2' => $data->field2 ?? '',
+                'field3' => $data->field3 ?? '',
             ]);
-            return $this->sendSuccess(__('message.listcontact'), $data);
+            $total = [
+                'currentPage' => $contacts->currentPage(),
+                'lastPage' => $contacts->lastPage(),
+                'total' => $contacts->total(),
+            ];
+            return $this->sendSuccess(__('message.listcontact'), $data, 200, $total);
         } catch (\Exception $e) {
             Log::warning("Publipostage::index - Erreur d'affichage de Contacts: " . $e->getMessage());
             return $this->sendError(__('message.error'));
@@ -91,10 +96,10 @@ class PublipostageController extends BaseController
     * )
     */
     public function store(Request $request): JsonResponse {
-        //User
+        // User
         $user = Auth::user();
 		App::setLocale($user->lg);
-        //Validator
+        // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
             'number' => [
@@ -111,19 +116,20 @@ class PublipostageController extends BaseController
             'field2' => 'present',
             'field3' => 'present',
         ]);
-        //Error field
+        // Error field
         if ($validator->fails()) {
-            Log::warning("Publipostage::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Publipostage::store - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier du préfixe téléphonique
         $prefix = Prefix::where('label', substr($request->number, 0, 2))->first();
         if (!$prefix) {
-            Log::warning("Publipostage::store - Validator number : ".json_encode($request->all()));
+            Log::warning("Publipostage::store - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
         // Création de la reclamation
         $set = [
+            'publipostage' => 1,
             'user_id' => $user->id,
             'label' => $request->label,
             'number' => $request->number,
@@ -172,10 +178,10 @@ class PublipostageController extends BaseController
     * )
     */
     public function update(request $request, $uid): JsonResponse {
-        //User
+        // User
         $user = Auth::user();
 		App::setLocale($user->lg);
-        //Validator
+        // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
             'number' => [
@@ -192,15 +198,15 @@ class PublipostageController extends BaseController
             'field2' => 'present',
             'field3' => 'present',
         ]);
-        //Error field
+        // Error field
         if($validator->fails()){
-            Log::warning("Publipostage::update - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Publipostage::update - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier du préfixe téléphonique
         $prefix = Prefix::where('label', substr($request->number, 0, 2))->first();
         if (!$prefix) {
-            Log::warning("Publipostage::update - Validator number : ".json_encode($request->all()));
+            Log::warning("Publipostage::update - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
         // Vérifier si l'ID est présent et valide
@@ -234,33 +240,111 @@ class PublipostageController extends BaseController
     // Suppression d'un Contact
     /**
     *   @OA\Delete(
-    *   path="/api/publipostage/{uid}",
+    *   path="/api/publipostage/delete",
     *   tags={"Publipostage"},
     *   operationId="deletePub",
-    *   description="Suppression d'un Publipostage",
+    *   description="Suppression d'un ou de plusieurs Contacts",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=201, description="Contact supprimé avec succès."),
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\JsonContent(
+    *         required={"contacts"},
+    *         @OA\Property(property="contacts", type="array", @OA\Items(
+    *               example="['910102034', '920102034', '930102034']"
+    *           )
+    *         ),
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy($uid): JsonResponse {
-        //User
+    public function destroy(request $request): JsonResponse {
+        // User
         $user = Auth::user();
 		App::setLocale($user->lg);
+        // Validator
+        $validator = Validator::make($request->all(), [
+            'contacts' => 'required|array',
+        ]);
+        // Error field
+        if($validator->fails()){
+            Log::warning("Publipostage::destroy - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+        }
         try {
-            // Vérification si le Contact est attribué à une demande
-            $contact = Contact::where('uid', $uid)->first();
-            // Suppression
-            $deleted = Contact::destroy($contact->id);
-            if (!$deleted) {
-                Log::warning("Publipostage::destroy - Tentative de suppression d'un Contact inexistante : " . $uid);
-                return $this->sendError(__('message.error'), [], 403);
-            }
+            foreach ($request->contacts as $number) :
+                // Vérification si le Contact est attribué à une demande
+                $contact = Contact::where('number', $number)
+                ->where('user_id', $user->id)
+                ->where('publipostage', 1)
+                ->first();
+                // Suppression
+                $deleted = Contact::destroy($contact->id);
+                if ($deleted) {
+                    $find = GroupContact::where('contact_id', $contact->id)->first();
+                    if ($find) $find->delete();
+                }
+            endforeach;
             return $this->sendSuccess(__('message.delcontact'), [], 201);
         } catch(\Exception $e) {
             Log::warning("Publipostage::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
             return $this->sendError(__('message.error'));
+        }
+    }
+    //Importation
+    /**
+    * @OA\Post(
+    *   path="/api/publipostage/imports",
+    *   tags={"Publipostage"},
+    *   operationId="importPub",
+    *   description="Importation d'un Contact",
+    *   security={{"bearer":{}}},
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\MediaType(
+    *          mediaType="multipart/form-data",
+    *          @OA\Schema(
+    *             required={"files"},
+    *             @OA\Property(property="files", type="string", format="binary"),
+    *          )
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Contact enregisté avec succès."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function imports(Request $request): JsonResponse {
+        // User
+        $user = Auth::user();
+		App::setLocale($user->lg);
+        // Validator
+        $validator = Validator::make($request->all(), [
+            'files' => 'required|file|mimes:xlsx,xls|max:2048',
+        ]);
+        // Error field
+        if ($validator->fails()) {
+            Log::warning("Publipostage::imports - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
+        }
+        $import = new ContactImport($user, 1);
+    
+        try {
+            Excel::import($import, $request->file('files'));
+            
+            $errors = $import->getErrors();
+            
+            if (!empty($errors)) {
+                Log::warning("Publipostage::imports : Certaines lignes n'ont pas pu être importées" . json_encode($errors));
+                return $this->sendError(__('message.fielderr'), $errors, 422);
+            }
+            
+            return $this->sendSuccess(__('message.impcontact'), [], 201);
+        } catch (\Exception $e) {
+            Log::warning("Publipostage::imports : " . $e->getMessage());
+            return $this->sendError(__('message.fielderr'), [], 400);
         }
     }
 }

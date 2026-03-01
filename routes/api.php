@@ -61,7 +61,7 @@ Route::middleware(['auth:api'])->group(function () {
     // Route pour la photo de profil
     Route::post('users/photos', 'photos');
     // Route pour la deconnexion
-    Route::post('users/logout', 'logout');
+    Route::post('users/logout', 'logout')->name('logout');
   });
   // Route pour les mots de passe
   Route::post('password/editpass', [PasswordController::class, 'editpass']);
@@ -70,7 +70,14 @@ Route::middleware(['auth:api'])->group(function () {
     // Route pour importation
     Route::post('phonebooks/imports', 'imports');
   });
-  // Route pour retirer un contact d'un groupe
-  Route::post('groups/addgroup', [GroupController::class, 'addgroup']);
-  Route::post('groups/delgroup', [GroupController::class, 'delgroup']);
+  // Route pour les groupes
+  Route::controller(GroupController::class)->group(function () {
+    Route::post('groups/add/{uid}', 'addcontact');
+    Route::post('groups/del/{uid}', 'delcontact');
+  });
+  // Route pour les Publipostages
+  Route::controller(PublipostageController::class)->group(function () {
+    // Route pour importation
+    Route::post('publipostage/imports', 'imports');
+  });
 });

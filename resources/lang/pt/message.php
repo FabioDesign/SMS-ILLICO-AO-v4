@@ -38,6 +38,7 @@ return [
     'addcontact' => "Contacto registado com sucesso.",
     'editcontact' => "Contacto alterado com sucesso.",
     'delcontact' => "Contacto eliminado com sucesso.",
+    'impcontact' => "Contacto importado com sucesso.",
 
     // Groups
     'listgroup' => "Lista de grupos.",

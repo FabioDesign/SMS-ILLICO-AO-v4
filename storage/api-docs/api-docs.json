@@ -5,7 +5,7 @@
         "version": "1.0"
     },
     "paths": {
-        "/api/groups?num=1&limit=10&search=''": {
+        "/api/groups": {
             "get": {
                 "tags": [
                     "Groups"
@@ -28,9 +28,7 @@
                         "bearer": []
                     }
                 ]
-            }
-        },
-        "/api/groups": {
+            },
             "post": {
                 "tags": [
                     "Groups"
@@ -144,8 +142,33 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Retirer un contact d'un Group",
+                "description": "Suppression d'un contact d'un Group",
                 "operationId": "delGroup",
+                "responses": {
+                    "201": {
+                        "description": "Contact retiré avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/groups/blacklist/{uid}": {
+            "post": {
+                "tags": [
+                    "Groups"
+                ],
+                "description": "Retirer un contact d'un Group",
+                "operationId": "blacklistGroup",
                 "responses": {
                     "201": {
                         "description": "Contact retiré avec succès."
@@ -556,16 +579,83 @@
                         "bearer": []
                     }
                 ]
-            },
-            "delete": {
+            }
+        },
+        "/api/phonebooks/delete": {
+            "post": {
                 "tags": [
                     "Phonebooks"
                 ],
-                "description": "Suppression d'un Contact",
+                "description": "Suppression d'un ou de plusieurs Contacts",
                 "operationId": "deleteContact",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "contacts"
+                                ],
+                                "properties": {
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "example": "['910102034', '920102034', '930102034']"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
-                        "description": "Contact supprimé avec succès."
+                        "description": "Contacts supprimés avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/phonebooks/imports": {
+            "post": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Importation d'un Contact",
+                "operationId": "importNum",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "files"
+                                ],
+                                "properties": {
+                                    "files": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact enregisté avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -755,6 +845,50 @@
                 ]
             }
         },
+        "/api/publipostage/imports": {
+            "post": {
+                "tags": [
+                    "Publipostage"
+                ],
+                "description": "Importation d'un Contact",
+                "operationId": "importPub",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "files"
+                                ],
+                                "properties": {
+                                    "files": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/users/auth": {
             "post": {
                 "tags": [
@@ -883,7 +1017,7 @@
                 }
             }
         },
-        "/api/users/profile": {
+        "/api/users/profiles": {
             "post": {
                 "tags": [
                     "Users"
@@ -958,13 +1092,13 @@
                 ]
             }
         },
-        "/api/users/photo": {
+        "/api/users/avatars": {
             "post": {
                 "tags": [
                     "Users"
                 ],
                 "description": "Modification de la photo de profil",
-                "operationId": "photo",
+                "operationId": "avatars",
                 "requestBody": {
                     "required": true,
                     "content": {

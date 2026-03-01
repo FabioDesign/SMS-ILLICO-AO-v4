@@ -46,7 +46,7 @@ class UserController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::login - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("User::login - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
           return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         try {
@@ -173,7 +173,7 @@ class UserController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("User::store - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Test sur DID
@@ -187,7 +187,7 @@ class UserController extends BaseController
             ]);
             // Error field
             if ($validator->fails()) {
-                Log::warning("User::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+                Log::warning("User::store - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
                 return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
             }
         }
@@ -347,7 +347,7 @@ class UserController extends BaseController
 		App::setLocale($user->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Test sur DID
@@ -361,7 +361,7 @@ class UserController extends BaseController
             ]);
             // Error field
             if ($validator->fails()) {
-                Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+                Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
                 return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
             }
         }
@@ -425,7 +425,7 @@ class UserController extends BaseController
 		App::setLocale($user->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::avatars - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("User::avatars - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Upload photo

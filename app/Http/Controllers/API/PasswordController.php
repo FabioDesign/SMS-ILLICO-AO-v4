@@ -42,7 +42,7 @@ class PasswordController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Password::verifemail - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Password::verifemail - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         try {
@@ -143,7 +143,7 @@ class PasswordController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Password::verifotp - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Password::verifotp - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         try {
@@ -210,7 +210,7 @@ class PasswordController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Password::addpass - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Password::addpass - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Récupérer les données
@@ -278,7 +278,7 @@ class PasswordController extends BaseController
         ]);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Password::editpass - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Password::editpass - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérification de l'ancien mot de passe

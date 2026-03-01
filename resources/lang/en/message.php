@@ -38,6 +38,7 @@ return [
     'addcontact' => "Contact successfully registered.",
     'editcontact' => "Contact successfully modified.",
     'delcontact' => "Contact successfully deleted.",
+    'impcontact' => "Contact successfully imported.",
 
     // Groups
     'listgroup' => "Group list.",

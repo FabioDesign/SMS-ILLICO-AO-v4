@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('field3', 255)->nullable();
             $table->tinyInteger('blacklist')->default('0');
             $table->tinyInteger('publipostage')->default('0');
-            $table->tinyInteger('status')->default('0');
             $table->timestamps();
             $table->bigInteger('user_id');
         });

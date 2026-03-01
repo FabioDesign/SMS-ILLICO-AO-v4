@@ -4,8 +4,8 @@ namespace App\Http\Controllers\API;
 
 use \Carbon\Carbon;
 use Illuminate\Validation\Rule;
-use App\Models\{Group, GroupContact};
 use Illuminate\Http\{Request, JsonResponse};
+use App\Models\{Contact, Group, GroupContact};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
 use App\Http\Controllers\API\BaseController as BaseController;
 
@@ -14,7 +14,7 @@ class GroupController extends BaseController
     //Liste des groupes
     /**
     * @OA\Get(
-    *   path="/api/groups?num=1&limit=10&search=''",
+    *   path="/api/groups",
     *   tags={"Groups"},
     *   operationId="listGroup",
     *   description="Liste des groupes",
@@ -29,17 +29,11 @@ class GroupController extends BaseController
         $user = Auth::user();
 		App::setLocale($user->lg);
         try {
-            $num = isset($request->num) ? (int) $request->num:1;
-            $limit = isset($request->limit) ? (int) $request->limit:10;
-            $search = isset($request->search) ? (int) $request->search:'';
             // Code to list groupes
-            $query = Group::select('uid', 'label');
-            if ($search) $query->where('label', 'LIKE', '%'.$search.'%');
-            $query->where('user_id', $user->id)
+            $groupes = Group::select('uid', 'label')
+            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
-            $total = $query->count();
-            $groupes = $query->paginate($limit, ['*'], 'page', $num);
             // Vérifier si les données existent
             if ($groupes->isEmpty()) {
                 Log::warning("Group::index - Aucun Groupe trouvé.");
@@ -91,7 +85,7 @@ class GroupController extends BaseController
         ]);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Group::store - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Group::store - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Création de la reclamation
@@ -146,7 +140,7 @@ class GroupController extends BaseController
         ]);
         //Error field
         if($validator->fails()){
-            Log::warning("Group::update - Validator : " . $validator->errors()->first() . " - ".json_encode($request->all()));
+            Log::warning("Group::update - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier si l'ID est présent et valide
@@ -171,38 +165,6 @@ class GroupController extends BaseController
             return $this->sendError(__('message.error'));
         }
 	}
-    // Retirer un contact d'un Groupe
-    /**
-    *   @OA\Delete(
-    *   path="/api/groups/delgroup",
-    *   tags={"Groups"},
-    *   operationId="delGroup",
-    *   description="Retirer un contact d'un Group",
-    *   security={{"bearer":{}}},
-    *   @OA\Response(response=201, description="Contact retiré avec succès."),
-    *   @OA\Response(response=400, description="Serveur indisponible."),
-    *   @OA\Response(response=404, description="Page introuvable.")
-    * )
-    */
-    public function delgroup($uid): JsonResponse {
-        //User
-        $user = Auth::user();
-		App::setLocale($user->lg);
-        try {
-            // Vérification si le Contact est attribué à une demande
-            $contact = Contact::where('uid', $uid)->first();
-            // Suppression
-            GroupContact::where('contact_id', $contact->id)->delete();
-            if (!$deleted) {
-                Log::warning("Group::delgroup - Tentative de suppression d'un Groupe inexistante : " . $uid);
-                return $this->sendError(__('message.error'), [], 403);
-            }
-            return $this->sendSuccess(__('message.delgroup'), [], 201);
-        } catch(\Exception $e) {
-            Log::warning("Group::destroy - Erreur lors de la suppression d'un Groupe : " . $e->getMessage());
-            return $this->sendError(__('message.error'));
-        }
-    }
     // Suppression d'un Groupe
     /**
     *   @OA\Delete(
@@ -232,6 +194,171 @@ class GroupController extends BaseController
             $find = GroupContact::where('group_id', $group->id)->first();
             if ($find) {
                 GroupContact::where('group_id', $group->id)->delete();
+            }
+            return $this->sendSuccess(__('message.delgroup'), [], 201);
+        } catch(\Exception $e) {
+            Log::warning("Group::destroy - Erreur lors de la suppression d'un Groupe : " . $e->getMessage());
+            return $this->sendError(__('message.error'));
+        }
+    }
+    // Ajout de Contact dans un Groupe
+    /**
+    *   @OA\Post(
+    *   path="/api/groups/add/{uid}",
+    *   tags={"Groups"},
+    *   operationId="addGroup",
+    *   description="Ajout de ou de plusieurs Contacts dans un Groupe",
+    *   security={{"bearer":{}}},
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\JsonContent(
+    *         required={"contacts"},
+    *         @OA\Property(property="contacts", type="array", @OA\Items(
+    *               example="['910102034', '920102034', '930102034']"
+    *           )
+    *         ),
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function addcontact(request $request, $uid): JsonResponse {
+        // User
+        $user = Auth::user();
+		App::setLocale($user->lg);
+        // Validator
+        $validator = Validator::make($request->all(), [
+            'contacts' => 'required|array',
+        ]);
+        // Error field
+        if($validator->fails()){
+            Log::warning("Group::addcontact - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+        }
+        // Vérifier si l'ID est présent et valide
+        $group = Group::where('uid', $uid)->first();
+        if (!$group) {
+            Log::warning("Group::addcontact - Aucun Groupe trouvé pour l'ID : " . $uid);
+            return $this->sendSuccess(__('message.nodata'));
+        }
+        try {
+            foreach ($request->contacts as $number) :
+                // Vérification si le Contact est attribué à une demande
+                $contact = Contact::where('number', $number)
+                ->where('user_id', $user->id)
+                ->where('publipostage', 0)
+                ->first();
+                if ($contact) {
+                    // Création de la reclamation
+                    $set = [
+                        'group_id' => $group->id,
+                        'contact_id' => $contact->id,
+                    ];
+                    DB::beginTransaction(); // Démarrer une transaction
+                    try {
+                        GroupContact::create($set);
+                        // Valider la transaction
+                        DB::commit();
+                    } catch (\Exception $e) {
+                        DB::rollBack(); // Annuler la transaction en cas d'erreur
+                        Log::warning("Group::addcontact : " . $e->getMessage() . " " . json_encode($set));
+                        return $this->sendError(__('message.error'));
+                    }
+                }
+            endforeach;
+            return $this->sendSuccess(__('message.addgroup'), [], 201);
+        } catch(\Exception $e) {
+            Log::warning("Group::addcontact - Erreur lors de l'ajout d'un Contact dans un groupe : " . $e->getMessage());
+            return $this->sendError(__('message.error'));
+        }
+    }
+    // Suppression d'un contact d'un Groupe
+    /**
+    *   @OA\Delete(
+    *   path="/api/groups/delgroup/{uid}",
+    *   tags={"Groups"},
+    *   operationId="delGroup",
+    *   description="Suppression d'un contact d'un Group",
+    *   security={{"bearer":{}}},
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\JsonContent(
+    *         required={"contacts"},
+    *         @OA\Property(property="contacts", type="array", @OA\Items(
+    *               example="['910102034', '920102034', '930102034']"
+    *           )
+    *         ),
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Contact retiré avec succès."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function delcontact(request $request, $uid): JsonResponse {
+        // User
+        $user = Auth::user();
+		App::setLocale($user->lg);
+        // Validator
+        $validator = Validator::make($request->all(), [
+            'contacts' => 'required|array',
+        ]);
+        // Error field
+        if($validator->fails()){
+            Log::warning("Group::delcontact - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+        }
+        // Vérifier si l'ID est présent et valide
+        $group = Group::where('uid', $uid)->first();
+        if (!$group) {
+            Log::warning("Group::delcontact - Aucun Groupe trouvé pour l'ID : " . $uid);
+            return $this->sendSuccess(__('message.nodata'));
+        }
+        try {
+            foreach ($request->contacts as $number) :
+                // Vérification si le Contact est attribué à une demande
+                $contact = Contact::where('number', $number)
+                ->where('user_id', $user->id)
+                ->where('publipostage', 0)
+                ->first();
+                if ($contact) {
+                    // Suppression
+                    GroupContact::where('contact_id', $contact->id)->delete();
+                }
+            endforeach;
+            return $this->sendSuccess(__('message.delgroup'), [], 201);
+        } catch(\Exception $e) {
+            Log::warning("Group::delcontact - Erreur lors de l'ajout d'un Contact dans un groupe : " . $e->getMessage());
+            return $this->sendError(__('message.error'));
+        }
+    }
+    // Retirer un contact d'un Groupe
+    /**
+    *   @OA\Post(
+    *   path="/api/groups/blacklist/{uid}",
+    *   tags={"Groups"},
+    *   operationId="blacklistGroup",
+    *   description="Retirer un contact d'un Group",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=201, description="Contact retiré avec succès."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function blacklist($uid): JsonResponse {
+        //User
+        $user = Auth::user();
+		App::setLocale($user->lg);
+        try {
+            // Vérification si le Contact est attribué à une demande
+            $contact = Contact::where('uid', $uid)->first();
+            // Suppression
+            GroupContact::where('contact_id', $contact->id)->delete();
+            if (!$deleted) {
+                Log::warning("Group::delgroup - Tentative de suppression d'un Groupe inexistante : " . $uid);
+                return $this->sendError(__('message.error'), [], 403);
             }
             return $this->sendSuccess(__('message.delgroup'), [], 201);
         } catch(\Exception $e) {
