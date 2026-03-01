@@ -16,6 +16,7 @@ return new class extends Migration
             $table->tinyInteger('blacklist')->default('0');
             $table->bigInteger('contact_id');
             $table->bigInteger('group_id');
+            $table->unique(['group_id', 'contact_id']);
         });
     }
 

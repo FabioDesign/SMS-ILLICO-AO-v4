@@ -344,4 +344,66 @@ class PhonebookController extends BaseController
             return $this->sendError(__('message.fielderr'), [], 400);
         }
     }
+    // Ajout/Exclusion de Contact
+    /**
+    *   @OA\Post(
+    *   path="/api/phonebooks/blacklist",
+    *   tags={"Phonebooks"},
+    *   operationId="contactExclu",
+    *   description="Ajout/Exclusion de ou de plusieurs Contacts",
+    *   security={{"bearer":{}}},
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\JsonContent(
+    *         required={"status", "contacts"},
+    *         @OA\Property(property="status", type="integer"),
+    *         @OA\Property(property="contacts", type="array", @OA\Items(
+    *               example="['910102034', '920102034', '930102034']"
+    *           )
+    *         ),
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function blacklist(request $request): JsonResponse {
+        // User
+        $user = Auth::user();
+		App::setLocale($user->lg);
+        // Validator
+        $validator = Validator::make($request->all(), [
+            'status'     => 'required|in:0,1',
+            'contacts'   => 'required|array',
+            'contacts.*' => 'required|string'
+        ]);
+        // Error field
+        if($validator->fails()){
+            Log::warning("Contact::blacklist - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+        }
+        try {
+            DB::beginTransaction();
+            // Récupérer tous les contacts en une seule requête
+            $contactIds = Contact::whereIn('number', $request->contacts)
+                ->where('user_id', $user->id)
+                ->where('publipostage', 0)
+                ->pluck('id');
+            if ($contactIds->isEmpty()) {
+                DB::rollBack();
+                Log::warning("Contact::blacklist - Aucun Contacts trouvés : " . json_encode($request->contacts));
+                return $this->sendSuccess(__('message.nodata'));
+            }
+
+            // Update en masse sur le pivot
+            Contact::whereIn('id', $contactIds)->update(['blacklist'  => $request->status]);
+            DB::commit();
+            return $this->sendSuccess(__('message.addcontact'), [], 201);
+        } catch(\Exception $e) {
+            DB::rollBack();
+            Log::warning("Contact::blacklist - Erreur lors du blacklistage d'un Contact : " . $e->getMessage() . " " . json_encode($request->all()));
+            return $this->sendError(__('message.error'));
+        }
+    }
 }

@@ -137,13 +137,80 @@
                 ]
             }
         },
-        "/api/groups/delgroup": {
+        "/api/groups/add/{uid}": {
+            "post": {
+                "tags": [
+                    "Groups"
+                ],
+                "description": "Ajout de ou de plusieurs Contacts dans un Groupe",
+                "operationId": "addGroup",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "contacts"
+                                ],
+                                "properties": {
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "example": "['910102034', '920102034', '930102034']"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contacts supprimés avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/groups/del/{uid}": {
             "delete": {
                 "tags": [
                     "Groups"
                 ],
                 "description": "Suppression d'un contact d'un Group",
                 "operationId": "delGroup",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "contacts"
+                                ],
+                                "properties": {
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "example": "['910102034', '920102034', '930102034']"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
                         "description": "Contact retiré avec succès."
@@ -167,11 +234,36 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Retirer un contact d'un Group",
-                "operationId": "blacklistGroup",
+                "description": "Ajout/Exclusion de ou de plusieurs Contacts dans un Groupe",
+                "operationId": "addExclu",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status",
+                                    "contacts"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "integer"
+                                    },
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "example": "['910102034', '920102034', '930102034']"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
-                        "description": "Contact retiré avec succès."
+                        "description": "Contacts supprimés avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -582,7 +674,7 @@
             }
         },
         "/api/phonebooks/delete": {
-            "post": {
+            "delete": {
                 "tags": [
                     "Phonebooks"
                 ],
@@ -656,6 +748,56 @@
                 "responses": {
                     "201": {
                         "description": "Contact enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/phonebooks/blacklist": {
+            "post": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Ajout/Exclusion de ou de plusieurs Contacts",
+                "operationId": "contactExclu",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status",
+                                    "contacts"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "integer"
+                                    },
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "example": "['910102034', '920102034', '930102034']"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contacts supprimés avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -820,16 +962,39 @@
                         "bearer": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/publipostage/delete": {
             "delete": {
                 "tags": [
                     "Publipostage"
                 ],
-                "description": "Suppression d'un Publipostage",
+                "description": "Suppression d'un ou de plusieurs Contacts",
                 "operationId": "deletePub",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "contacts"
+                                ],
+                                "properties": {
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "example": "['910102034', '920102034', '930102034']"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
-                        "description": "Contact supprimé avec succès."
+                        "description": "Contacts supprimés avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."

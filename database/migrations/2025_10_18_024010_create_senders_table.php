@@ -19,6 +19,7 @@ return new class extends Migration
             $table->tinyInteger('status')->default('0');
             $table->timestamps();
             $table->bigInteger('user_id');
+            $table->unique(['label', 'user_id']);
         });
     }
 

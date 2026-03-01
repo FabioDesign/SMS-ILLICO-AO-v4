@@ -16,8 +16,8 @@ return new class extends Migration
             $table->uuid('uid');
             $table->string('lastname', 255);
             $table->string('firstname', 255);
-            $table->string('number', 20);
-            $table->string('email', 255);
+            $table->string('number', 20)->unique();
+            $table->string('email', 255)->unique();
             $table->char('codepin', 4)->default('7070');
             $table->string('company', 255)->nullable();
             $table->string('nif', 50)->nullable();

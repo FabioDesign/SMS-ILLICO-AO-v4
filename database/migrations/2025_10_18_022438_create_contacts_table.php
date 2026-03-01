@@ -25,6 +25,7 @@ return new class extends Migration
             $table->tinyInteger('publipostage')->default('0');
             $table->timestamps();
             $table->bigInteger('user_id');
+            $table->unique(['number', 'publipostage', 'user_id']);
         });
     }
 

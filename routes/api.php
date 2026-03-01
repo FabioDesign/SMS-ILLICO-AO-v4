@@ -69,11 +69,13 @@ Route::middleware(['auth:api'])->group(function () {
   Route::controller(PhonebookController::class)->group(function () {
     // Route pour importation
     Route::post('phonebooks/imports', 'imports');
+    Route::post('phonebooks/blacklist', 'blacklist');
   });
   // Route pour les groupes
   Route::controller(GroupController::class)->group(function () {
     Route::post('groups/add/{uid}', 'addcontact');
     Route::post('groups/del/{uid}', 'delcontact');
+    Route::post('groups/blacklist/{uid}', 'blacklist');
   });
   // Route pour les Publipostages
   Route::controller(PublipostageController::class)->group(function () {

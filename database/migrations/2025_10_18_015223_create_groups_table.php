@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('label', 50);
             $table->timestamps();
             $table->bigInteger('user_id');
+            $table->unique(['label', 'user_id']);
         });
     }
 

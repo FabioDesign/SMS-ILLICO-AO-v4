@@ -197,7 +197,7 @@ class GroupController extends BaseController
             }
             return $this->sendSuccess(__('message.delgroup'), [], 201);
         } catch(\Exception $e) {
-            Log::warning("Group::destroy - Erreur lors de la suppression d'un Groupe : " . $e->getMessage());
+            Log::warning("Group::destroy - Erreur lors de la suppression d'un Groupe : " . $e->getMessage() . " " . $uid);
             return $this->sendError(__('message.error'));
         }
     }
@@ -224,60 +224,63 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function addcontact(request $request, $uid): JsonResponse {
+    public function addcontact(Request $request, string $uid): JsonResponse
+    {
         // User
         $user = Auth::user();
 		App::setLocale($user->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
+            'contacts.*' => 'required|integer'
         ]);
-        // Error field
-        if($validator->fails()){
-            Log::warning("Group::addcontact - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+        if ($validator->fails()) {
+            Log::warning("Group::addcontact - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all())
+            );
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
-        // Vérifier si l'ID est présent et valide
+
         $group = Group::where('uid', $uid)->first();
         if (!$group) {
             Log::warning("Group::addcontact - Aucun Groupe trouvé pour l'ID : " . $uid);
             return $this->sendSuccess(__('message.nodata'));
         }
+
         try {
-            foreach ($request->contacts as $number) :
-                // Vérification si le Contact est attribué à une demande
-                $contact = Contact::where('number', $number)
+            DB::beginTransaction();
+            // Récupérer tous les contacts en une seule requête
+            $contacts = Contact::whereIn('number', $request->contacts)
                 ->where('user_id', $user->id)
                 ->where('publipostage', 0)
-                ->first();
-                if ($contact) {
-                    // Création de la reclamation
-                    $set = [
-                        'group_id' => $group->id,
-                        'contact_id' => $contact->id,
-                    ];
-                    DB::beginTransaction(); // Démarrer une transaction
-                    try {
-                        GroupContact::create($set);
-                        // Valider la transaction
-                        DB::commit();
-                    } catch (\Exception $e) {
-                        DB::rollBack(); // Annuler la transaction en cas d'erreur
-                        Log::warning("Group::addcontact : " . $e->getMessage() . " " . json_encode($set));
-                        return $this->sendError(__('message.error'));
-                    }
-                }
-            endforeach;
-            return $this->sendSuccess(__('message.addgroup'), [], 201);
-        } catch(\Exception $e) {
-            Log::warning("Group::addcontact - Erreur lors de l'ajout d'un Contact dans un groupe : " . $e->getMessage());
+                ->pluck('id');
+
+            if ($contacts->isEmpty()) {
+                DB::rollBack();
+                Log::warning("Group::addcontact - Aucun Contacts trouvés : " . json_encode($request->contacts));
+                return $this->sendSuccess(__('message.nodata'));
+            }
+
+            // Préparer les insertions en masse
+            $data = $contacts->map(function ($contactId) use ($group) {
+                return [
+                    'group_id'   => $group->id,
+                    'contact_id' => $contactId,
+                ];
+            })->toArray();
+            GroupContact::insertOrIgnore($data);
+            DB::commit();
+            return $this->sendSuccess(__('message.addcontact'), [], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::warning("Group::addcontact - Erreur lors de l'ajout : " . $e->getMessage() . " " . json_encode($request->all())
+            );
             return $this->sendError(__('message.error'));
         }
     }
     // Suppression d'un contact d'un Groupe
     /**
     *   @OA\Delete(
-    *   path="/api/groups/delgroup/{uid}",
+    *   path="/api/groups/del/{uid}",
     *   tags={"Groups"},
     *   operationId="delGroup",
     *   description="Suppression d'un contact d'un Group",
@@ -297,72 +300,123 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function delcontact(request $request, $uid): JsonResponse {
+    public function delcontact(Request $request, string $uid): JsonResponse
+    {
         // User
         $user = Auth::user();
 		App::setLocale($user->lg);
-        // Validator
+        // Validator        
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
+            'contacts.*' => 'required|integer'
         ]);
-        // Error field
-        if($validator->fails()){
-            Log::warning("Group::delcontact - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+        if ($validator->fails()) {
+            Log::warning("Group::addcontact - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all())
+            );
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
-        // Vérifier si l'ID est présent et valide
+
         $group = Group::where('uid', $uid)->first();
         if (!$group) {
             Log::warning("Group::delcontact - Aucun Groupe trouvé pour l'ID : " . $uid);
             return $this->sendSuccess(__('message.nodata'));
         }
+
         try {
-            foreach ($request->contacts as $number) :
-                // Vérification si le Contact est attribué à une demande
-                $contact = Contact::where('number', $number)
+            DB::beginTransaction();
+            // Récupérer tous les contacts en une seule requête
+            $contactIds = Contact::whereIn('number', $request->contacts)
                 ->where('user_id', $user->id)
                 ->where('publipostage', 0)
-                ->first();
-                if ($contact) {
-                    // Suppression
-                    GroupContact::where('contact_id', $contact->id)->delete();
-                }
-            endforeach;
-            return $this->sendSuccess(__('message.delgroup'), [], 201);
-        } catch(\Exception $e) {
-            Log::warning("Group::delcontact - Erreur lors de l'ajout d'un Contact dans un groupe : " . $e->getMessage());
+                ->pluck('id');
+
+            if ($contactIds->isEmpty()) {
+                DB::rollBack();
+                Log::warning("Group::addcontact - Aucun Contacts trouvés : " . json_encode($request->contacts));
+                return $this->sendSuccess(__('message.nodata'));
+            }
+
+            // Suppression en masse sécurisée (IMPORTANT : filtrer par group_id)
+            GroupContact::where('group_id', $group->id)
+                ->whereIn('contact_id', $contactIds)
+                ->delete();
+            DB::commit();
+            return $this->sendSuccess(__('message.delgroup'), [], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::warning("Group::delcontact - Erreur suppression : " . $e->getMessage() . " " . json_encode($request->all())
+            );
             return $this->sendError(__('message.error'));
         }
     }
-    // Retirer un contact d'un Groupe
+    // Ajout/Exclusion de Contact dans un Groupe
     /**
     *   @OA\Post(
     *   path="/api/groups/blacklist/{uid}",
     *   tags={"Groups"},
-    *   operationId="blacklistGroup",
-    *   description="Retirer un contact d'un Group",
+    *   operationId="addExclu",
+    *   description="Ajout/Exclusion de ou de plusieurs Contacts dans un Groupe",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=201, description="Contact retiré avec succès."),
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\JsonContent(
+    *         required={"status", "contacts"},
+    *         @OA\Property(property="status", type="integer"),
+    *         @OA\Property(property="contacts", type="array", @OA\Items(
+    *               example="['910102034', '920102034', '930102034']"
+    *           )
+    *         ),
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function blacklist($uid): JsonResponse {
-        //User
+    public function blacklist(request $request, $uid): JsonResponse {
+        // User
         $user = Auth::user();
 		App::setLocale($user->lg);
+        // Validator
+        $validator = Validator::make($request->all(), [
+            'status'     => 'required|in:0,1',
+            'contacts'   => 'required|array',
+            'contacts.*' => 'required|string'
+        ]);
+        // Error field
+        if($validator->fails()){
+            Log::warning("Group::blacklist - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+        }
+        // Vérifier si l'ID est présent et valide
+        $group = Group::where('uid', $uid)->first();
+        if (!$group) {
+            Log::warning("Group::blacklist - Aucun Groupe trouvé pour l'ID : " . $uid);
+            return $this->sendSuccess(__('message.nodata'));
+        }
         try {
-            // Vérification si le Contact est attribué à une demande
-            $contact = Contact::where('uid', $uid)->first();
-            // Suppression
-            GroupContact::where('contact_id', $contact->id)->delete();
-            if (!$deleted) {
-                Log::warning("Group::delgroup - Tentative de suppression d'un Groupe inexistante : " . $uid);
-                return $this->sendError(__('message.error'), [], 403);
+            DB::beginTransaction();
+            // Récupérer tous les contacts en une seule requête
+            $contactIds = Contact::whereIn('number', $request->contacts)
+                ->where('user_id', $user->id)
+                ->where('publipostage', 0)
+                ->pluck('id');
+
+            if ($contactIds->isEmpty()) {
+                DB::rollBack();
+                Log::warning("Group::blacklist - Aucun Contacts trouvés : " . json_encode($request->contacts));
+                return $this->sendSuccess(__('message.nodata'));
             }
-            return $this->sendSuccess(__('message.delgroup'), [], 201);
+
+            // Update en masse sur le pivot
+            GroupContact::where('group_id', $group->id)
+                ->whereIn('contact_id', $contactIds)
+                ->update(['blacklist'  => $request->status]);
+            DB::commit();
+            return $this->sendSuccess(__('message.addcontact'), [], 201);
         } catch(\Exception $e) {
-            Log::warning("Group::destroy - Erreur lors de la suppression d'un Groupe : " . $e->getMessage());
+            DB::rollBack();
+            Log::warning("Group::blacklist - Erreur lors du blacklistage d'un Contact dans un groupe : " . $e->getMessage() . " " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
