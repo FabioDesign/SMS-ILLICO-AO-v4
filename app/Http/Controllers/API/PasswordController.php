@@ -51,7 +51,7 @@ class PasswordController extends BaseController
             $data = [
                 'remoteip' => $request->ip(),
                 'secret' => env('RECAPTCHAV3_SECRET'),
-                'response' => $_POST['g_recaptcha_response'],
+                'response' => $request->input('g_recaptcha_response'),
             ];
             // Initialiser cURL
             $curl = curl_init();
@@ -80,7 +80,7 @@ class PasswordController extends BaseController
                     //subject
                     $subject = __('message.forgotpwd');
                     $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>"
-                    . __('message.dear') . " " . $user->lastname . ",<br><br>"
+                    . __('message.dear') . " " . $authUser->lastname . ",<br><br>"
                     . __('message.otp') . " : <b>" . $otp . "</b><br><br>
                     <hr style='color:#156082;'>"
                     . __('message.bestregard') . " !<br>"
@@ -90,7 +90,7 @@ class PasswordController extends BaseController
                         // Envoi de l'email
                         $this->sendMail($request->email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
                         // Mettre à jour l'utilisateur avec l'OTP et l'horodatage
-                        $user->update([
+                        $authUser->update([
                             'otp' => str_replace(' ', '', $otp),
                             'otp_at' => now(),
                         ]);
@@ -138,7 +138,7 @@ class PasswordController extends BaseController
         $validator = Validator::make($request->all(), [
             'lg' => 'required|in:en,pt',
             'email' => 'required|email|exists:users,email',
-            'otp' => 'required|size:6',
+            'otp' => 'required|digits:6',
         ]);
 		App::setLocale($request->lg);
         //Error field
@@ -155,23 +155,23 @@ class PasswordController extends BaseController
             ->first();
             // Vérifier si les données existent
             if (!$user) {
-                Log::warning("Email ou Code OTP erroné : " . json_encode($request->all()));
+                Log::warning("Password::verifotp - Email ou Code OTP erroné : " . json_encode($request->all()));
                 return $this->sendError(__('message.otperr'), [], 404);
             }
             // Vérifier si l'OTP a expiré
-            if (!($user->otp_at >= now()->subMinutes(5))) {
-                Log::warning("Code OTP a expiré : " . json_encode($request->all()));
+            if (!($authUser->otp_at >= now()->subMinutes(5))) {
+                Log::warning("Password::verifotp - Code OTP a expiré : " . json_encode($request->all()));
                 return $this->sendError(__('message.otpexp'), [], 404);
             }
             return $this->sendSuccess(__('message.otpsucc'));
         } catch(\Exception $e) {
-            Log::warning("Une erreur est survenue, veuillez réessayer plus tard : " . $e->getMessage());
+            Log::warning("Password::verifotp - Erreur : " . $e->getMessage() . " " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
     //Réinitialisation de Mot de passe
     /**
-    * @OA\Post(
+    * @OA\Put(
     *   path="/api/password/addpass",
     *   tags={"Password"},
     *   operationId="addpass",
@@ -197,7 +197,7 @@ class PasswordController extends BaseController
         $validator = Validator::make($request->all(), [
             'lg' => 'required|in:en,pt',
             'email' => 'required|email|exists:users,email',
-            'otp' => 'required|size:6',
+            'otp' => 'required|digits:6',
             'password' => [
                 'required', 'confirmed',
                 Password::min(8)
@@ -221,24 +221,24 @@ class PasswordController extends BaseController
         ->first();
         // Vérifier si les données existent
         if (!$user) {
-            Log::warning("Email ou Code OTP erroné : " . $request->email);
-            return $this->sendError("Email ou Code OTP erroné.", [], 404);
+            Log::warning("Password::addpass - Email ou Code OTP erroné : " . $request->email);
+            return $this->sendError(__('message.emailerr'), [], 404);
         }
         try {
             // Mettre à jour du password
-            $user->update([
+            $authUser->update([
                 'password_at' => now(),
                 'password' => Hash::make($request->password),
             ]);
-            return $this->sendSuccess("Mot de passe modifié avec succès.", [], 201);
+            return $this->sendSuccess(__('message.passwordsucc'), [], 201);
         } catch(\Exception $e) {
-            Log::warning("Une erreur est survenue, veuillez réessayer plus tard : " . $e->getMessage());
-            return $this->sendError("Une erreur est survenue, veuillez réessayer plus tard.");
+            Log::warning("Password::addpass - Erreur : " . $e->getMessage());
+            return $this->sendError(__('message.error') . " " . json_encode($request->all()));
         }
     }
     //Modification de Mot de passe
     /**
-    * @OA\Post(
+    * @OA\Put(
     *   path="/api/password/editpass",
     *   tags={"Password"},
     *   operationId="editpass",
@@ -259,12 +259,10 @@ class PasswordController extends BaseController
     * )
     */
     public function editpass(Request $request){
-        //User
-        $user = Auth::user();
-		App::setLocale($user->lg);
-        //Data
-        Log::notice("ID Utilisateur : {$user->id} - Requête : " . json_encode($request->all()));
-        //Validator
+        // User
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
+        // Validator
         $validator = Validator::make($request->all(), [
             'oldpass' => 'required|min:8',
             'password' => [
@@ -282,20 +280,20 @@ class PasswordController extends BaseController
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérification de l'ancien mot de passe
-        if (!Hash::check($request->oldpass, $user->password)) {
-            Log::warning("Ancien mot de passe incorrect pour l'utilisateur ID : {$user->id}");
-            return $this->sendError("Ancien mot de passe incorrect.");
+        if (!Hash::check($request->oldpass, $authUser->password)) {
+            Log::warning("Password::editpass - Ancien mot de passe incorrect pour l'utilisateur ID : {$authUser->id}");
+            return $this->sendError(__('message.passworderr'));
         }
         try {
             // Mettre à jour du password
-            User::findOrFail($user->id)->update([
+            User::findOrFail($authUser->id)->update([
                 'password_at' => now(),
                 'password' => Hash::make($request->password),
             ]);
-            return $this->sendSuccess("Mot de passe modifié avec succès.", [], 201);
+            return $this->sendSuccess(__('message.passwordsucc'), [], 201);
         } catch(\Exception $e) {
-            Log::warning("Erreur lors de la mise à jour du mot de passe : " . $e->getMessage());
-            return $this->sendError("Une erreur est survenue, veuillez réessayer plus tard.");
+            Log::warning("Password::editpass - Erreur : " . $e->getMessage() . " " . json_encode($request->all()));
+            return $this->sendError(__('message.error'));
         }
     }
 }

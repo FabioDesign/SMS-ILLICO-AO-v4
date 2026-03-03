@@ -8,6 +8,8 @@ return [
     'inactive' => "inativo",
     'activated' => "ativado",
     'blocked' => "bloqueado",
+    'listuser' => "Lista de utilizadors.",
+    'detailuser' => "Detalhes sobre um utilizador.",
     'authsucc' => "Autenticação concluída com sucesso.",
     'autherr' => "Falha na autenticação.",
     'noprofil' => "Não há perfil disponível para este utilizador.",
@@ -27,6 +29,9 @@ return [
     'otpsucc' => "Código OTP validado com sucesso.",
     'otperr' => "Código OTP incorreto.",
     'otpexp' => "O código OTP expirou.",
+    'passwordsucc' => "Senha alterada com sucesso.",
+    'emailerr' => "E-mail ou código OTP incorreto.",
+    'passworderr' => "Senha antiga incorreta.",
 
     // Photo
     'photosucc' => "Foto do perfil atualizada com sucesso.",

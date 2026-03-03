@@ -28,20 +28,19 @@ class PublipostageController extends BaseController
     */
     public function index(Request $request): JsonResponse {
         // User
-        $user = Auth::user();
-		App::setLocale($user->lg);
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
         try {
             $num = isset($request->num) ? (int) $request->num:1;
             $limit = isset($request->limit) ? (int) $request->limit:10;
             $search = isset($request->search) ? (int) $request->search:'';
             // Code to list contacts
-            $query = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3');
-            if ($search) $query->where('label', 'LIKE', '%'.$search.'%');
-            $query->where('user_id', $user->id)
+            $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
+            ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%'.$search.'%'))
+            ->where('user_id', $authUser->id)
             ->where('publipostage', 1)
             ->orderByDesc('created_at')
-            ->get();
-            $contacts = $query->paginate($limit, ['*'], 'page', $num);
+            ->paginate($limit, ['*'], 'page', $num);
             // Vérifier si les données existent
             if ($contacts->isEmpty()) {
                 Log::warning("Publipostage::index - Aucun Contact trouvé.");
@@ -58,14 +57,14 @@ class PublipostageController extends BaseController
                 'field2' => $data->field2 ?? '',
                 'field3' => $data->field3 ?? '',
             ]);
-            $total = [
-                'currentPage' => $contacts->currentPage(),
-                'lastPage' => $contacts->lastPage(),
-                'total' => $contacts->total(),
-            ];
-            return $this->sendSuccess(__('message.listcontact'), $data, 200, $total);
+            return $this->sendSuccess(__('message.listcontact'), [
+                'lists' => $data,
+                'current_page' => $contacts->currentPage(),
+                'last_page' => $contacts->lastPage(),
+                'total'  => $contacts->total(),
+            ]);
         } catch (\Exception $e) {
-            Log::warning("Publipostage::index - Erreur d'affichage de Contacts: " . $e->getMessage());
+            Log::warning("Publipostage::index - Erreur : " . $e->getMessage());
             return $this->sendError(__('message.error'));
         }
     }
@@ -97,8 +96,8 @@ class PublipostageController extends BaseController
     */
     public function store(Request $request): JsonResponse {
         // User
-        $user = Auth::user();
-		App::setLocale($user->lg);
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
@@ -106,8 +105,8 @@ class PublipostageController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 1);
+                Rule::unique('contacts')->where(function ($query) use ($authUser) {
+                    return $query->where('user_id', $authUser->id)->where('publipostage', 1);
                 }),
             ],
             'gender' => 'required|in:M,F',
@@ -130,7 +129,7 @@ class PublipostageController extends BaseController
         // Création de la reclamation
         $set = [
             'publipostage' => 1,
-            'user_id' => $user->id,
+            'user_id' => $authUser->id,
             'label' => $request->label,
             'number' => $request->number,
             'gender' => $request->gender,
@@ -147,7 +146,7 @@ class PublipostageController extends BaseController
             return $this->sendSuccess(__('message.addcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Publipostage::store : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("Publipostage::store - Erreur : " . $e->getMessage() . " " . json_encode($set));
             return $this->sendError(__('message.error'));
         }
     }
@@ -179,8 +178,8 @@ class PublipostageController extends BaseController
     */
     public function update(request $request, $uid): JsonResponse {
         // User
-        $user = Auth::user();
-		App::setLocale($user->lg);
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
@@ -188,8 +187,8 @@ class PublipostageController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 1);
+                Rule::unique('contacts')->where(function ($query) use ($authUser) {
+                    return $query->where('user_id', $authUser->id)->where('publipostage', 1);
                 }),
             ],
             'gender' => 'required|in:M,F',
@@ -233,7 +232,7 @@ class PublipostageController extends BaseController
             return $this->sendSuccess(__('message.editcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Publipostage::update : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("Publipostage::update - Erreur : " . $e->getMessage() . " " . json_encode($set));
             return $this->sendError(__('message.error'));
         }
 	}
@@ -263,8 +262,8 @@ class PublipostageController extends BaseController
     public function destroy(Request $request): JsonResponse
     {
         // User
-        $user = Auth::user();
-		App::setLocale($user->lg);
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
         // Validator        
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
@@ -280,7 +279,7 @@ class PublipostageController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('number', $request->contacts)
-                ->where('user_id', $user->id)
+                ->where('user_id', $authUser->id)
                 ->where('publipostage', 1)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
@@ -295,7 +294,7 @@ class PublipostageController extends BaseController
             return $this->sendSuccess(__('message.delcontact'), [], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::warning("Publipostage::destroy - Erreur lors de la suppression d'un Contact : " . $e->getMessage());
+            Log::warning("Publipostage::destroy - Erreur : " . $e->getMessage());
             return $this->sendError(__('message.error'));
         }
     }
@@ -324,8 +323,8 @@ class PublipostageController extends BaseController
     */
     public function imports(Request $request): JsonResponse {
         // User
-        $user = Auth::user();
-		App::setLocale($user->lg);
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'files' => 'required|file|mimes:xlsx,xls|max:2048',
@@ -335,7 +334,7 @@ class PublipostageController extends BaseController
             Log::warning("Publipostage::imports - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
-        $import = new ContactImport($user, 1);
+        $import = new ContactImport($authUser, 1);
     
         try {
             Excel::import($import, $request->file('files'));
@@ -349,8 +348,8 @@ class PublipostageController extends BaseController
             
             return $this->sendSuccess(__('message.impcontact'), [], 201);
         } catch (\Exception $e) {
-            Log::warning("Publipostage::imports : " . $e->getMessage());
-            return $this->sendError(__('message.fielderr'), [], 400);
+            Log::warning("Publipostage::imports - Erreur : " . $e->getMessage());
+            return $this->sendError(__('message.error'), [], 400);
         }
     }
 }

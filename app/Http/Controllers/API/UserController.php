@@ -1,17 +1,133 @@
 <?php
 namespace App\Http\Controllers\API; 
 
-use \Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rules\Password;
+use App\Models\{AccountType, Town, User};
 use Illuminate\Support\Facades\{App, Auth, DB, Hash, Log, Validator};
-use App\Models\{Cells, Country, District, MaritalStatus, Nationality, Permission, Profile, Province, Sector, User};
 use App\Http\Controllers\API\BaseController as BaseController;
 
 class UserController extends BaseController
 {
+    // Liste des Utilisateurs
+    /**
+    * @OA\Get(
+    *   path="/api/users",
+    *   tags={"Users"},
+    *   operationId="listUser",
+    *   description="Liste des Utilisateurs",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Liste des Utilisateurs."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function index(Request $request): JsonResponse {
+        // User
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
+        try {
+            // Récupérer les données
+            $users = User::select('uid', 'lastname', 'firstname', 'number', 'email', 'company', 'status', 'created_at')
+            ->where('id', '!=', $authUser->id)
+            ->orderByDesc('created_at')
+            ->get();
+            // Vérifier si les données existent
+            if ($users->isEmpty()) {
+                Log::warning("User::index - Aucun utilisateur trouvé");
+                return $this->sendSuccess(__('message.nodata'));
+            }
+            // Transformer les données
+            $data = $users->map(fn($data) => [
+                'uid' => $data->uid,
+                'lastname' => $data->lastname,
+                'firstname' => $data->firstname,
+                'number' => $data->number,
+                'email' => $data->email,
+                'company' => $data->company,
+                'status' => match((int)$data->status) {
+                    0 => 'Inactif',
+                    1 => 'Actif',
+                    2 => 'Bloqué'
+                },
+                'created_at' => $data->created_at->format('d/m/Y H:i'),
+            ]);
+            return $this->sendSuccess(__('message.listuser'), $data);
+        } catch(\Exception $e) {
+            Log::warning("User::index - Erreur : ".$e->getMessage());
+            return $this->sendError(__('message.error'));
+        }
+    }
+    // Détail d'Utilisateur
+    /**
+    * @OA\Get(
+    *   path="/api/users/{uid}",
+    *   tags={"Users"},
+    *   operationId="showUser",
+    *   description="Détail d'Utilisateur",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Détail d'Utilisateur."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function show(string $uid): JsonResponse
+    {
+        // User
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
+
+        try {
+            // Eager Loading (1 seule requête optimisée)
+            $user = User::with(['town', 'accountType'])
+                ->where('uid', $uid)
+                ->first();
+
+            if (!$user) {
+                Log::warning("User::show - Aucun utilisateur trouvé pour l'UID : " . $uid);
+                return $this->sendSuccess(__('message.nodata'));
+            }
+
+            $data = [
+                'lastname'  => $authUser->lastname,
+                'firstname' => $authUser->firstname,
+                'number'    => $authUser->number,
+                'email'     => $authUser->email,
+                'company'   => $authUser->company,
+                'nif'       => $authUser->nif,
+                'address'   => $authUser->address,
+                'website'   => $authUser->website,
+                'volume'    => $authUser->volume,
+
+                'towns' => $authUser->town ? [
+                    'id'    => $authUser->town->id,
+                    'label' => $authUser->town->label,
+                ] : null,
+
+                'account_type' => $authUser->accountType ? [
+                    'id'    => $authUser->accountType->id,
+                    'label' => $authUser->lg === 'en' ? $authUser->accountType->en : $authUser->accountType->fr,
+                ] : null,
+
+                'status' => match((int) $authUser->status) {
+                    0 => 'Inactif',
+                    1 => 'Actif',
+                    2 => 'Bloqué',
+                    default => 'Inconnu'
+                },
+
+                'created_at' => $authUser->created_at->format('d/m/Y H:i'),
+
+                'avatar' => asset('assets/avatars/' . ($authUser->avatar ?? 'avatar.jpg')),
+            ];
+            return $this->sendSuccess(__('message.detailuser'), $data);
+        } catch (\Exception $e) {
+            Log::warning("User::show - Erreur : " . $e->getMessage());
+            return $this->sendError(__('message.error'));
+        }
+    }
     //Authentification
     /**
     * @OA\Post(
@@ -41,7 +157,7 @@ class UserController extends BaseController
           'lg' => 'required',
           'login' => 'required',
           'password' => 'required',
-        //   'g_recaptcha_response' => 'required',
+          'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         //Error field
@@ -51,31 +167,31 @@ class UserController extends BaseController
         }
         try {
             // Paramètre de Recapcha
-            // $url = 'https://www.google.com/recaptcha/api/siteverify';
-            // $data = [
-            //     'remoteip' => $request->ip(),
-            //     'secret' => env('RECAPTCHAV3_SECRET'),
-            //     'response' => $request->input('g_recaptcha_response'),
-            // ];
-            // // Initialiser cURL
-            // $curl = curl_init();
-            // curl_setopt($curl, CURLOPT_URL, $url);
-            // curl_setopt($curl, CURLOPT_POST, true);
-            // curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-            // curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            // curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+            $url = 'https://www.google.com/recaptcha/api/siteverify';
+            $data = [
+                'remoteip' => $request->ip(),
+                'secret' => env('RECAPTCHAV3_SECRET'),
+                'response' => $request->input('g_recaptcha_response'),
+            ];
+            // Initialiser cURL
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 
-            // $result = curl_exec($curl);
+            $result = curl_exec($curl);
 
-            // // Vérifier les erreurs cURL
-            // if (curl_error($curl)) {
-            //     Log::warning("User::store - cURL Error : " . curl_error($curl));
-            //     return $this->sendError(__('message.error'));
-            // }
-            // curl_close($curl);
+            // Vérifier les erreurs cURL
+            if (curl_error($curl)) {
+                Log::warning("User::store - cURL Error : " . curl_error($curl));
+                return $this->sendError(__('message.error'));
+            }
+            curl_close($curl);
 
-            // $resultJson = json_decode($result);
-            // if ($resultJson->success == true) {
+            $resultJson = json_decode($result);
+            if ($resultJson->success == true) {
                 $credentialNum = [
                     'number' => $request->login,
                     'password' => $request->password,
@@ -88,39 +204,42 @@ class UserController extends BaseController
                 ];
                 if ((Auth::attempt($credentialNum))||(Auth::attempt($credentialEml))) {
                     try {
-                        $user = Auth::user();
+                        $authUser = Auth::user();
                         // Test si la photo est vide
-                        if ($user->photo != '') $photo = $user->photo;
-                        else $photo = 'avatar.jpg';
+                        if ($authUser->avatar != '')
+                            $avatar = $authUser->avatar;
+                        else
+                            $avatar = 'avatar.jpg';
                         // Ajouter les informations de l'utilisateur et du profil dans la réponse
                         $data = [
-                            'access_token' =>  $user->createToken('MyApp')->accessToken,
+                            'access_token' =>  $authUser->createToken('MyApp')->accessToken,
                             'infos' => [
-                                'lastname' => $user->lastname,
-                                'firstname' => $user->firstname,
-                                'number' => $user->number,
-                                'email' => $user->email,
-                                'photo' => env('APP_URL') . '/assets/avatars/' . $photo,
+                                'uid' => $authUser->uid,
+                                'lastname' => $authUser->lastname,
+                                'firstname' => $authUser->firstname,
+                                'number' => $authUser->number,
+                                'email' => $authUser->email,
+                                'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
                             ]
                         ];
-                        User::findOrFail($user->id)->update([
+                        User::findOrFail($authUser->id)->update([
                             'login_at' => now(),
                             'lg' => $request->lg,
                         ]);
-                        // Logs::createLog('Connexion', $user->id, 1);
+                        // Logs::createLog('Connexion', $authUser->id, 1);
                         return $this->sendSuccess(__('message.authsucc'), $data);
                     } catch (\Exception $e) {
-                        Log::warning("Echec de connexion à la base de données : " . $e->getMessage());
+                        Log::warning("User::login - Echec de connexion : " . $e->getMessage());
                         return $this->sendError(__('message.error'));
                     }
                 } else {
-                    Log::warning("Authentication : " . json_encode($request->all()));
+                    Log::warning("User::login - Authentication : " . json_encode($request->all()));
                     return $this->sendError(__('message.autherr'), [], 401);
                 }
-            // } else {
-            //     Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
-            //     return $this->sendError(__('message.recaptcha'));
-            // }
+            } else {
+                Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
+                return $this->sendError(__('message.recaptcha'));
+            }
         } catch (\Exception $e) {
             Log::warning("User::login - Recaptcha : " . $e->getMessage() . "  " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
@@ -238,7 +357,7 @@ class UserController extends BaseController
                 DB::beginTransaction(); // Démarrer une transaction
                 try {
                     // Création de l'utilisateur
-                    $user = User::create($set);
+                    User::create($set);
                     DB::commit(); // Valider la transaction
                     // Username
                     $username = $request->firstname . " " . $request->lastname;
@@ -289,7 +408,7 @@ class UserController extends BaseController
                     return $this->sendSuccess(__('message.usersucc'), $data, 201);
                 } catch (\Exception $e) {
                     DB::rollBack(); // Annuler la transaction en cas d'erreur
-                    Log::warning("User::store - Erreur enregistrement de l'utilisateur : " . $e->getMessage() . " " . json_encode($set));
+                    Log::warning("User::store - Erreur : " . $e->getMessage() . " " . json_encode($set));
                     return $this->sendError(__('message.error'));
                 }
             } else {
@@ -331,20 +450,20 @@ class UserController extends BaseController
     * )
     */
     public function profiles(Request $request): JsonResponse {
-        //User
-        $user = Auth::user();
-        //Data
-        Log::notice("User::profiles - ID User : {$user->id} - Requête : " . json_encode($request->all()));
-        //Validator
+        // User
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
+        // Data
+        Log::notice("User::profiles - ID User : {$authUser->id} - Requête : " . json_encode($request->all()));
+        // Validator
         $validator = Validator::make($request->all(), [
             'lastname' => 'required',
             'firstname' => 'required',
-            'number' => 'required|unique:users,number,'.$user->id,
-            'email' => 'required|unique:users,email,'.$user->id,
+            'number' => 'required|unique:users,number,' . $authUser->id . ',id',
+            'email'  => 'required|email|unique:users,email,' . $authUser->id . ',id',
             'town_id' => 'required|integer|min:1',
             'accountyp_id' => 'required|integer|min:1',
         ]);
-		App::setLocale($user->lg);
         //Error field
         if ($validator->fails()) {
             Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
@@ -380,21 +499,21 @@ class UserController extends BaseController
             'address' => $request->address ?? '',
             'website' => $request->website ?? '',
         ];
-        DB::beginTransaction(); // Démarrer une transaction
         try {
+            DB::beginTransaction(); // Démarrer une transaction
             // Création de l'utilisateur
-            User::findOrFail($user->id)->update($set);
+            User::findOrFail($authUser->id)->update($set);
             DB::commit(); // Valider la transaction
             return $this->sendSuccess(__('message.profilsucc'), $set, 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("User::profiles - Erreur lors de la modification de Profil utilisateur : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("User::profiles - Erreur : " . $e->getMessage() . " " . json_encode($set));
             return $this->sendError(__('message.error'));
         }
 	}
     //Photo de profil
     /**
-     * @OA\Post(
+     * @OA\Put(
      *   path="/api/users/avatars",
      *   tags={"Users"},
      *   operationId="avatars",
@@ -405,8 +524,8 @@ class UserController extends BaseController
      *      @OA\MediaType(
      *          mediaType="multipart/form-data",
      *          @OA\Schema(
-     *             required={"photo"},
-     *             @OA\Property(property="photo", type="string", format="binary"),
+     *             required={"avatar"},
+     *             @OA\Property(property="avatar", type="string", format="binary"),
      *          )
      *      )
      *   ),
@@ -417,34 +536,39 @@ class UserController extends BaseController
      */
     public function avatars(Request $request)
     {
-        $user = Auth::user();
-        //Validator
+        // User
+        $authUser = Auth::user();
+        App::setLocale($authUser->lg);
+        // Validator
         $validator = Validator::make($request->all(), [
-			'photo' => 'required|file|mimes:png,jpeg,jpg|max:2048',
+			'avatar' => 'required|file|mimes:png,jpeg,jpg|max:2048',
         ]);
-		App::setLocale($user->lg);
-        //Error field
+        // Error field
         if ($validator->fails()) {
             Log::warning("User::avatars - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Upload photo
         $dir = 'assets/avatars';
-        $image = $request->file('photo');
+        $image = $request->file('avatar');
         $ext = $image->getClientOriginalExtension();
-        $photo = User::filenameUnique($ext);
-        if (!($image->move($dir, $photo))) {
-            Log::warning("User::avatars - Erreur de téléchargement de la photo : " . $e->getMessage());
+        $avatar = User::filenameUnique($ext);
+        if (!($image->move($dir, $avatar))) {
+            Log::warning("User::avatars - Erreur : " . $e->getMessage());
             return $this->sendError(__('message.photodown'));
         }
         try {
             $set = [
-                'photo' => $photo,
+                'avatar' => $avatar,
+                'avatar_at' => now(),
             ];
-            User::findOrFail($user->id)->update($set);
-            return $this->sendSuccess(__('message.photosucc'), [], 201);
+            User::findOrFail($authUser->id)->update($set);
+            $data = [
+                'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
+            ];
+            return $this->sendSuccess(__('message.photosucc'), $data, 201);
         } catch(\Exception $e) {
-            Log::warning("Photo::store - Erreur de modification de la photo de profil : " . $e->getMessage());
+            Log::warning("User::avatars - Erreur : " . $e->getMessage());
             return $this->sendError(__('message.error'));
         }
     }

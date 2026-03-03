@@ -413,7 +413,7 @@
             }
         },
         "/api/password/addpass": {
-            "post": {
+            "put": {
                 "tags": [
                     "Password"
                 ],
@@ -469,7 +469,7 @@
             }
         },
         "/api/password/editpass": {
-            "post": {
+            "put": {
                 "tags": [
                     "Password"
                 ],
@@ -1054,6 +1054,56 @@
                 ]
             }
         },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Liste des Utilisateurs",
+                "operationId": "listUser",
+                "responses": {
+                    "200": {
+                        "description": "Liste des Utilisateurs."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{uid}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Détail d'Utilisateur",
+                "operationId": "showUser",
+                "responses": {
+                    "200": {
+                        "description": "Détail d'Utilisateur."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/users/auth": {
             "post": {
                 "tags": [
@@ -1270,10 +1320,10 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "photo"
+                                    "avatar"
                                 ],
                                 "properties": {
-                                    "photo": {
+                                    "avatar": {
                                         "type": "string",
                                         "format": "binary"
                                     }

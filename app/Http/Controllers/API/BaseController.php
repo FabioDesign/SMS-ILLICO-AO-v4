@@ -17,15 +17,12 @@ class BaseController extends Controller
    *
    * @return \Illuminate\Http\Response
    */
-  public function sendSuccess($message, $data = [], $status = 200, $total = 0) {
+  public function sendSuccess($message, $data = [], $status = 200) {
     $response = [
       'status' => $status,
       'message' => $message,
       'data' => $data,
     ];
-    if ($total != 0) {
-      $response['pagination'] = $total;
-    }
     return response()->json($response, 200);
   }
   /**

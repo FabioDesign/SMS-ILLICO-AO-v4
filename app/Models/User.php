@@ -22,7 +22,7 @@ class User extends Authenticatable
         'uid',
         'nif',
         'otp',
-        'photo',
+        'avatar',
         'email',
         'number',
         'volume',
@@ -33,7 +33,7 @@ class User extends Authenticatable
         'address',
         'codepin',
         'company',
-        'photo_at',
+        'avatar_at',
         'login_at',
         'lastname',
         'password',
@@ -73,5 +73,24 @@ class User extends Authenticatable
                 $model->uid = Str::uuid()->toString();
             }
         });
+    }
+    // Génération de Filename unique
+    public static function filenameUnique($ext)
+    {
+        do {
+            $alfa = 'abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ0123456789';
+            $string = substr(str_shuffle($alfa), 0, 15) . '.' . $ext;
+        } while(self::where('avatar', $string)->exists());
+        return $string;
+    }
+    // Liste des villes
+    public function town()
+    {
+        return $this->belongsTo(Town::class);
+    }
+    // Liste des types de comptes
+    public function accountType()
+    {
+        return $this->belongsTo(AccountType::class, 'accountyp_id');
     }
 }

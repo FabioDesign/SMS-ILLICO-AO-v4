@@ -41,7 +41,7 @@ Route::post('users/register', [UserController::class, 'store']);
 Route::controller(PasswordController::class)->group(function () {
   Route::post('password/verifemail', 'verifemail');
   Route::post('password/verifotp', 'verifotp');
-  Route::post('password/addpass', 'addpass');
+  Route::put('password/addpass', 'addpass');
 });
 // Route pour les listes
 Route::controller(ListsController::class)->group(function () {
@@ -51,6 +51,7 @@ Route::controller(ListsController::class)->group(function () {
 
 Route::middleware(['auth:api'])->group(function () {
   Route::resources([
+    'users' => UserController::class,
     'groups' => GroupController::class,
     'phonebooks' => PhonebookController::class,
     'publipostage' => PublipostageController::class,
@@ -59,12 +60,12 @@ Route::middleware(['auth:api'])->group(function () {
   Route::controller(UserController::class)->group(function () {
     Route::post('users/profiles', 'profiles');
     // Route pour la photo de profil
-    Route::post('users/photos', 'photos');
+    Route::post('users/avatars', 'avatars');
     // Route pour la deconnexion
     Route::post('users/logout', 'logout')->name('logout');
   });
   // Route pour les mots de passe
-  Route::post('password/editpass', [PasswordController::class, 'editpass']);
+  Route::put('password/editpass', [PasswordController::class, 'editpass']);
   // Route pour les contacts
   Route::controller(PhonebookController::class)->group(function () {
     // Route pour importation

@@ -25,8 +25,8 @@ return new class extends Migration
             $table->string('website', 255)->nullable();
             $table->decimal('volume', 10, 0)->default('0');
             $table->char('lg', 2);
-            $table->string('photo', 20)->nullable();
-            $table->timestamp('photo_at')->nullable();
+            $table->string('avatar', 20)->nullable();
+            $table->timestamp('avatar_at')->nullable();
             $table->string('password', 255)->nullable();
             $table->timestamp('password_at')->nullable();
             $table->string('otp', 6)->nullable();

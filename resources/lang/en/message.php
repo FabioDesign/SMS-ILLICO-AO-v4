@@ -8,6 +8,8 @@ return [
     'inactive' => "inactive",
     'activated' => "activated",
     'blocked' => "blocked",
+    'listuser' => "Users list.",
+    'detailuser' => "Details about a user.",
     'authsucc' => "Authentication completed successfully.",
     'autherr' => "Authentication failure.",
     'noprofil' => "No profile available for this user.",
@@ -27,6 +29,9 @@ return [
     'otpsucc' => "OTP code successfully validated.",
     'otperr' => "Incorrect OTP code.",
     'otpexp' => "OTP code has expired.",
+    'passwordsucc' => "Password successfully changed.",
+    'emailerr' => "Incorrect email or OTP code.",
+    'passworderr' => "Incorrect old password.",
 
     // Photo
     'photosucc' => "Profile photo successfully updated.",
