@@ -9,7 +9,6 @@ use App\Http\Controllers\API\{
     PasswordController,
     PhonebookController,
     PublipostageController,
-    RegisterController,
     UserController,
 };
 

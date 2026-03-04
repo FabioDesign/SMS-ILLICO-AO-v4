@@ -1,7 +1,7 @@
 <?php
 
 return [
-    // Users
+    // Languages
     'login' => "E-mail ou telefone",
     'password' => "Senha",
     'active' => "ativo",

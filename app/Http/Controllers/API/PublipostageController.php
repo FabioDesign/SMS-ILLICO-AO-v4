@@ -27,9 +27,8 @@ class PublipostageController extends BaseController
     * )
     */
     public function index(Request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         try {
             $num = isset($request->num) ? (int) $request->num:1;
             $limit = isset($request->limit) ? (int) $request->limit:10;
@@ -37,7 +36,7 @@ class PublipostageController extends BaseController
             // Code to list contacts
             $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%'.$search.'%'))
-            ->where('user_id', $authUser->id)
+            ->where('user_id', Auth::user()->id)
             ->where('publipostage', 1)
             ->orderByDesc('created_at')
             ->paginate($limit, ['*'], 'page', $num);
@@ -95,9 +94,8 @@ class PublipostageController extends BaseController
     * )
     */
     public function store(Request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
@@ -105,8 +103,8 @@ class PublipostageController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($authUser) {
-                    return $query->where('user_id', $authUser->id)->where('publipostage', 1);
+                Rule::unique('contacts')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id)->where('publipostage', 1);
                 }),
             ],
             'gender' => 'required|in:M,F',
@@ -129,7 +127,7 @@ class PublipostageController extends BaseController
         // Création de la reclamation
         $set = [
             'publipostage' => 1,
-            'user_id' => $authUser->id,
+            'user_id' => Auth::user()->id,
             'label' => $request->label,
             'number' => $request->number,
             'gender' => $request->gender,
@@ -177,9 +175,8 @@ class PublipostageController extends BaseController
     * )
     */
     public function update(request $request, $uid): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
@@ -187,8 +184,8 @@ class PublipostageController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($authUser) {
-                    return $query->where('user_id', $authUser->id)->where('publipostage', 1);
+                Rule::unique('contacts')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id)->where('publipostage', 1);
                 }),
             ],
             'gender' => 'required|in:M,F',
@@ -261,9 +258,8 @@ class PublipostageController extends BaseController
     */
     public function destroy(Request $request): JsonResponse
     {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator        
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
@@ -279,7 +275,7 @@ class PublipostageController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('number', $request->contacts)
-                ->where('user_id', $authUser->id)
+                ->where('user_id', Auth::user()->id)
                 ->where('publipostage', 1)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
@@ -322,9 +318,8 @@ class PublipostageController extends BaseController
     * )
     */
     public function imports(Request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'files' => 'required|file|mimes:xlsx,xls|max:2048',
@@ -334,7 +329,7 @@ class PublipostageController extends BaseController
             Log::warning("Publipostage::imports - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
-        $import = new ContactImport($authUser, 1);
+        $import = new ContactImport(Auth::user(), 1);
     
         try {
             Excel::import($import, $request->file('files'));

@@ -25,13 +25,12 @@ class UserController extends BaseController
     * )
     */
     public function index(Request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         try {
             // Récupérer les données
             $users = User::select('uid', 'lastname', 'firstname', 'number', 'email', 'company', 'status', 'created_at')
-            ->where('id', '!=', $authUser->id)
+            ->where('id', '!=', Auth::user()->id)
             ->orderByDesc('created_at')
             ->get();
             // Vérifier si les données existent
@@ -75,9 +74,8 @@ class UserController extends BaseController
     */
     public function show(string $uid): JsonResponse
     {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
 
         try {
             // Eager Loading (1 seule requête optimisée)
@@ -91,36 +89,36 @@ class UserController extends BaseController
             }
 
             $data = [
-                'lastname'  => $authUser->lastname,
-                'firstname' => $authUser->firstname,
-                'number'    => $authUser->number,
-                'email'     => $authUser->email,
-                'company'   => $authUser->company,
-                'nif'       => $authUser->nif,
-                'address'   => $authUser->address,
-                'website'   => $authUser->website,
-                'volume'    => $authUser->volume,
+                'lastname'  => Auth::user()->lastname,
+                'firstname' => Auth::user()->firstname,
+                'number'    => Auth::user()->number,
+                'email'     => Auth::user()->email,
+                'company'   => Auth::user()->company,
+                'nif'       => Auth::user()->nif,
+                'address'   => Auth::user()->address,
+                'website'   => Auth::user()->website,
+                'volume'    => Auth::user()->volume,
 
-                'towns' => $authUser->town ? [
-                    'id'    => $authUser->town->id,
-                    'label' => $authUser->town->label,
+                'towns' => Auth::user()->town ? [
+                    'id'    => Auth::user()->town->id,
+                    'label' => Auth::user()->town->label,
                 ] : null,
 
-                'account_type' => $authUser->accountType ? [
-                    'id'    => $authUser->accountType->id,
-                    'label' => $authUser->lg === 'en' ? $authUser->accountType->en : $authUser->accountType->fr,
+                'account_type' => Auth::user()->accountType ? [
+                    'id'    => Auth::user()->accountType->id,
+                    'label' => Auth::user()->lg === 'en' ? Auth::user()->accountType->en : Auth::user()->accountType->fr,
                 ] : null,
 
-                'status' => match((int) $authUser->status) {
+                'status' => match((int) Auth::user()->status) {
                     0 => 'Inactif',
                     1 => 'Actif',
                     2 => 'Bloqué',
                     default => 'Inconnu'
                 },
 
-                'created_at' => $authUser->created_at->format('d/m/Y H:i'),
+                'created_at' => Auth::user()->created_at->format('d/m/Y H:i'),
 
-                'avatar' => asset('assets/avatars/' . ($authUser->avatar ?? 'avatar.jpg')),
+                'avatar' => asset('assets/avatars/' . (Auth::user()->avatar ?? 'avatar.jpg')),
             ];
             return $this->sendSuccess(__('message.detailuser'), $data);
         } catch (\Exception $e) {
@@ -157,7 +155,7 @@ class UserController extends BaseController
           'lg' => 'required',
           'login' => 'required',
           'password' => 'required',
-          'g_recaptcha_response' => 'required',
+        //   'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         //Error field
@@ -204,29 +202,28 @@ class UserController extends BaseController
                 ];
                 if ((Auth::attempt($credentialNum))||(Auth::attempt($credentialEml))) {
                     try {
-                        $authUser = Auth::user();
                         // Test si la photo est vide
-                        if ($authUser->avatar != '')
-                            $avatar = $authUser->avatar;
+                        if (Auth::user()->avatar != '')
+                            $avatar = Auth::user()->avatar;
                         else
                             $avatar = 'avatar.jpg';
                         // Ajouter les informations de l'utilisateur et du profil dans la réponse
                         $data = [
-                            'access_token' =>  $authUser->createToken('MyApp')->accessToken,
+                            'access_token' =>  Auth::user()->createToken('MyApp')->accessToken,
                             'infos' => [
-                                'uid' => $authUser->uid,
-                                'lastname' => $authUser->lastname,
-                                'firstname' => $authUser->firstname,
-                                'number' => $authUser->number,
-                                'email' => $authUser->email,
+                                'uid' => Auth::user()->uid,
+                                'lastname' => Auth::user()->lastname,
+                                'firstname' => Auth::user()->firstname,
+                                'number' => Auth::user()->number,
+                                'email' => Auth::user()->email,
                                 'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
                             ]
                         ];
-                        User::findOrFail($authUser->id)->update([
+                        User::findOrFail(Auth::user()->id)->update([
                             'login_at' => now(),
                             'lg' => $request->lg,
                         ]);
-                        // Logs::createLog('Connexion', $authUser->id, 1);
+                        // Logs::createLog('Connexion', Auth::user()->id, 1);
                         return $this->sendSuccess(__('message.authsucc'), $data);
                     } catch (\Exception $e) {
                         Log::warning("User::login - Echec de connexion : " . $e->getMessage());
@@ -359,7 +356,7 @@ class UserController extends BaseController
                     // Création de l'utilisateur
                     User::create($set);
                     DB::commit(); // Valider la transaction
-                    // Username
+                    // Languagename
                     $username = $request->firstname . " " . $request->lastname;
                     // Subject
                     $subject = __('message.creataccount');
@@ -450,17 +447,16 @@ class UserController extends BaseController
     * )
     */
     public function profiles(Request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Data
-        Log::notice("User::profiles - ID User : {$authUser->id} - Requête : " . json_encode($request->all()));
+        Log::notice("User::profiles - ID User : {Auth::user()->id} - Requête : " . json_encode($request->all()));
         // Validator
         $validator = Validator::make($request->all(), [
             'lastname' => 'required',
             'firstname' => 'required',
-            'number' => 'required|unique:users,number,' . $authUser->id . ',id',
-            'email'  => 'required|email|unique:users,email,' . $authUser->id . ',id',
+            'number' => 'required|unique:users,number,' . Auth::user()->id . ',id',
+            'email'  => 'required|email|unique:users,email,' . Auth::user()->id . ',id',
             'town_id' => 'required|integer|min:1',
             'accountyp_id' => 'required|integer|min:1',
         ]);
@@ -502,7 +498,7 @@ class UserController extends BaseController
         try {
             DB::beginTransaction(); // Démarrer une transaction
             // Création de l'utilisateur
-            User::findOrFail($authUser->id)->update($set);
+            User::findOrFail(Auth::user()->id)->update($set);
             DB::commit(); // Valider la transaction
             return $this->sendSuccess(__('message.profilsucc'), $set, 201);
         } catch (\Exception $e) {
@@ -536,9 +532,8 @@ class UserController extends BaseController
      */
     public function avatars(Request $request)
     {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
 			'avatar' => 'required|file|mimes:png,jpeg,jpg|max:2048',
@@ -562,7 +557,7 @@ class UserController extends BaseController
                 'avatar' => $avatar,
                 'avatar_at' => now(),
             ];
-            User::findOrFail($authUser->id)->update($set);
+            User::findOrFail(Auth::user()->id)->update($set);
             $data = [
                 'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
             ];

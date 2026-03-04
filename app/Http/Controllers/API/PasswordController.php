@@ -80,7 +80,7 @@ class PasswordController extends BaseController
                     //subject
                     $subject = __('message.forgotpwd');
                     $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>"
-                    . __('message.dear') . " " . $authUser->lastname . ",<br><br>"
+                    . __('message.dear') . " " . $user->lastname . ",<br><br>"
                     . __('message.otp') . " : <b>" . $otp . "</b><br><br>
                     <hr style='color:#156082;'>"
                     . __('message.bestregard') . " !<br>"
@@ -90,7 +90,7 @@ class PasswordController extends BaseController
                         // Envoi de l'email
                         $this->sendMail($request->email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
                         // Mettre à jour l'utilisateur avec l'OTP et l'horodatage
-                        $authUser->update([
+                        $user->update([
                             'otp' => str_replace(' ', '', $otp),
                             'otp_at' => now(),
                         ]);
@@ -159,7 +159,7 @@ class PasswordController extends BaseController
                 return $this->sendError(__('message.otperr'), [], 404);
             }
             // Vérifier si l'OTP a expiré
-            if (!($authUser->otp_at >= now()->subMinutes(5))) {
+            if (!($user->otp_at >= now()->subMinutes(5))) {
                 Log::warning("Password::verifotp - Code OTP a expiré : " . json_encode($request->all()));
                 return $this->sendError(__('message.otpexp'), [], 404);
             }
@@ -226,7 +226,7 @@ class PasswordController extends BaseController
         }
         try {
             // Mettre à jour du password
-            $authUser->update([
+            $user->update([
                 'password_at' => now(),
                 'password' => Hash::make($request->password),
             ]);
@@ -259,9 +259,8 @@ class PasswordController extends BaseController
     * )
     */
     public function editpass(Request $request){
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'oldpass' => 'required|min:8',
@@ -280,13 +279,13 @@ class PasswordController extends BaseController
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérification de l'ancien mot de passe
-        if (!Hash::check($request->oldpass, $authUser->password)) {
-            Log::warning("Password::editpass - Ancien mot de passe incorrect pour l'utilisateur ID : {$authUser->id}");
+        if (!Hash::check($request->oldpass, Auth::user()->password)) {
+            Log::warning("Password::editpass - Ancien mot de passe incorrect pour l'utilisateur ID : {Auth::user()->id}");
             return $this->sendError(__('message.passworderr'));
         }
         try {
             // Mettre à jour du password
-            User::findOrFail($authUser->id)->update([
+            User::findOrFail(Auth::user()->id)->update([
                 'password_at' => now(),
                 'password' => Hash::make($request->password),
             ]);

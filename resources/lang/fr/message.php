@@ -1,7 +1,7 @@
 <?php
 
 return [
-    //Users
+    // Languages
     'mr' => "M.",
     'mrs' => "Mme",
     'mr_mrs' => "M./Mme",

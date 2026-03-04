@@ -24,13 +24,12 @@ class GroupController extends BaseController
     * )
     */
     public function index(Request $request): JsonResponse {
-        //User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         try {
             // Code to list groupes
             $groupes = Group::select('uid', 'label')
-            ->where('user_id', $authUser->id)
+            ->where('user_id', Auth::user()->id)
             ->orderByDesc('created_at')
             ->get();
             // Vérifier si les données existent
@@ -70,15 +69,15 @@ class GroupController extends BaseController
     * )
     */
     public function store(Request $request): JsonResponse {
-        //User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        $user = Auth::user();
+        App::setLocale($user->lg);
         //Validator
         $validator = Validator::make($request->all(), [
             'label' => [
                 'required',
-                Rule::unique('groups')->where(function ($query) use ($authUser) {
-                    return $query->where('user_id', $authUser->id);
+                Rule::unique('groups')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id);
                 }),
             ],
         ]);
@@ -89,7 +88,7 @@ class GroupController extends BaseController
         }
         // Création de la reclamation
         $set = [
-            'user_id' => $authUser->id,
+            'user_id' => Auth::user()->id,
             'label' => $request->label,
         ];
         DB::beginTransaction(); // Démarrer une transaction
@@ -125,15 +124,15 @@ class GroupController extends BaseController
     * )
     */
     public function update(request $request, $uid): JsonResponse {
-        //User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        $user = Auth::user();
+        App::setLocale($user->lg);
         //Validator
         $validator = Validator::make($request->all(), [
             'label' => [
                 'required',
-                Rule::unique('groups')->where(function ($query) use ($authUser) {
-                    return $query->where('user_id', $authUser->id);
+                Rule::unique('groups')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id);
                 }),
             ],
         ]);
@@ -178,9 +177,8 @@ class GroupController extends BaseController
     * )
     */
     public function destroy($uid): JsonResponse {
-        //User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         try {
             // Vérification si le Groupe est attribué à une demande
             $group = Group::where('uid', $uid)->first();
@@ -225,9 +223,8 @@ class GroupController extends BaseController
     */
     public function addcontact(Request $request, string $uid): JsonResponse
     {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
@@ -249,7 +246,7 @@ class GroupController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contacts = Contact::whereIn('number', $request->contacts)
-                ->where('user_id', $authUser->id)
+                ->where('user_id', Auth::user()->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
 
@@ -301,9 +298,8 @@ class GroupController extends BaseController
     */
     public function delcontact(Request $request, string $uid): JsonResponse
     {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator        
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
@@ -325,7 +321,7 @@ class GroupController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('number', $request->contacts)
-                ->where('user_id', $authUser->id)
+                ->where('user_id', Auth::user()->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
@@ -372,9 +368,8 @@ class GroupController extends BaseController
     * )
     */
     public function blacklist(request $request, $uid): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'status'     => 'required|in:0,1',
@@ -396,7 +391,7 @@ class GroupController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('number', $request->contacts)
-                ->where('user_id', $authUser->id)
+                ->where('user_id', Auth::user()->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {

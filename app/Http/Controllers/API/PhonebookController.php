@@ -27,9 +27,8 @@ class PhonebookController extends BaseController
     * )
     */
     public function index(Request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         try {
             $num = isset($request->num) ? (int) $request->num:1;
             $limit = isset($request->limit) ? (int) $request->limit:10;
@@ -37,7 +36,7 @@ class PhonebookController extends BaseController
             // Code to list contacts
             $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%'.$search.'%'))
-            ->where('user_id', $authUser->id)
+            ->where('user_id', Auth::user()->id)
             ->where('blacklist', 0)
             ->where('publipostage', 0)
             ->orderByDesc('created_at')
@@ -96,9 +95,9 @@ class PhonebookController extends BaseController
     * )
     */
     public function store(Request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        $user = Auth::user();
+        App::setLocale($user->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
@@ -106,8 +105,8 @@ class PhonebookController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($authUser) {
-                    return $query->where('user_id', $authUser->id)->where('publipostage', 0);
+                Rule::unique('contacts')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id)->where('publipostage', 0);
                 }),
             ],
             'gender' => 'present',
@@ -129,7 +128,7 @@ class PhonebookController extends BaseController
         }
         // Création de la reclamation
         $set = [
-            'user_id' => $authUser->id,
+            'user_id' => Auth::user()->id,
             'label' => $request->label,
             'number' => $request->number,
             'gender' => $request->gender,
@@ -177,9 +176,9 @@ class PhonebookController extends BaseController
     * )
     */
     public function update(request $request, $uid): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        $user = Auth::user();
+        App::setLocale($user->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
@@ -187,8 +186,8 @@ class PhonebookController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($authUser) {
-                    return $query->where('user_id', $authUser->id)->where('publipostage', 0);
+                Rule::unique('contacts')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id)->where('publipostage', 0);
                 }),
             ],
             'gender' => 'present',
@@ -261,9 +260,8 @@ class PhonebookController extends BaseController
     */
     public function destroy(Request $request): JsonResponse
     {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator        
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
@@ -279,7 +277,7 @@ class PhonebookController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('number', $request->contacts)
-                ->where('user_id', $authUser->id)
+                ->where('user_id', Auth::user()->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
@@ -325,9 +323,8 @@ class PhonebookController extends BaseController
     * )
     */
     public function imports(Request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'files' => 'required|file|mimes:xlsx,xls|max:2048',
@@ -337,7 +334,7 @@ class PhonebookController extends BaseController
             Log::warning("Contact::imports - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
-        $import = new ContactImport($authUser, 0);
+        $import = new ContactImport(Auth::user(), 0);
         try {
             Excel::import($import, $request->file('files'));
             $errors = $import->getErrors();
@@ -376,9 +373,8 @@ class PhonebookController extends BaseController
     * )
     */
     public function blacklist(request $request): JsonResponse {
-        // User
-        $authUser = Auth::user();
-        App::setLocale($authUser->lg);
+        // Language
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'status'     => 'required|in:0,1',
@@ -394,7 +390,7 @@ class PhonebookController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('number', $request->contacts)
-                ->where('user_id', $authUser->id)
+                ->where('user_id', Auth::user()->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
