@@ -42,7 +42,7 @@ class PasswordController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Password::verifemail - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("Password::verifemail - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         try {
@@ -60,55 +60,51 @@ class PasswordController extends BaseController
             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-
             $result = curl_exec($curl);
-
             // Vérifier les erreurs cURL
             if (curl_error($curl)) {
-                Log::warning("User::store - cURL Error : " . curl_error($curl));
+                Log::warning("Password::verifemail - cURL Error : " . curl_error($curl));
                 return $this->sendError(__('message.error'));
             }
             curl_close($curl);
-
             $resultJson = json_decode($result);
-            if ($resultJson->success == true) {
-                try {
-                    // Récupérer les données
-                    $user = User::where('email', $request->email)->first();
-                    // Générer l'OTP sécurisé
-                    $otp = random_int(100, 999) . ' ' . random_int(100, 999);
-                    //subject
-                    $subject = __('message.forgotpwd');
-                    $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>"
-                    . __('message.dear') . " " . $user->lastname . ",<br><br>"
-                    . __('message.otp') . " : <b>" . $otp . "</b><br><br>
-                    <hr style='color:#156082;'>"
-                    . __('message.bestregard') . " !<br>"
-                    . env('MAIL_SIGNATURE')
-                    . "</div>";
-                    try {
-                        // Envoi de l'email
-                        $this->sendMail($request->email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
-                        // Mettre à jour l'utilisateur avec l'OTP et l'horodatage
-                        $user->update([
-                            'otp' => str_replace(' ', '', $otp),
-                            'otp_at' => now(),
-                        ]);
-                        return $this->sendSuccess(__('message.sendmailsucc'), [], 201);
-                    } catch(\Exception $e) {
-                        Log::warning("Password::verifemail - Erreur d'envoi de mail : " . $e->getMessage());
-                        return $this->sendError(__('message.sendmailerr'));
-                    }
-                } catch(\Exception $e) {
-                    Log::warning("Password::verifemail - Erreur de récupération de l'utilisateur : " . $e->getMessage());
-                    return $this->sendError(__('message.error'));
-                }
-            } else {
+            if ($resultJson->success == false || $resultJson->score < 0.5) {
                 Log::warning("Password::verifemail - Recaptcha : " . json_encode($resultJson));
                 return $this->sendError(__('message.recaptcha'));
             }
+            try {
+                // Récupérer les données
+                $user = User::where('email', $request->email)->first();
+                // Générer l'OTP sécurisé
+                $otp = random_int(100, 999) . ' ' . random_int(100, 999);
+                //subject
+                $subject = __('message.forgotpwd');
+                $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>"
+                . __('message.dear') . " {$user->lastname},<br><br>"
+                . __('message.otp') . " : <b>{$otp}</b><br><br>
+                <hr style='color:#156082;'>"
+                . __('message.bestregard') . " !<br>"
+                . env('MAIL_SIGNATURE')
+                . "</div>";
+                try {
+                    // Envoi de l'email
+                    $this->sendMail($request->email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
+                    // Mettre à jour l'utilisateur avec l'OTP et l'horodatage
+                    $user->update([
+                        'otp' => str_replace(' ', '', $otp),
+                        'otp_at' => now(),
+                    ]);
+                    return $this->sendSuccess(__('message.sendmailsucc'), [], 201);
+                } catch(\Exception $e) {
+                    Log::warning("Password::verifemail - Erreur d'envoi de mail : {$e->getMessage()}");
+                    return $this->sendError(__('message.sendmailerr'));
+                }
+            } catch(\Exception $e) {
+                Log::warning("Password::verifemail - Erreur de récupération de l'utilisateur : {$e->getMessage()}");
+                return $this->sendError(__('message.error'));
+            }
         } catch (\Exception $e) {
-            Log::warning("Password::verifemail - Recaptcha : " . $e->getMessage() . "  " . json_encode($request->all()));
+            Log::warning("Password::verifemail - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
@@ -143,7 +139,7 @@ class PasswordController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Password::verifotp - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("Password::verifotp - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         try {
@@ -165,7 +161,7 @@ class PasswordController extends BaseController
             }
             return $this->sendSuccess(__('message.otpsucc'));
         } catch(\Exception $e) {
-            Log::warning("Password::verifotp - Erreur : " . $e->getMessage() . " " . json_encode($request->all()));
+            Log::warning("Password::verifotp - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
@@ -210,7 +206,7 @@ class PasswordController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Password::addpass - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("Password::addpass - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Récupérer les données
@@ -221,7 +217,7 @@ class PasswordController extends BaseController
         ->first();
         // Vérifier si les données existent
         if (!$user) {
-            Log::warning("Password::addpass - Email ou Code OTP erroné : " . $request->email);
+            Log::warning("Password::addpass - Email ou Code OTP erroné : {$request->email}");
             return $this->sendError(__('message.emailerr'), [], 404);
         }
         try {
@@ -232,8 +228,8 @@ class PasswordController extends BaseController
             ]);
             return $this->sendSuccess(__('message.passwordsucc'), [], 201);
         } catch(\Exception $e) {
-            Log::warning("Password::addpass - Erreur : " . $e->getMessage());
-            return $this->sendError(__('message.error') . " " . json_encode($request->all()));
+            Log::warning("Password::addpass - Erreur : {$e->getMessage()} " . json_encode($request->all()));
+            return $this->sendError(__('message.error'));
         }
     }
     //Modification de Mot de passe
@@ -253,7 +249,7 @@ class PasswordController extends BaseController
     *         @OA\Property(property="password_confirmation", type="string", format="password")
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Mot de passe modifié avec succès."),
+    *   @OA\Response(response=201, description="Mot de passe modifié avec succès."),
     *   @OA\Response(response=400, description="Bad Request."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -275,7 +271,7 @@ class PasswordController extends BaseController
         ]);
         //Error field
         if ($validator->fails()) {
-            Log::warning("Password::editpass - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("Password::editpass - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérification de l'ancien mot de passe
@@ -291,7 +287,7 @@ class PasswordController extends BaseController
             ]);
             return $this->sendSuccess(__('message.passwordsucc'), [], 201);
         } catch(\Exception $e) {
-            Log::warning("Password::editpass - Erreur : " . $e->getMessage() . " " . json_encode($request->all()));
+            Log::warning("Password::editpass - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }

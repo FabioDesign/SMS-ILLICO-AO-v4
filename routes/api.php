@@ -75,6 +75,7 @@ Route::middleware(['auth:api'])->group(function () {
   Route::controller(GroupController::class)->group(function () {
     Route::post('groups/add/{uid}', 'addcontact');
     Route::post('groups/del/{uid}', 'delcontact');
+    Route::post('groups/contact/{uid}', 'contact');
     Route::post('groups/blacklist/{uid}', 'blacklist');
   });
   // Route pour les Publipostages

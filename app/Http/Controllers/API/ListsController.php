@@ -32,7 +32,7 @@ class ListsController extends BaseController
             }
             return $this->sendSuccess(__('message.townlist'), $towns);
         } catch (\Exception $e) {
-            Log::warning("List::town - Erreur lors de la récupération des Villes: " . $e->getMessage());
+            Log::warning("List::town - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.townlisterr'));
         }
     }
@@ -59,7 +59,7 @@ class ListsController extends BaseController
             }
             return $this->sendSuccess(__('message.accountlist'), $accountyps);
         } catch (\Exception $e) {
-            Log::warning("List::AccountType - Erreur lors de la récupération des Type de Compte: " . $e->getMessage());
+            Log::warning("List::AccountType - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.accountlisterr'));
         }
     }

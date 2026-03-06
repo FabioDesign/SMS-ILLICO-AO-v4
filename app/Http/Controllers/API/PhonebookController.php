@@ -35,11 +35,11 @@ class PhonebookController extends BaseController
             $search = isset($request->search) ? (int) $request->search:'';
             // Code to list contacts
             $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
-            ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%'.$search.'%'))
+            ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%' . $search . '%'))
             ->where('user_id', Auth::user()->id)
             ->where('blacklist', 0)
             ->where('publipostage', 0)
-            ->orderByDesc('created_at')
+            ->orderBy('label')
             ->paginate($limit, ['*'], 'page', $num);
             // Vérifier si les données existent
             if ($contacts->isEmpty()) {
@@ -64,7 +64,7 @@ class PhonebookController extends BaseController
                 'total'  => $contacts->total(),
             ]);
         } catch (\Exception $e) {
-            Log::warning("Contact::index - Erreur : " . $e->getMessage());
+            Log::warning("Contact::index - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }
@@ -117,16 +117,16 @@ class PhonebookController extends BaseController
         ]);
         // Error field
         if ($validator->fails()) {
-            Log::warning("Contact::store - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("Contact::store - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
-        // Vérifier du préfixe téléphonique
-        $prefix = Prefix::where('label', substr($request->number, 0, 2))->first();
-        if (!$prefix) {
+        // Vérifier préfixe
+        $prefix = substr($request->number, 0, 2);
+        if (!Prefix::where('label', $prefix)->exists()) {
             Log::warning("Contact::store - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
-        // Création de la reclamation
+        // Data to save
         $set = [
             'user_id' => Auth::user()->id,
             'label' => $request->label,
@@ -145,7 +145,7 @@ class PhonebookController extends BaseController
             return $this->sendSuccess(__('message.addcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Contact::store - Erreur : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("Contact::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
@@ -198,22 +198,22 @@ class PhonebookController extends BaseController
         ]);
         // Error field
         if ($validator->fails()) {
-            Log::warning("Contact::update - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("Contact::update - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
-        // Vérifier du préfixe téléphonique
-        $prefix = Prefix::where('label', substr($request->number, 0, 2))->first();
-        if (!$prefix) {
+        // Vérifier préfixe
+        $prefix = substr($request->number, 0, 2);
+        if (!Prefix::where('label', $prefix)->exists()) {
             Log::warning("Contact::update - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
         // Vérifier si l'ID est présent et valide
         $contact = Contact::where('uid', $uid)->first();
         if (!$contact) {
-            Log::warning("Contact::update - Aucun Contact trouvé pour l'ID : " . $uid);
+            Log::warning("Contact::update - Aucun Contact trouvé pour l'ID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
-        // Création de la reclamation
+        // Data to save
         $set = [
             'label' => $request->label,
             'number' => $request->number,
@@ -231,7 +231,7 @@ class PhonebookController extends BaseController
             return $this->sendSuccess(__('message.editcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Contact::update - Erreur : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("Contact::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
 	}
@@ -248,7 +248,7 @@ class PhonebookController extends BaseController
     *      @OA\JsonContent(
     *         required={"contacts"},
     *         @OA\Property(property="contacts", type="array", @OA\Items(
-    *               example="['910102034', '920102034', '930102034']"
+    *               example="['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
     *           )
     *         ),
     *      )
@@ -268,15 +268,14 @@ class PhonebookController extends BaseController
             'contacts.*' => 'required|integer'
         ]);
         if ($validator->fails()) {
-            Log::warning("Contact::destroy - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all())
+            Log::warning("Contact::destroy - Validator : {$validator->errors()->first()} - " . json_encode($request->all())
             );
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
-
         try {
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
-            $contactIds = Contact::whereIn('number', $request->contacts)
+            $contactIds = Contact::whereIn('uid', $request->contacts)
                 ->where('user_id', Auth::user()->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
@@ -285,17 +284,15 @@ class PhonebookController extends BaseController
                 Log::warning("Contact::destroy - Aucun Contacts trouvés : " . json_encode($request->contacts));
                 return $this->sendSuccess(__('message.nodata'));
             }
-
             // Supprimer tous les pivots liés
             GroupContact::whereIn('contact_id', $contactIds)->delete();
-
             // Supprimer tous les contacts en masse
             Contact::whereIn('id', $contactIds)->delete();
             DB::commit();
-            return $this->sendSuccess(__('message.delcontact'), [], 200);
+            return $this->sendSuccess(__('message.delcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::warning("Contact::destroy - Erreur : " . $e->getMessage());
+            Log::warning("Contact::destroy - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }
@@ -331,20 +328,19 @@ class PhonebookController extends BaseController
         ]);
         // Error field
         if ($validator->fails()) {
-            Log::warning("Contact::imports - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("Contact::imports - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         $import = new ContactImport(Auth::user(), 0);
         try {
             Excel::import($import, $request->file('files'));
-            $errors = $import->getErrors();
-            if (!empty($errors)) {
-                Log::warning("Contact::imports : Certaines lignes n'ont pas pu être importées" . json_encode($errors));
-                return $this->sendError(__('message.fielderr'), [], 422);
-            }
-            return $this->sendSuccess(__('message.impcontact'), [], 201);
+            return $this->sendSuccess(__('message.impcontact'), [
+                'imported' => $import->getImportedCount(),
+                'total' => $import->getTotalRows(),
+                'errors' => $import->getErrors(),
+            ], 201);
         } catch (\Exception $e) {
-            Log::warning("Contact::imports - Erreur : " . $e->getMessage());
+            Log::warning("Contact::imports - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.fielderr'), [], 400);
         }
     }
@@ -362,7 +358,7 @@ class PhonebookController extends BaseController
     *         required={"status", "contacts"},
     *         @OA\Property(property="status", type="integer"),
     *         @OA\Property(property="contacts", type="array", @OA\Items(
-    *               example="['910102034', '920102034', '930102034']"
+    *               example="['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
     *           )
     *         ),
     *      )
@@ -383,13 +379,13 @@ class PhonebookController extends BaseController
         ]);
         // Error field
         if($validator->fails()){
-            Log::warning("Contact::blacklist - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("Contact::blacklist - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         try {
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
-            $contactIds = Contact::whereIn('number', $request->contacts)
+            $contactIds = Contact::whereIn('uid', $request->contacts)
                 ->where('user_id', Auth::user()->id)
                 ->where('publipostage', 0)
                 ->pluck('id');
@@ -398,14 +394,14 @@ class PhonebookController extends BaseController
                 Log::warning("Contact::blacklist - Aucun Contacts trouvés : " . json_encode($request->contacts));
                 return $this->sendSuccess(__('message.nodata'));
             }
-
             // Update en masse sur le pivot
-            Contact::whereIn('id', $contactIds)->update(['blacklist'  => $request->status]);
+            Contact::whereIn('id', $contactIds)->update(['blacklist' => $request->status]);
             DB::commit();
-            return $this->sendSuccess(__('message.addcontact'), [], 201);
+            $message = $request->status == 1 ? __('message.addcontact') : __('message.delcontact');
+            return $this->sendSuccess($message, [], 201);
         } catch(\Exception $e) {
             DB::rollBack();
-            Log::warning("Contact::blacklist - Erreur : " . $e->getMessage() . " " . json_encode($request->all()));
+            Log::warning("Contact::blacklist - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }

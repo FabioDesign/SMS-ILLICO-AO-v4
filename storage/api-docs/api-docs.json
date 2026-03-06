@@ -72,6 +72,29 @@
             }
         },
         "/api/groups/{uid}": {
+            "get": {
+                "tags": [
+                    "Groups"
+                ],
+                "description": "Liste des contacts d'un groupe",
+                "operationId": "showGroups",
+                "responses": {
+                    "200": {
+                        "description": "Liste des contacts d'un groupe."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
             "put": {
                 "tags": [
                     "Groups"
@@ -137,6 +160,69 @@
                 ]
             }
         },
+        "/api/groups/contact/{uid}": {
+            "post": {
+                "tags": [
+                    "Groups"
+                ],
+                "description": "Ajout d'un Contact dans un Groupe",
+                "operationId": "ContactGroup",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "label",
+                                    "number"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "number": {
+                                        "type": "integer"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "date_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "field1": {
+                                        "type": "string"
+                                    },
+                                    "field2": {
+                                        "type": "string"
+                                    },
+                                    "field3": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Ajout d'un Contact dans un Groupe."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/groups/add/{uid}": {
             "post": {
                 "tags": [
@@ -156,7 +242,7 @@
                                     "contacts": {
                                         "type": "array",
                                         "items": {
-                                            "example": "['910102034', '920102034', '930102034']"
+                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
                                         }
                                     }
                                 },
@@ -202,7 +288,7 @@
                                     "contacts": {
                                         "type": "array",
                                         "items": {
-                                            "example": "['910102034', '920102034', '930102034']"
+                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
                                         }
                                     }
                                 },
@@ -252,7 +338,7 @@
                                     "contacts": {
                                         "type": "array",
                                         "items": {
-                                            "example": "['910102034', '920102034', '930102034']"
+                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
                                         }
                                     }
                                 },
@@ -505,7 +591,7 @@
                     }
                 },
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Mot de passe modifié avec succès."
                     },
                     "400": {
@@ -692,7 +778,7 @@
                                     "contacts": {
                                         "type": "array",
                                         "items": {
-                                            "example": "['910102034', '920102034', '930102034']"
+                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
                                         }
                                     }
                                 },
@@ -786,7 +872,7 @@
                                     "contacts": {
                                         "type": "array",
                                         "items": {
-                                            "example": "['910102034', '920102034', '930102034']"
+                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
                                         }
                                     }
                                 },
@@ -983,7 +1069,7 @@
                                     "contacts": {
                                         "type": "array",
                                         "items": {
-                                            "example": "['910102034', '920102034', '930102034']"
+                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
                                         }
                                     }
                                 },
@@ -1142,7 +1228,7 @@
                     }
                 },
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Authentification éffectuée avec succès."
                     },
                     "401": {
@@ -1290,7 +1376,7 @@
                     }
                 },
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Profil utilisateur modifié avec succès."
                     },
                     "400": {
@@ -1308,7 +1394,7 @@
             }
         },
         "/api/users/avatars": {
-            "post": {
+            "put": {
                 "tags": [
                     "Users"
                 ],
@@ -1334,7 +1420,7 @@
                     }
                 },
                 "responses": {
-                    "200": {
+                    "201": {
                         "description": "Photo de profil modifiée avec succès."
                     },
                     "401": {

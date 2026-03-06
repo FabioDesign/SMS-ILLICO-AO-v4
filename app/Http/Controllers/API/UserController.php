@@ -55,7 +55,7 @@ class UserController extends BaseController
             ]);
             return $this->sendSuccess(__('message.listuser'), $data);
         } catch(\Exception $e) {
-            Log::warning("User::index - Erreur : ".$e->getMessage());
+            Log::warning("User::index - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
@@ -76,18 +76,16 @@ class UserController extends BaseController
     {
         // Language
         App::setLocale(Auth::user()->lg);
-
         try {
             // Eager Loading (1 seule requête optimisée)
             $user = User::with(['town', 'accountType'])
                 ->where('uid', $uid)
                 ->first();
-
             if (!$user) {
-                Log::warning("User::show - Aucun utilisateur trouvé pour l'UID : " . $uid);
+                Log::warning("User::show - Aucun utilisateur trouvé pour l'UID : {$uid}");
                 return $this->sendSuccess(__('message.nodata'));
             }
-
+            // Data to save
             $data = [
                 'lastname'  => Auth::user()->lastname,
                 'firstname' => Auth::user()->firstname,
@@ -98,31 +96,26 @@ class UserController extends BaseController
                 'address'   => Auth::user()->address,
                 'website'   => Auth::user()->website,
                 'volume'    => Auth::user()->volume,
-
                 'towns' => Auth::user()->town ? [
                     'id'    => Auth::user()->town->id,
                     'label' => Auth::user()->town->label,
                 ] : null,
-
                 'account_type' => Auth::user()->accountType ? [
                     'id'    => Auth::user()->accountType->id,
                     'label' => Auth::user()->lg === 'en' ? Auth::user()->accountType->en : Auth::user()->accountType->fr,
                 ] : null,
-
                 'status' => match((int) Auth::user()->status) {
                     0 => 'Inactif',
                     1 => 'Actif',
                     2 => 'Bloqué',
                     default => 'Inconnu'
                 },
-
                 'created_at' => Auth::user()->created_at->format('d/m/Y H:i'),
-
                 'avatar' => asset('assets/avatars/' . (Auth::user()->avatar ?? 'avatar.jpg')),
             ];
             return $this->sendSuccess(__('message.detailuser'), $data);
         } catch (\Exception $e) {
-            Log::warning("User::show - Erreur : " . $e->getMessage());
+            Log::warning("User::show - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }
@@ -143,7 +136,7 @@ class UserController extends BaseController
     *         @OA\Property(property="g_recaptcha_response", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Authentification éffectuée avec succès."),
+    *   @OA\Response(response=201, description="Authentification éffectuée avec succès."),
     *   @OA\Response(response=401, description="Echec d'authentification."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -155,12 +148,12 @@ class UserController extends BaseController
           'lg' => 'required',
           'login' => 'required',
           'password' => 'required',
-        //   'g_recaptcha_response' => 'required',
+          'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::login - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("User::login - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
           return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         try {
@@ -178,67 +171,62 @@ class UserController extends BaseController
             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-
             $result = curl_exec($curl);
-
             // Vérifier les erreurs cURL
             if (curl_error($curl)) {
                 Log::warning("User::store - cURL Error : " . curl_error($curl));
                 return $this->sendError(__('message.error'));
             }
             curl_close($curl);
-
             $resultJson = json_decode($result);
-            if ($resultJson->success == true) {
-                $credentialNum = [
-                    'number' => $request->login,
-                    'password' => $request->password,
-                    'status' => 1,
-                ];
-                $credentialEml = [
-                    'email' => $request->login,
-                    'password' => $request->password,
-                    'status' => 1,
-                ];
-                if ((Auth::attempt($credentialNum))||(Auth::attempt($credentialEml))) {
-                    try {
-                        // Test si la photo est vide
-                        if (Auth::user()->avatar != '')
-                            $avatar = Auth::user()->avatar;
-                        else
-                            $avatar = 'avatar.jpg';
-                        // Ajouter les informations de l'utilisateur et du profil dans la réponse
-                        $data = [
-                            'access_token' =>  Auth::user()->createToken('MyApp')->accessToken,
-                            'infos' => [
-                                'uid' => Auth::user()->uid,
-                                'lastname' => Auth::user()->lastname,
-                                'firstname' => Auth::user()->firstname,
-                                'number' => Auth::user()->number,
-                                'email' => Auth::user()->email,
-                                'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
-                            ]
-                        ];
-                        User::findOrFail(Auth::user()->id)->update([
-                            'login_at' => now(),
-                            'lg' => $request->lg,
-                        ]);
-                        // Logs::createLog('Connexion', Auth::user()->id, 1);
-                        return $this->sendSuccess(__('message.authsucc'), $data);
-                    } catch (\Exception $e) {
-                        Log::warning("User::login - Echec de connexion : " . $e->getMessage());
-                        return $this->sendError(__('message.error'));
-                    }
-                } else {
-                    Log::warning("User::login - Authentication : " . json_encode($request->all()));
-                    return $this->sendError(__('message.autherr'), [], 401);
-                }
-            } else {
-                Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
+            if ($resultJson->success == false || $resultJson->score < 0.5) {
+                Log::warning("Password::verifemail - Recaptcha : " . json_encode($resultJson));
                 return $this->sendError(__('message.recaptcha'));
             }
+            $credentialNum = [
+                'number' => $request->login,
+                'password' => $request->password,
+                'status' => 1,
+            ];
+            $credentialEml = [
+                'email' => $request->login,
+                'password' => $request->password,
+                'status' => 1,
+            ];
+            if ((Auth::attempt($credentialNum))||(Auth::attempt($credentialEml))) {
+                try {
+                    // Test si la photo est vide
+                    if (Auth::user()->avatar != '')
+                        $avatar = Auth::user()->avatar;
+                    else
+                        $avatar = 'avatar.jpg';
+                    // Ajouter les informations de l'utilisateur et du profil dans la réponse
+                    $data = [
+                        'access_token' =>  Auth::user()->createToken('MyApp')->accessToken,
+                        'infos' => [
+                            'uid' => Auth::user()->uid,
+                            'lastname' => Auth::user()->lastname,
+                            'firstname' => Auth::user()->firstname,
+                            'number' => Auth::user()->number,
+                            'email' => Auth::user()->email,
+                            'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
+                        ]
+                    ];
+                    User::findOrFail(Auth::user()->id)->update([
+                        'login_at' => now(),
+                        'lg' => $request->lg,
+                    ]);
+                    return $this->sendSuccess(__('message.authsucc'), $data, 201);
+                } catch (\Exception $e) {
+                    Log::warning("User::login - Echec de connexion : {$e->getMessage()}");
+                    return $this->sendError(__('message.error'));
+                }
+            } else {
+                Log::warning("User::login - Authentication : " . json_encode($request->all()));
+                return $this->sendError(__('message.autherr'), [], 401);
+            }
         } catch (\Exception $e) {
-            Log::warning("User::login - Recaptcha : " . $e->getMessage() . "  " . json_encode($request->all()));
+            Log::warning("User::login - Recaptcha : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
@@ -289,7 +277,7 @@ class UserController extends BaseController
 		App::setLocale($request->lg);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::store - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("User::store - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Test sur DID
@@ -303,7 +291,7 @@ class UserController extends BaseController
             ]);
             // Error field
             if ($validator->fails()) {
-                Log::warning("User::store - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+                Log::warning("User::store - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
                 return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
             }
         }
@@ -322,98 +310,94 @@ class UserController extends BaseController
             curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-
             $result = curl_exec($curl);
-
             // Vérifier les erreurs cURL
             if (curl_error($curl)) {
                 Log::warning("User::store - cURL Error : " . curl_error($curl));
                 return $this->sendError(__('message.error'));
             }
             curl_close($curl);
-
             $resultJson = json_decode($result);
-            if ($resultJson->success == true) {
-                // Formatage du nom et prénoms
-                $email = Str::lower($request->email);
-                $set = [
-                    'lg' => $request->lg,
+            if ($resultJson->success == false || $resultJson->score < 0.5) {
+                Log::warning("User::store - Recaptcha : " . json_encode($resultJson));
+                return $this->sendError(__('message.recaptcha'));
+            }
+            // Formatage du nom et prénoms
+            $email = Str::lower($request->email);
+            // Data to save
+            $set = [
+                'lg' => $request->lg,
+                'lastname' => $request->lastname,
+                'firstname' => $request->firstname,
+                'number' => $request->number,
+                'email' => $email,
+                'town_id' => $request->town_id,
+                'accountyp_id' => $request->accountyp_id,
+                'company' => $request->company ?? '',
+                'nif' => $request->nif ?? '',
+                'address' => $request->address ?? '',
+                'website' => $request->website ?? '',
+                'password_at' => now(),
+                'password' => Hash::make("Azerty@123"),
+            ];
+            DB::beginTransaction(); // Démarrer une transaction
+            try {
+                // Création de l'utilisateur
+                User::create($set);
+                DB::commit(); // Valider la transaction
+                // Languagename
+                $username = "{$request->firstname} {$request->lastname}";
+                // Subject
+                $subject = __('message.creataccount');
+                // Send SMS to LogicMind
+                $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
+                Dear Mr.,<br /><br />
+                Confirmation mail of registration of <b>{$username}</b><br />
+                Contact : <b>{$request->number}</b><br />
+                Email : <b>{$email}</b><br />
+                Business Name : <b>{$request->company}</b><br />";
+                $message .=  "<br />
+                <hr style='color:#156082;'>"
+                . __('message.bestregard')
+                . env('MAIL_SIGNATURE')
+                . "<hr style='color:#156082;'></div>";
+                // Envoi de l'email
+                $this->sendMail(env('MAIL_FROM_ADDRESS'), $email, $username, env('MAIL_CC'), $subject, $message);
+                //send SMS to Customer
+                if ($request->lg == 'en') {
+                    $content = "Dear M./Mrs. {$username}<br /><br />
+                    Thank you for your registration on SMS illico, our platform of sending SMS through the web.<br />
+                    Your registration has been taken into account and will be validated within 48 hours maximum after verification of provided information.<br />
+                    You will receive an SMS and a mail after the activation of your account.<br /><br />";
+                } else {
+                    $content = "Prezado(a) Sr.(a) {$username}<br /><br />
+                    Obrigado pelo seu registo no SMS illico, a nossa plataforma de envio de SMS através da web.<br />
+                    O seu registo foi registado e será validado no prazo máximo de 48 horas após a verificação das informações fornecidas.<br />
+                    Receberá um SMS e um e-mail após a ativação da sua conta.<br /><br />";
+                }
+                $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
+                " . $content
+                . "<hr style='color:#156082;'>"
+                . __('message.bestregard')
+                . env('MAIL_SIGNATURE')
+                . "<hr style='color:#156082;'></div>";
+                // Envoi de l'email
+                $this->sendMail($email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
+                // Retourner les données de l'utilisateur
+                $data = [
                     'lastname' => $request->lastname,
                     'firstname' => $request->firstname,
                     'number' => $request->number,
                     'email' => $email,
-                    'town_id' => $request->town_id,
-                    'accountyp_id' => $request->accountyp_id,
-                    'company' => $request->company ?? '',
-                    'nif' => $request->nif ?? '',
-                    'address' => $request->address ?? '',
-                    'website' => $request->website ?? '',
-                    'password_at' => now(),
-                    'password' => Hash::make("Azerty@123"),
                 ];
-                DB::beginTransaction(); // Démarrer une transaction
-                try {
-                    // Création de l'utilisateur
-                    User::create($set);
-                    DB::commit(); // Valider la transaction
-                    // Languagename
-                    $username = $request->firstname . " " . $request->lastname;
-                    // Subject
-                    $subject = __('message.creataccount');
-                    // Send SMS to LogicMind
-                    $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
-                    Dear Mr.,<br /><br />
-                    Confirmation mail of registration of <b>" . $username . "</b><br />
-                    Contact : <b>" . $request->number . "</b><br />
-                    Email : <b>" . $email . "</b><br />
-                    Business Name : <b>" . $request->company . "</b><br />";
-                    $message .=  "<br />
-                    <hr style='color:#156082;'>"
-                    . __('message.bestregard')
-                    . env('MAIL_SIGNATURE')
-                    . "<hr style='color:#156082;'></div>";
-                    // Envoi de l'email
-                    $this->sendMail(env('MAIL_FROM_ADDRESS'), $email, $username, env('MAIL_CC'), $subject, $message);
-
-                    //send SMS to Customer
-                    if ($request->lg == 'en') {
-                        $content = "Dear M./Mrs. " . $username . "<br /><br />
-                        Thank you for your registration on SMS illico, our platform of sending SMS through the web.<br />
-                        Your registration has been taken into account and will be validated within 48 hours maximum after verification of provided information.<br />
-                        You will receive an SMS and a mail after the activation of your account.<br /><br />";
-                    } else {
-                        $content = "Prezado(a) Sr.(a) " . $username . "<br /><br />
-                        Obrigado pelo seu registo no SMS illico, a nossa plataforma de envio de SMS através da web.<br />
-                        O seu registo foi registado e será validado no prazo máximo de 48 horas após a verificação das informações fornecidas.<br />
-                        Receberá um SMS e um e-mail após a ativação da sua conta.<br /><br />";
-                    }
-                    $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
-                    " . $content
-                    . "<hr style='color:#156082;'>"
-                    . __('message.bestregard')
-                    . env('MAIL_SIGNATURE')
-                    . "<hr style='color:#156082;'></div>";
-                    // Envoi de l'email
-                    $this->sendMail($email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
-                    // Retourner les données de l'utilisateur
-                    $data = [
-                        'lastname' => $request->lastname,
-                        'firstname' => $request->firstname,
-                        'number' => $request->number,
-                        'email' => $email,
-                    ];
-                    return $this->sendSuccess(__('message.usersucc'), $data, 201);
-                } catch (\Exception $e) {
-                    DB::rollBack(); // Annuler la transaction en cas d'erreur
-                    Log::warning("User::store - Erreur : " . $e->getMessage() . " " . json_encode($set));
-                    return $this->sendError(__('message.error'));
-                }
-            } else {
-                Log::warning("User::store - Recaptcha : " . json_encode($resultJson));
-                return $this->sendError(__('message.recaptcha'));
+                return $this->sendSuccess(__('message.usersucc'), $data, 201);
+            } catch (\Exception $e) {
+                DB::rollBack(); // Annuler la transaction en cas d'erreur
+                Log::warning("User::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
+                return $this->sendError(__('message.error'));
             }
         } catch (\Exception $e) {
-            Log::warning("User::store - Recaptcha : " . $e->getMessage() . "  " . json_encode($request->all()));
+            Log::warning("User::store - Recaptcha : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
@@ -441,7 +425,7 @@ class UserController extends BaseController
     *             @OA\Property(property="website", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Profil utilisateur modifié avec succès."),
+    *   @OA\Response(response=201, description="Profil utilisateur modifié avec succès."),
     *   @OA\Response(response=400, description="Bad Request."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -449,8 +433,6 @@ class UserController extends BaseController
     public function profiles(Request $request): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
-        // Data
-        Log::notice("User::profiles - ID User : {Auth::user()->id} - Requête : " . json_encode($request->all()));
         // Validator
         $validator = Validator::make($request->all(), [
             'lastname' => 'required',
@@ -462,7 +444,7 @@ class UserController extends BaseController
         ]);
         //Error field
         if ($validator->fails()) {
-            Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("User::profiles - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Test sur DID
@@ -476,13 +458,13 @@ class UserController extends BaseController
             ]);
             // Error field
             if ($validator->fails()) {
-                Log::warning("User::profiles - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+                Log::warning("User::profiles - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
                 return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
             }
         }
         // Formatage du nom et prénoms
         $email = Str::lower($request->email);
-        // Formatage des données
+        // Data to save
         $set = [
             'lastname' => $request->lastname,
             'firstname' => $request->firstname,
@@ -503,7 +485,7 @@ class UserController extends BaseController
             return $this->sendSuccess(__('message.profilsucc'), $set, 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("User::profiles - Erreur : " . $e->getMessage() . " " . json_encode($set));
+            Log::warning("User::profiles - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
 	}
@@ -525,7 +507,7 @@ class UserController extends BaseController
      *          )
      *      )
      *   ),
-     *   @OA\Response(response=200, description="Photo de profil modifiée avec succès."),
+     *   @OA\Response(response=201, description="Photo de profil modifiée avec succès."),
      *   @OA\Response(response=401, description="Non autorisé."),
      *   @OA\Response(response=404, description="Page introuvable."),
      * )
@@ -540,7 +522,7 @@ class UserController extends BaseController
         ]);
         // Error field
         if ($validator->fails()) {
-            Log::warning("User::avatars - Validator : " . $validator->errors()->first() . " - " . json_encode($request->all()));
+            Log::warning("User::avatars - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
         }
         // Upload photo
@@ -549,10 +531,11 @@ class UserController extends BaseController
         $ext = $image->getClientOriginalExtension();
         $avatar = User::filenameUnique($ext);
         if (!($image->move($dir, $avatar))) {
-            Log::warning("User::avatars - Erreur : " . $e->getMessage());
+            Log::warning("User::avatars - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.photodown'));
         }
         try {
+            // Data to save
             $set = [
                 'avatar' => $avatar,
                 'avatar_at' => now(),
@@ -563,7 +546,7 @@ class UserController extends BaseController
             ];
             return $this->sendSuccess(__('message.photosucc'), $data, 201);
         } catch(\Exception $e) {
-            Log::warning("User::avatars - Erreur : " . $e->getMessage());
+            Log::warning("User::avatars - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
@@ -585,7 +568,7 @@ class UserController extends BaseController
             $request->user()->token()->revoke();
             return $this->sendSuccess(__('message.logoutsucc'));
         } catch (\Exception $e) {
-            Log::error("Logout error: " . $e->getMessage());
+            Log::error("Logout error: {$e->getMessage()}");
             return $this->sendError(__('message.logouterr'));
         }
     }
