@@ -181,7 +181,7 @@
                                         "type": "string"
                                     },
                                     "number": {
-                                        "type": "integer"
+                                        "type": "number"
                                     },
                                     "gender": {
                                         "type": "string"
@@ -654,7 +654,7 @@
                                         "type": "string"
                                     },
                                     "number": {
-                                        "type": "integer"
+                                        "type": "number"
                                     },
                                     "gender": {
                                         "type": "string"
@@ -717,7 +717,7 @@
                                         "type": "string"
                                     },
                                     "number": {
-                                        "type": "integer"
+                                        "type": "number"
                                     },
                                     "gender": {
                                         "type": "string"
@@ -945,7 +945,7 @@
                                         "type": "string"
                                     },
                                     "number": {
-                                        "type": "integer"
+                                        "type": "number"
                                     },
                                     "gender": {
                                         "type": "string"
@@ -1008,7 +1008,7 @@
                                         "type": "string"
                                     },
                                     "number": {
-                                        "type": "integer"
+                                        "type": "number"
                                     },
                                     "gender": {
                                         "type": "string"

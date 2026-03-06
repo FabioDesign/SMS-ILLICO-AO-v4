@@ -80,7 +80,7 @@ class PublipostageController extends BaseController
     *      @OA\JsonContent(
     *         required={"label", "number"},
     *         @OA\Property(property="label", type="string"),
-    *         @OA\Property(property="number", type="integer"),
+    *         @OA\Property(property="number", type="number"),
     *         @OA\Property(property="gender", type="string"),
     *         @OA\Property(property="date_at", type="date"),
     *         @OA\Property(property="field1", type="string"),
@@ -161,7 +161,7 @@ class PublipostageController extends BaseController
     *      @OA\JsonContent(
     *         required={"label", "number"},
     *         @OA\Property(property="label", type="string"),
-    *         @OA\Property(property="number", type="integer"),
+    *         @OA\Property(property="number", type="number"),
     *         @OA\Property(property="gender", type="string"),
     *         @OA\Property(property="date_at", type="date"),
     *         @OA\Property(property="field1", type="string"),
