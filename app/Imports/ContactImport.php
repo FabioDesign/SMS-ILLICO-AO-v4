@@ -61,7 +61,7 @@ class ContactImport implements ToModel, SkipsEmptyRows, WithStartRow
                     ->where('publipostage', $this->publipostage);
                 }),
             ],
-            'gender' => $this->publipostage == 1 ? 'required' : 'present',
+            'gender' => 'present',
             'date_at' => 'nullable|date|date_format:Y-m-d',
             'field1' => 'present',
             'field2' => 'present',
