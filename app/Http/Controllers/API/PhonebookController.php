@@ -68,6 +68,46 @@ class PhonebookController extends BaseController
             return $this->sendError(__('message.error'));
         }
     }
+    // Détail d'un Contact
+    /**
+    * @OA\Get(
+    *   path="/api/phonebooks/{uid}",
+    *   tags={"Phonebooks"},
+    *   operationId="showContact",
+    *   description="Détail d'un Contact",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Détail d'un Contact."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function show(string $uid): JsonResponse
+    {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        try {
+            // Eager Loading (1 seule requête optimisée)
+            $contacts = Contact::where('uid', $uid)->first();
+            if (!$contacts) {
+                Log::warning("Contact::show - Aucun contact trouvé pour l'UID : {$uid}");
+                return $this->sendSuccess(__('message.nodata'));
+            }
+            // Data to save
+            $data = [
+                'label' => $contacts->label,
+                'number' => $contacts->number,
+                'gender' => $contacts->gender ?? '',
+                'date_at' => $contacts->date_at ?? '',
+                'field1' => $contacts->field1 ?? '',
+                'field2' => $contacts->field2 ?? '',
+                'field3' => $contacts->field3 ?? '',
+            ];
+            return $this->sendSuccess(__('message.detcontact'), $data);
+        } catch (\Exception $e) {
+            Log::warning("Contact::show - Erreur : {$e->getMessage()}");
+            return $this->sendError(__('message.error'));
+        }
+    }
     //Enregistrement
     /**
     * @OA\Post(

@@ -73,11 +73,11 @@ Route::middleware(['auth:api'])->group(function () {
   });
   // Route pour les groupes
   Route::controller(GroupController::class)->group(function () {
-    Route::post('groups/add/{uid}', 'addcontact');
-    Route::post('groups/del/{uid}', 'delcontact');
     Route::post('groups/contact/{uid}', 'contact');
     Route::post('groups/imports/{uid}', 'imports');
+    Route::post('groups/contacts/{uid}', 'contacts');
     Route::post('groups/blacklist/{uid}', 'blacklist');
+    Route::post('groups/contactlist/{uid}', 'contactlist');
   });
   // Route pour les Publipostages
   Route::controller(PublipostageController::class)->group(function () {

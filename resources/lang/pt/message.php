@@ -44,12 +44,14 @@ return [
     'editcontact' => "Contacto alterado com sucesso.",
     'delcontact' => "Contacto eliminado com sucesso.",
     'impcontact' => "Contacto importado com sucesso.",
+    'detcontact' => "Detalhes sobre um contacto.",
 
     // Groups
     'listgroup' => "Lista de grupos.",
     'addgroup' => "Groupo registado com sucesso.",
     'editgroup' => "Groupo alterado com sucesso.",
     'delgroup' => "Groupo eliminado com sucesso.",
+    'detgroup' => "Detalhes sobre um grupo.",
 
     // Files
     'fileformat' => "O tipo de anexo não é permitido, use o formato recomendado",

@@ -71,16 +71,16 @@
                 ]
             }
         },
-        "/api/groups/{uid}?num=1&limit=10&search=''": {
+        "/api/groups/{uid}": {
             "get": {
                 "tags": [
                     "Groups"
                 ],
-                "description": "Liste des contacts d'un groupe",
-                "operationId": "showGroups",
+                "description": "Détail d'un Groupe",
+                "operationId": "showGroup",
                 "responses": {
                     "200": {
-                        "description": "Liste des contacts d'un groupe."
+                        "description": "Détail d'un Groupe."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -94,9 +94,7 @@
                         "bearer": []
                     }
                 ]
-            }
-        },
-        "/api/groups/{uid}": {
+            },
             "put": {
                 "tags": [
                     "Groups"
@@ -147,6 +145,31 @@
                 "responses": {
                     "201": {
                         "description": "Groupe supprimé avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/groups/contactlist/{uid}?num=1&limit=10&search=''": {
+            "get": {
+                "tags": [
+                    "Groups"
+                ],
+                "description": "Liste des contacts d'un groupe",
+                "operationId": "listContactGroup",
+                "responses": {
+                    "200": {
+                        "description": "Liste des contacts d'un groupe."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -225,12 +248,12 @@
                 ]
             }
         },
-        "/api/groups/add/{uid}": {
+        "/api/groups/contacts/{uid}": {
             "post": {
                 "tags": [
                     "Groups"
                 ],
-                "description": "Ajout de ou de plusieurs Contacts dans un Groupe",
+                "description": "Ajout/Suppression de un ou de plusieurs Contacts dans un Groupe",
                 "operationId": "addGroup",
                 "requestBody": {
                     "required": true,
@@ -238,9 +261,13 @@
                         "application/json": {
                             "schema": {
                                 "required": [
+                                    "status",
                                     "contacts"
                                 ],
                                 "properties": {
+                                    "status": {
+                                        "type": "integer"
+                                    },
                                     "contacts": {
                                         "type": "array",
                                         "items": {
@@ -256,52 +283,6 @@
                 "responses": {
                     "201": {
                         "description": "Contacts supprimés avec succès."
-                    },
-                    "400": {
-                        "description": "Serveur indisponible."
-                    },
-                    "404": {
-                        "description": "Page introuvable."
-                    }
-                },
-                "security": [
-                    {
-                        "bearer": []
-                    }
-                ]
-            }
-        },
-        "/api/groups/del/{uid}": {
-            "post": {
-                "tags": [
-                    "Groups"
-                ],
-                "description": "Suppression d'un contact d'un Group",
-                "operationId": "delGroup",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "contacts"
-                                ],
-                                "properties": {
-                                    "contacts": {
-                                        "type": "array",
-                                        "items": {
-                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Contact supprimé avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -679,6 +660,92 @@
                 ]
             }
         },
+        "/api/phonebooks/{uid}": {
+            "get": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Détail d'un Contact",
+                "operationId": "showContact",
+                "responses": {
+                    "200": {
+                        "description": "Détail d'un Contact."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Modification d'un Contact",
+                "operationId": "editContact",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "label",
+                                    "number"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "number": {
+                                        "type": "number"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "date_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "field1": {
+                                        "type": "string"
+                                    },
+                                    "field2": {
+                                        "type": "string"
+                                    },
+                                    "field3": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact modifié avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/phonebooks": {
             "post": {
                 "tags": [
@@ -727,69 +794,6 @@
                 "responses": {
                     "201": {
                         "description": "Contact enregisté avec succès."
-                    },
-                    "400": {
-                        "description": "Serveur indisponible."
-                    },
-                    "404": {
-                        "description": "Page introuvable."
-                    }
-                },
-                "security": [
-                    {
-                        "bearer": []
-                    }
-                ]
-            }
-        },
-        "/api/phonebooks/{uid}": {
-            "put": {
-                "tags": [
-                    "Phonebooks"
-                ],
-                "description": "Modification d'un Contact",
-                "operationId": "editContact",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "label",
-                                    "number"
-                                ],
-                                "properties": {
-                                    "label": {
-                                        "type": "string"
-                                    },
-                                    "number": {
-                                        "type": "number"
-                                    },
-                                    "gender": {
-                                        "type": "string"
-                                    },
-                                    "date_at": {
-                                        "type": "string",
-                                        "format": "date"
-                                    },
-                                    "field1": {
-                                        "type": "string"
-                                    },
-                                    "field2": {
-                                        "type": "string"
-                                    },
-                                    "field3": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Contact modifié avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -970,6 +974,92 @@
                 ]
             }
         },
+        "/api/publipostage/{uid}": {
+            "get": {
+                "tags": [
+                    "Publipostage"
+                ],
+                "description": "Détail d'un Contact",
+                "operationId": "showPub",
+                "responses": {
+                    "200": {
+                        "description": "Détail d'un Contact."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Publipostage"
+                ],
+                "description": "Modification d'un Publipostage",
+                "operationId": "editPub",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "label",
+                                    "number"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "number": {
+                                        "type": "number"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "date_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "field1": {
+                                        "type": "string"
+                                    },
+                                    "field2": {
+                                        "type": "string"
+                                    },
+                                    "field3": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact modifié avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/publipostage": {
             "post": {
                 "tags": [
@@ -1018,69 +1108,6 @@
                 "responses": {
                     "201": {
                         "description": "Contact enregisté avec succès."
-                    },
-                    "400": {
-                        "description": "Serveur indisponible."
-                    },
-                    "404": {
-                        "description": "Page introuvable."
-                    }
-                },
-                "security": [
-                    {
-                        "bearer": []
-                    }
-                ]
-            }
-        },
-        "/api/publipostage/{uid}": {
-            "put": {
-                "tags": [
-                    "Publipostage"
-                ],
-                "description": "Modification d'un Publipostage",
-                "operationId": "editPub",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "label",
-                                    "number"
-                                ],
-                                "properties": {
-                                    "label": {
-                                        "type": "string"
-                                    },
-                                    "number": {
-                                        "type": "number"
-                                    },
-                                    "gender": {
-                                        "type": "string"
-                                    },
-                                    "date_at": {
-                                        "type": "string",
-                                        "format": "date"
-                                    },
-                                    "field1": {
-                                        "type": "string"
-                                    },
-                                    "field2": {
-                                        "type": "string"
-                                    },
-                                    "field3": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Contact modifié avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
