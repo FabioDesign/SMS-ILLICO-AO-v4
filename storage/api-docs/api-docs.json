@@ -71,7 +71,7 @@
                 ]
             }
         },
-        "/api/groups/{uid}": {
+        "/api/groups/{uid}?num=1&limit=10&search=''": {
             "get": {
                 "tags": [
                     "Groups"
@@ -94,7 +94,9 @@
                         "bearer": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/groups/{uid}": {
             "put": {
                 "tags": [
                     "Groups"
@@ -270,7 +272,7 @@
             }
         },
         "/api/groups/del/{uid}": {
-            "delete": {
+            "post": {
                 "tags": [
                     "Groups"
                 ],
@@ -299,7 +301,51 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Contact retiré avec succès."
+                        "description": "Contact supprimé avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/groups/imports/{uid}": {
+            "post": {
+                "tags": [
+                    "Groups"
+                ],
+                "description": "Importation d'un Contact",
+                "operationId": "importGroup",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "files"
+                                ],
+                                "properties": {
+                                    "files": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact enregisté avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."

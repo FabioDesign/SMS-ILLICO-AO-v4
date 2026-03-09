@@ -175,7 +175,7 @@ class PhonebookController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, $uid): JsonResponse {
+    public function update(request $request, string $uid): JsonResponse {
         // Language
         $user = Auth::user();
         App::setLocale($user->lg);
@@ -265,7 +265,7 @@ class PhonebookController extends BaseController
         // Validator        
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
-            'contacts.*' => 'required|integer'
+            'contacts.*' => 'required|uuid',
         ]);
         if ($validator->fails()) {
             Log::warning("Contact::destroy - Validator : {$validator->errors()->first()} - " . json_encode($request->all())

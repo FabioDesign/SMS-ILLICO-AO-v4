@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\API;
 
+use Excel;
+use \Carbon\Carbon;
+use App\Imports\ContactImport;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\{Request, JsonResponse};
 use App\Models\{Contact, Group, GroupContact, Prefix};
@@ -41,7 +44,7 @@ class GroupController extends BaseController
             $data = $groupes->map(fn($data) => [
                 'uid' => $data->uid,
                 'label' => $data->label,
-                'total' => GroupContact::where('group_id', $data->id)->count(),
+                'total' => GroupContact::where('group_id', $data->id)->where('blacklist', 0)->count(),
             ]);
             return $this->sendSuccess(__('message.listgroup'), $data);
         } catch (\Exception $e) {
@@ -52,7 +55,7 @@ class GroupController extends BaseController
     // Liste des contacts d'un groupe
     /**
     * @OA\Get(
-    *   path="/api/groups/{uid}",
+    *   path="/api/groups/{uid}?num=1&limit=10&search=''",
     *   tags={"Groups"},
     *   operationId="showGroups",
     *   description="Liste des contacts d'un groupe",
@@ -62,25 +65,47 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show($uid): JsonResponse
+    public function show(Request $request, string $uid): JsonResponse
     {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
+            $num = isset($request->num) ? (int) $request->num:1;
+            $limit = isset($request->limit) ? (int) $request->limit:10;
+            $search = isset($request->search) ? (int) $request->search:'';
             $groupContact = GroupContact::select('contacts.uid', 'contacts.label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->join('contacts', 'group_contact.contact_id', '=', 'contacts.id')
             ->join('groups', 'group_contact.group_id', '=', 'groups.id')
+            ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%' . $search . '%'))
             ->where('groups.user_id', Auth::user()->id)
             ->where('group_contact.blacklist', 0)
+            ->where('contacts.blacklist', 0)
             ->where('groups.uid', $uid)
+            ->where('publipostage', 0)
             ->orderBy('label')
-            ->get();
+            ->paginate($limit, ['*'], 'page', $num);
 
             if ($groupContact->isEmpty()) {
                 Log::warning("Group::show - Aucun contact trouvé pour l'UID : {$uid}");
                 return $this->sendSuccess(__('message.nodata'));
             };
-            return $this->sendSuccess(__('message.listcontact'), $groupContact);
+            // Transformer les données
+            $data = $groupContact->map(fn($data) => [
+                'uid' => $data->uid,
+                'label' => $data->label,
+                'number' => $data->number,
+                'gender' => $data->gender ?? '',
+                'date_at' => $data->date_at != null ? Carbon::parse($data->date_at)->format('d/m/Y'):'',
+                'field1' => $data->field1 ?? '',
+                'field2' => $data->field2 ?? '',
+                'field3' => $data->field3 ?? '',
+            ]);
+            return $this->sendSuccess(__('message.listcontact'), [
+                'lists' => $data,
+                'current_page' => $groupContact->currentPage(),
+                'last_page' => $groupContact->lastPage(),
+                'total'  => $groupContact->total(),
+            ]);
         } catch (\Exception $e) {
             Log::warning("Group::show - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
@@ -161,7 +186,7 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, $uid): JsonResponse {
+    public function update(request $request, string $uid): JsonResponse {
         // Language
         $user = Auth::user();
         App::setLocale($user->lg);
@@ -214,7 +239,7 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy($uid): JsonResponse {
+    public function destroy(string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -359,7 +384,7 @@ class GroupController extends BaseController
         // Validator
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
-            'contacts.*' => 'required|integer'
+            'contacts.*' => 'required|uuid',
         ]);
         // Error field
         if($validator->fails()){
@@ -403,7 +428,7 @@ class GroupController extends BaseController
     }
     // Suppression d'un contact d'un Groupe
     /**
-    *   @OA\Delete(
+    *   @OA\Post(
     *   path="/api/groups/del/{uid}",
     *   tags={"Groups"},
     *   operationId="delGroup",
@@ -419,7 +444,7 @@ class GroupController extends BaseController
     *         ),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Contact retiré avec succès."),
+    *   @OA\Response(response=201, description="Contact supprimé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -431,7 +456,7 @@ class GroupController extends BaseController
         // Validator        
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
-            'contacts.*' => 'required|integer'
+            'contacts.*' => 'required|uuid',
         ]);
         // Error field
         if($validator->fails()){
@@ -462,12 +487,78 @@ class GroupController extends BaseController
                 ->whereIn('contact_id', $contactIds)
                 ->delete();
             DB::commit();
-            return $this->sendSuccess(__('message.delgroup'), [], 201);
+            return $this->sendSuccess(__('message.delcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::warning("Group::delcontact - Erreur : {$e->getMessage()} " . json_encode($request->all())
             );
             return $this->sendError(__('message.error'));
+        }
+    }
+    //Importation
+    /**
+    * @OA\Post(
+    *   path="/api/groups/imports/{uid}",
+    *   tags={"Groups"},
+    *   operationId="importGroup",
+    *   description="Importation d'un Contact",
+    *   security={{"bearer":{}}},
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\MediaType(
+    *          mediaType="multipart/form-data",
+    *          @OA\Schema(
+    *             required={"files"},
+    *             @OA\Property(property="files", type="string", format="binary"),
+    *          )
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Contact enregisté avec succès."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function imports(Request $request, string $uid): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        // Validator
+        $validator = Validator::make($request->all(), [
+            'files' => 'required|file|mimes:xlsx,xls|max:2048',
+        ]);
+        // Error field
+        if ($validator->fails()) {
+            Log::warning("Group::imports - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
+        }
+        // Vérifier si l'ID est présent et valide
+        $group = Group::where('uid', $uid)->first();
+        if (!$group) {
+            Log::warning("Group::imports - Aucun Groupe trouvé pour l'ID : {$uid}");
+            return $this->sendSuccess(__('message.nodata'));
+        }
+        $import = new ContactImport(Auth::user(), 0);
+        try {
+            Excel::import($import, $request->file('files'));
+            // Récupérer les IDs des contacts importés
+            $contactIds = $import->getContactIds();
+            // Test de sécurité pour éviter les insertions massives non filtrées
+            if (!empty($contactIds)) {
+                $data = collect($contactIds)->map(function ($contact_id) use ($group) {
+                    return [
+                        'group_id'   => $group->id,
+                        'contact_id' => $contact_id,
+                    ];
+                })->toArray();
+                GroupContact::insertOrIgnore($data);
+            }
+            return $this->sendSuccess(__('message.impcontact'), [
+                'imported' => $import->getImportedCount(),
+                'total' => $import->getTotalRows(),
+                'errors' => $import->getErrors(),
+            ], 201);
+        } catch (\Exception $e) {
+            Log::warning("Group::imports - Erreur : {$e->getMessage()}");
+            return $this->sendError(__('message.fielderr'), [], 400);
         }
     }
     // Ajout/Exclusion de Contact dans un Groupe
@@ -494,7 +585,7 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function blacklist(request $request, $uid): JsonResponse {
+    public function blacklist(request $request, string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
