@@ -148,7 +148,7 @@ class UserController extends BaseController
           'lg' => 'required',
           'login' => 'required',
           'password' => 'required',
-          'g_recaptcha_response' => 'required',
+        //   'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         //Error field
@@ -158,31 +158,31 @@ class UserController extends BaseController
         }
         try {
             // Paramètre de Recapcha
-            $url = 'https://www.google.com/recaptcha/api/siteverify';
-            $data = [
-                'remoteip' => $request->ip(),
-                'secret' => env('RECAPTCHAV3_SECRET'),
-                'response' => $request->input('g_recaptcha_response'),
-            ];
-            // Initialiser cURL
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $url);
-            curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-            $result = curl_exec($curl);
-            // Vérifier les erreurs cURL
-            if (curl_error($curl)) {
-                Log::warning("User::store - cURL Error : " . curl_error($curl));
-                return $this->sendError(__('message.error'));
-            }
-            curl_close($curl);
-            $resultJson = json_decode($result);
-            if ($resultJson->success == false || $resultJson->score < 0.5) {
-                Log::warning("Password::verifemail - Recaptcha : " . json_encode($resultJson));
-                return $this->sendError(__('message.recaptcha'));
-            }
+            // $url = 'https://www.google.com/recaptcha/api/siteverify';
+            // $data = [
+            //     'remoteip' => $request->ip(),
+            //     'secret' => env('RECAPTCHAV3_SECRET'),
+            //     'response' => $request->input('g_recaptcha_response'),
+            // ];
+            // // Initialiser cURL
+            // $curl = curl_init();
+            // curl_setopt($curl, CURLOPT_URL, $url);
+            // curl_setopt($curl, CURLOPT_POST, true);
+            // curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+            // curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            // curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+            // $result = curl_exec($curl);
+            // // Vérifier les erreurs cURL
+            // if (curl_error($curl)) {
+            //     Log::warning("User::store - cURL Error : " . curl_error($curl));
+            //     return $this->sendError(__('message.error'));
+            // }
+            // curl_close($curl);
+            // $resultJson = json_decode($result);
+            // if ($resultJson->success == false || $resultJson->score < 0.5) {
+            //     Log::warning("Password::verifemail - Recaptcha : " . json_encode($resultJson));
+            //     return $this->sendError(__('message.recaptcha'));
+            // }
             $credentialNum = [
                 'number' => $request->login,
                 'password' => $request->password,
