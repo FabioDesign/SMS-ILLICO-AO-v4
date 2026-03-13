@@ -9,6 +9,7 @@ use App\Http\Controllers\API\{
     PasswordController,
     PhonebookController,
     PublipostageController,
+    SenderController,
     UserController,
 };
 
@@ -52,6 +53,7 @@ Route::middleware(['auth:api'])->group(function () {
   Route::resources([
     'users' => UserController::class,
     'groups' => GroupController::class,
+    'senders' => SenderController::class,
     'phonebooks' => PhonebookController::class,
     'publipostage' => PublipostageController::class,
   ]);
