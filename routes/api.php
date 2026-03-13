@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\{
     GroupController,
     ListsController,
+    ModelsController,
     PasswordController,
     PhonebookController,
     PublipostageController,
@@ -53,6 +54,7 @@ Route::middleware(['auth:api'])->group(function () {
   Route::resources([
     'users' => UserController::class,
     'groups' => GroupController::class,
+    'models' => ModelController::class,
     'senders' => SenderController::class,
     'phonebooks' => PhonebookController::class,
     'publipostage' => PublipostageController::class,

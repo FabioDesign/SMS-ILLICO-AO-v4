@@ -60,6 +60,13 @@ return [
     'delsender' => "Sender successfully deleted.",
     'detsender' => "Details about a sender.",
 
+    // Models
+    'listmodel' => "Model list.",
+    'addmodel' => "Model successfully registered.",
+    'editmodel' => "Model successfully modified.",
+    'delmodel' => "Model successfully deleted.",
+    'detmodel' => "Details about a model.",
+
     // Files
     'fileformat' => "The type of attachment is not allowed, use the recommended format",
     'filesize' => "The size of the uploaded file must be less than or equal to 2MB",

@@ -60,6 +60,13 @@ return [
     'delsender' => "Remetente eliminado com sucesso.",
     'detsender' => "Detalhes sobre um remetente.",
 
+    // Models
+    'listmodel' => "Lista de modelos.",
+    'addmodel' => "Modelo registado com sucesso.",
+    'editmodel' => "Modelo modificado com sucesso.",
+    'delmodel' => "Modelo eliminado com sucesso.",
+    'detmodel' => "Detalhes sobre um modelo.",
+
     // Files
     'fileformat' => "O tipo de anexo não é permitido, use o formato recomendado",
     "filesize" => "O tamanho do ficheiro carregado deve ser menor ou igual a 2 MB",

@@ -11,8 +11,8 @@ class Models extends Model
 
     protected $fillable = [
         'uid',
-        'label',
         'title',
+        'message',
         'user_id',
     ];
 

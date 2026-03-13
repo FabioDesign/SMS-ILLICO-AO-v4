@@ -432,6 +432,169 @@
                 }
             }
         },
+        "/api/models": {
+            "get": {
+                "tags": [
+                    "Models"
+                ],
+                "description": "Liste des modèles.",
+                "operationId": "listModel",
+                "responses": {
+                    "200": {
+                        "description": "Liste des modèles."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Models"
+                ],
+                "description": "Enregistrement d'un modèle.",
+                "operationId": "storeModel",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "message"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "modèle enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/models/{uid}": {
+            "get": {
+                "tags": [
+                    "Models"
+                ],
+                "description": "Détail d'un modèle.",
+                "operationId": "showModel",
+                "responses": {
+                    "200": {
+                        "description": "Détail d'un modèle."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Models"
+                ],
+                "description": "Modification d'un modèle.",
+                "operationId": "editModel",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "message"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "modèle modifié avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Models"
+                ],
+                "description": "Suppression d'un modèle.",
+                "operationId": "deleteModel",
+                "responses": {
+                    "201": {
+                        "description": "modèle supprimé avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/password/verifemail": {
             "post": {
                 "tags": [
@@ -1696,6 +1859,10 @@
         {
             "name": "Lists",
             "description": "Lists"
+        },
+        {
+            "name": "Models",
+            "description": "Models"
         },
         {
             "name": "Password",
