@@ -1112,6 +1112,31 @@
                 ]
             }
         },
+        "/api/contacts/blacklist?num=1&limit=10": {
+            "get": {
+                "tags": [
+                    "Phonebooks"
+                ],
+                "description": "Liste des contacts exclus.",
+                "operationId": "contactBlacklist",
+                "responses": {
+                    "200": {
+                        "description": "Liste des contacts exclus."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/publipostage?num=1&limit=10&search=''": {
             "get": {
                 "tags": [

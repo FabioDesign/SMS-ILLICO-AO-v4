@@ -72,6 +72,7 @@ Route::middleware(['auth:api'])->group(function () {
   // Route pour les contacts
   Route::controller(PhonebookController::class)->group(function () {
     // Route pour importation
+    Route::get('contacts/blacklist', 'contacts');
     Route::post('phonebooks/imports', 'imports');
     Route::post('phonebooks/blacklist', 'blacklist');
   });

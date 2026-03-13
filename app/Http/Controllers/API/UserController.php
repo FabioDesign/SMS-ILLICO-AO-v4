@@ -174,13 +174,13 @@ class UserController extends BaseController
             $result = curl_exec($curl);
             // Vérifier les erreurs cURL
             if (curl_error($curl)) {
-                Log::warning("User::store - cURL Error : " . curl_error($curl));
+                Log::warning("User::login - cURL Error : " . curl_error($curl));
                 return $this->sendError(__('message.error'));
             }
             curl_close($curl);
             $resultJson = json_decode($result);
             if ($resultJson->success == false || $resultJson->score < 0.5) {
-                Log::warning("Password::verifemail - Recaptcha : " . json_encode($resultJson));
+                Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
                 return $this->sendError(__('message.recaptcha'));
             }
             $credentialNum = [

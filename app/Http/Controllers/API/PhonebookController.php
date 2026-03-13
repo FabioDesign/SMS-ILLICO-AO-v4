@@ -43,7 +43,7 @@ class PhonebookController extends BaseController
             ->paginate($limit, ['*'], 'page', $num);
             // Vérifier si les données existent
             if ($contacts->isEmpty()) {
-                Log::warning("Contact::index - Aucun Contact trouvé.");
+                Log::warning("Phonebook::index - Aucun Contact trouvé.");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Transformer les données
@@ -64,7 +64,7 @@ class PhonebookController extends BaseController
                 'total'  => $contacts->total(),
             ]);
         } catch (\Exception $e) {
-            Log::warning("Contact::index - Erreur : {$e->getMessage()}");
+            Log::warning("Phonebook::index - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }
@@ -89,7 +89,7 @@ class PhonebookController extends BaseController
             // Eager Loading (1 seule requête optimisée)
             $contacts = Contact::where('uid', $uid)->first();
             if (!$contacts) {
-                Log::warning("Contact::show - Aucun contact trouvé pour l'UID : {$uid}");
+                Log::warning("Phonebook::show - Aucun contact trouvé pour l'UID : {$uid}");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Data to save
@@ -104,7 +104,7 @@ class PhonebookController extends BaseController
             ];
             return $this->sendSuccess(__('message.detcontact'), $data);
         } catch (\Exception $e) {
-            Log::warning("Contact::show - Erreur : {$e->getMessage()}");
+            Log::warning("Phonebook::show - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }
@@ -157,13 +157,13 @@ class PhonebookController extends BaseController
         ]);
         // Error field
         if ($validator->fails()) {
-            Log::warning("Contact::store - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
+            Log::warning("Phonebook::store - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier préfixe
         $prefix = substr($request->number, 0, 2);
         if (!Prefix::where('label', $prefix)->exists()) {
-            Log::warning("Contact::store - Validator number : " . json_encode($request->all()));
+            Log::warning("Phonebook::store - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
         // Data to save
@@ -185,7 +185,7 @@ class PhonebookController extends BaseController
             return $this->sendSuccess(__('message.addcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Contact::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
+            Log::warning("Phonebook::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }
@@ -238,19 +238,19 @@ class PhonebookController extends BaseController
         ]);
         // Error field
         if ($validator->fails()) {
-            Log::warning("Contact::update - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
+            Log::warning("Phonebook::update - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier préfixe
         $prefix = substr($request->number, 0, 2);
         if (!Prefix::where('label', $prefix)->exists()) {
-            Log::warning("Contact::update - Validator number : " . json_encode($request->all()));
+            Log::warning("Phonebook::update - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
         // Vérifier si l'ID est présent et valide
         $contact = Contact::where('uid', $uid)->first();
         if (!$contact) {
-            Log::warning("Contact::update - Aucun Contact trouvé pour l'ID : {$uid}");
+            Log::warning("Phonebook::update - Aucun Contact trouvé pour l'ID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
@@ -271,7 +271,7 @@ class PhonebookController extends BaseController
             return $this->sendSuccess(__('message.editcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
-            Log::warning("Contact::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
+            Log::warning("Phonebook::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
 	}
@@ -308,7 +308,7 @@ class PhonebookController extends BaseController
             'contacts.*' => 'required|uuid',
         ]);
         if ($validator->fails()) {
-            Log::warning("Contact::destroy - Validator : {$validator->errors()->first()} - " . json_encode($request->all())
+            Log::warning("Phonebook::destroy - Validator : {$validator->errors()->first()} - " . json_encode($request->all())
             );
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
@@ -321,7 +321,7 @@ class PhonebookController extends BaseController
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
                 DB::rollBack();
-                Log::warning("Contact::destroy - Aucun Contacts trouvés : " . json_encode($request->contacts));
+                Log::warning("Phonebook::destroy - Aucun Contacts trouvés : " . json_encode($request->contacts));
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Supprimer tous les pivots liés
@@ -332,7 +332,7 @@ class PhonebookController extends BaseController
             return $this->sendSuccess(__('message.delcontact'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::warning("Contact::destroy - Erreur : {$e->getMessage()}");
+            Log::warning("Phonebook::destroy - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }
@@ -368,7 +368,7 @@ class PhonebookController extends BaseController
         ]);
         // Error field
         if ($validator->fails()) {
-            Log::warning("Contact::imports - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
+            Log::warning("Phonebook::imports - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         $import = new ContactImport(Auth::user(), 0);
@@ -380,7 +380,7 @@ class PhonebookController extends BaseController
                 'errors' => $import->getErrors(),
             ], 201);
         } catch (\Exception $e) {
-            Log::warning("Contact::imports - Erreur : {$e->getMessage()}");
+            Log::warning("Phonebook::imports - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.fielderr'), [], 400);
         }
     }
@@ -419,7 +419,7 @@ class PhonebookController extends BaseController
         ]);
         // Error field
         if($validator->fails()){
-            Log::warning("Contact::blacklist - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
+            Log::warning("Phonebook::blacklist - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         try {
@@ -431,7 +431,7 @@ class PhonebookController extends BaseController
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
                 DB::rollBack();
-                Log::warning("Contact::blacklist - Aucun Contacts trouvés : " . json_encode($request->contacts));
+                Log::warning("Phonebook::blacklist - Aucun Contacts trouvés : " . json_encode($request->contacts));
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Update en masse sur le pivot
@@ -441,7 +441,67 @@ class PhonebookController extends BaseController
             return $this->sendSuccess($message, [], 201);
         } catch(\Exception $e) {
             DB::rollBack();
-            Log::warning("Contact::blacklist - Erreur : {$e->getMessage()} " . json_encode($request->all()));
+            Log::warning("Phonebook::blacklist - Erreur : {$e->getMessage()} " . json_encode($request->all()));
+            return $this->sendError(__('message.error'));
+        }
+    }
+    //Liste des contacts exclus
+    /**
+    * @OA\Get(
+    *   path="/api/contacts/blacklist?num=1&limit=10",
+    *   tags={"Phonebooks"},
+    *   operationId="contactBlacklist",
+    *   description="Liste des contacts exclus.",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Liste des contacts exclus."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function contacts(Request $request): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        try {
+            $num = isset($request->num) ? (int) $request->num:1;
+            $limit = isset($request->limit) ? (int) $request->limit:10;
+            // Code to list contacts
+            $contactsOnly = DB::table('contacts as c')
+            ->where('c.user_id', Auth::user()->id)
+            ->where('c.blacklist', 1)
+            ->selectRaw('c.number as contact, NULL as `group`');
+
+            $contactsGroups = DB::table('group_contact as gc')
+            ->join('contacts as c', 'c.id', '=', 'gc.contact_id')
+            ->join('groups as g', 'g.id', '=', 'gc.group_id')
+            ->where('c.user_id', Auth::user()->id)
+            ->where(function ($q) {
+                $q->where('gc.blacklist', 1)
+                ->orWhere('c.blacklist', 1);
+            })
+            ->selectRaw('c.number as contact, g.label as `group`');
+
+            $contacts = $contactsOnly
+            ->unionAll($contactsGroups)
+            ->orderBy('contact')
+            ->paginate($limit, ['*'], 'page', $num);
+            // Vérifier si les données existent
+            if ($contacts->isEmpty()) {
+                Log::warning("Phonebook::contacts - Aucun contact trouvé.");
+                return $this->sendSuccess(__('message.nodata'));
+            }
+            // Transformer les données
+            $data = $contacts->map(fn($data) => [
+                'contact' => $data->contact,
+                'group' => $data->group ?? '',
+            ]);
+            return $this->sendSuccess(__('message.listcontact'), [
+                'lists' => $data,
+                'current_page' => $contacts->currentPage(),
+                'last_page' => $contacts->lastPage(),
+                'total'  => $contacts->total(),
+            ]);
+        } catch (\Exception $e) {
+            Log::warning("Phonebook::contacts - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }

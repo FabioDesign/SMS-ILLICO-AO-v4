@@ -26,5 +26,5 @@ class Group extends Model
                 $model->uid = Str::uuid()->toString();
             }
         });
-    }    
+    }
 }
