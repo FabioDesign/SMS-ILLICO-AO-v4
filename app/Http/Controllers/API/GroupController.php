@@ -19,7 +19,7 @@ class GroupController extends BaseController
     *   path="/api/groups",
     *   tags={"Groups"},
     *   operationId="listGroup",
-    *   description="Liste des groupes",
+    *   description="Liste des groupes.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Liste des groupes."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -31,17 +31,17 @@ class GroupController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Code to list groupes
-            $groupes = Group::select('id', 'uid', 'label')
+            $groups = Group::select('id', 'uid', 'label')
             ->where('user_id', Auth::user()->id)
             ->orderBy('label')
             ->get();
             // Vérifier si les données existent
-            if ($groupes->isEmpty()) {
+            if ($groups->isEmpty()) {
                 Log::warning("Group::index - Aucun Groupe trouvé.");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Transformer les données
-            $data = $groupes->map(fn($data) => [
+            $data = $groups->map(fn($data) => [
                 'uid' => $data->uid,
                 'label' => $data->label,
                 'total' => GroupContact::where('group_id', $data->id)->where('blacklist', 0)->count(),
@@ -58,7 +58,7 @@ class GroupController extends BaseController
     *   path="/api/groups/{uid}",
     *   tags={"Groups"},
     *   operationId="showGroup",
-    *   description="Détail d'un Groupe",
+    *   description="Détail d'un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Détail d'un Groupe."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -92,7 +92,7 @@ class GroupController extends BaseController
     *   path="/api/groups",
     *   tags={"Groups"},
     *   operationId="storeGroup",
-    *   description="Enregistrement d'un Group",
+    *   description="Enregistrement d'un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -147,7 +147,7 @@ class GroupController extends BaseController
     *   path="/api/groups/{uid}",
     *   tags={"Groups"},
     *   operationId="editGroup",
-    *   description="Modification d'un Group",
+    *   description="Modification d'un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -180,8 +180,8 @@ class GroupController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier si l'ID est présent et valide
-        $group = Group::where('uid', $uid)->first();
-        if (!$group) {
+        $groups = Group::where('uid', $uid)->first();
+        if (!$groups) {
             Log::warning("Group::update - Aucun Groupe trouvé pour l'ID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
@@ -191,7 +191,7 @@ class GroupController extends BaseController
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
-            $group->update($set);
+            $groups->update($set);
             // Valider la transaction
             DB::commit();
             return $this->sendSuccess(__('message.editgroup'), [], 201);
@@ -207,7 +207,7 @@ class GroupController extends BaseController
     *   path="/api/groups/{uid}",
     *   tags={"Groups"},
     *   operationId="deleteGroup",
-    *   description="Suppression d'un Group",
+    *   description="Suppression d'un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=201, description="Groupe supprimé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -219,16 +219,16 @@ class GroupController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Vérification si le Groupe est attribué à une demande
-            $group = Group::where('uid', $uid)->first();
+            $groups = Group::where('uid', $uid)->first();
             // Suppression
-            $deleted = Group::destroy($group->id);
+            $deleted = Group::destroy($groups->id);
             if (!$deleted) {
                 Log::warning("Group::destroy - Tentative de suppression d'un Groupe inexistante : {$uid}");
                 return $this->sendError(__('message.error'), [], 403);
             }
-            $find = GroupContact::where('group_id', $group->id)->first();
+            $find = GroupContact::where('group_id', $groups->id)->first();
             if ($find) {
-                GroupContact::where('group_id', $group->id)->delete();
+                GroupContact::where('group_id', $groups->id)->delete();
             }
             return $this->sendSuccess(__('message.delgroup'), [], 201);
         } catch(\Exception $e) {
@@ -242,7 +242,7 @@ class GroupController extends BaseController
     *   path="/api/groups/contactlist/{uid}?num=1&limit=10&search=''",
     *   tags={"Groups"},
     *   operationId="listContactGroup",
-    *   description="Liste des contacts d'un groupe",
+    *   description="Liste des contacts d'un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Liste des contacts d'un groupe."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -301,7 +301,7 @@ class GroupController extends BaseController
     *   path="/api/groups/contact/{uid}",
     *   tags={"Groups"},
     *   operationId="ContactGroup",
-    *   description="Ajout d'un Contact dans un Groupe",
+    *   description="Ajout d'un contact dans un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -352,8 +352,8 @@ class GroupController extends BaseController
             return $this->sendError( __('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier groupe
-        $group = Group::where('uid', $uid)->first();
-        if (!$group) {
+        $groups = Group::where('uid', $uid)->first();
+        if (!$groups) {
             Log::warning("Group::contact - Aucun Groupe trouvé pour l'ID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
@@ -375,10 +375,10 @@ class GroupController extends BaseController
             'field3'  => $request->field3,
         ];
         try {
-            DB::transaction(function () use ($data, $group) {
+            DB::transaction(function () use ($data, $groups) {
                 $contact = Contact::create($data);
                 GroupContact::insertOrIgnore([
-                    'group_id'   => $group->id,
+                    'group_id'   => $groups->id,
                     'contact_id' => $contact->id,
                 ]);
             });
@@ -394,7 +394,7 @@ class GroupController extends BaseController
     *   path="/api/groups/contacts/{uid}",
     *   tags={"Groups"},
     *   operationId="addGroup",
-    *   description="Ajout/Suppression de un ou de plusieurs Contacts dans un Groupe",
+    *   description="Ajout/Suppression d'un ou de plusieurs contacts dans un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -428,8 +428,8 @@ class GroupController extends BaseController
             );
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
-        $group = Group::where('uid', $uid)->first();
-        if (!$group) {
+        $groups = Group::where('uid', $uid)->first();
+        if (!$groups) {
             Log::warning("Group::contacts - Aucun Groupe trouvé pour l'ID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
@@ -448,9 +448,9 @@ class GroupController extends BaseController
             if ($request->status == 1) {
                 $msg = __('message.addcontact');
                 // Préparer les insertions en masse
-                $data = $contacts->map(function ($contactId) use ($group) {
+                $data = $contacts->map(function ($contactId) use ($groups) {
                     return [
-                        'group_id'   => $group->id,
+                        'group_id'   => $groups->id,
                         'contact_id' => $contactId,
                     ];
                 })->toArray();
@@ -458,7 +458,7 @@ class GroupController extends BaseController
                 DB::commit();
             } else {
                 $msg = __('message.delcontact');
-                GroupContact::where('group_id', $group->id)
+                GroupContact::where('group_id', $groups->id)
                     ->whereIn('contact_id', $contacts)
                     ->delete();
                 DB::commit();
@@ -477,7 +477,7 @@ class GroupController extends BaseController
     *   path="/api/groups/imports/{uid}",
     *   tags={"Groups"},
     *   operationId="importGroup",
-    *   description="Importation d'un Contact",
+    *   description="Importation d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -507,8 +507,8 @@ class GroupController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'ID est présent et valide
-        $group = Group::where('uid', $uid)->first();
-        if (!$group) {
+        $groups = Group::where('uid', $uid)->first();
+        if (!$groups) {
             Log::warning("Group::imports - Aucun Groupe trouvé pour l'ID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
@@ -519,9 +519,9 @@ class GroupController extends BaseController
             $contactIds = $import->getContactIds();
             // Test de sécurité pour éviter les insertions massives non filtrées
             if (!empty($contactIds)) {
-                $data = collect($contactIds)->map(function ($contact_id) use ($group) {
+                $data = collect($contactIds)->map(function ($contact_id) use ($groups) {
                     return [
-                        'group_id'   => $group->id,
+                        'group_id'   => $groups->id,
                         'contact_id' => $contact_id,
                     ];
                 })->toArray();
@@ -543,7 +543,7 @@ class GroupController extends BaseController
     *   path="/api/groups/blacklist/{uid}",
     *   tags={"Groups"},
     *   operationId="addExclu",
-    *   description="Ajout/Exclusion de ou de plusieurs Contacts dans un Groupe",
+    *   description="Ajout/Exclusion de ou de plusieurs Contacts dans un Groupe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -576,8 +576,8 @@ class GroupController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
         }
         // Vérifier si l'ID est présent et valide
-        $group = Group::where('uid', $uid)->first();
-        if (!$group) {
+        $groups = Group::where('uid', $uid)->first();
+        if (!$groups) {
             Log::warning("Group::blacklist - Aucun Groupe trouvé pour l'ID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
@@ -594,7 +594,7 @@ class GroupController extends BaseController
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Update en masse sur le pivot
-            GroupContact::where('group_id', $group->id)
+            GroupContact::where('group_id', $groups->id)
                 ->whereIn('contact_id', $contactIds)
                 ->update(['blacklist' => $request->status]);
             DB::commit();

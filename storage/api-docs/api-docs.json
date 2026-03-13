@@ -10,7 +10,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Liste des groupes",
+                "description": "Liste des groupes.",
                 "operationId": "listGroup",
                 "responses": {
                     "200": {
@@ -33,7 +33,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Enregistrement d'un Group",
+                "description": "Enregistrement d'un groupe.",
                 "operationId": "storeGroup",
                 "requestBody": {
                     "required": true,
@@ -76,7 +76,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Détail d'un Groupe",
+                "description": "Détail d'un groupe.",
                 "operationId": "showGroup",
                 "responses": {
                     "200": {
@@ -99,7 +99,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Modification d'un Group",
+                "description": "Modification d'un groupe.",
                 "operationId": "editGroup",
                 "requestBody": {
                     "required": true,
@@ -140,7 +140,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Suppression d'un Group",
+                "description": "Suppression d'un groupe.",
                 "operationId": "deleteGroup",
                 "responses": {
                     "201": {
@@ -165,7 +165,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Liste des contacts d'un groupe",
+                "description": "Liste des contacts d'un groupe.",
                 "operationId": "listContactGroup",
                 "responses": {
                     "200": {
@@ -190,7 +190,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Ajout d'un Contact dans un Groupe",
+                "description": "Ajout d'un contact dans un groupe.",
                 "operationId": "ContactGroup",
                 "requestBody": {
                     "required": true,
@@ -253,7 +253,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Ajout/Suppression de un ou de plusieurs Contacts dans un Groupe",
+                "description": "Ajout/Suppression d'un ou de plusieurs contacts dans un groupe.",
                 "operationId": "addGroup",
                 "requestBody": {
                     "required": true,
@@ -303,7 +303,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Importation d'un Contact",
+                "description": "Importation d'un contact.",
                 "operationId": "importGroup",
                 "requestBody": {
                     "required": true,
@@ -347,7 +347,7 @@
                 "tags": [
                     "Groups"
                 ],
-                "description": "Ajout/Exclusion de ou de plusieurs Contacts dans un Groupe",
+                "description": "Ajout/Exclusion de ou de plusieurs Contacts dans un Groupe.",
                 "operationId": "addExclu",
                 "requestBody": {
                     "required": true,
@@ -397,7 +397,7 @@
                 "tags": [
                     "Lists"
                 ],
-                "description": "Liste de Villes.",
+                "description": "Liste de villes.",
                 "operationId": "towns",
                 "responses": {
                     "200": {
@@ -417,7 +417,7 @@
                 "tags": [
                     "Lists"
                 ],
-                "description": "Liste de Type de Compte.",
+                "description": "Liste de type de compte.",
                 "operationId": "accountyp",
                 "responses": {
                     "200": {
@@ -437,7 +437,7 @@
                 "tags": [
                     "Password"
                 ],
-                "description": "Vérification de l'email",
+                "description": "Vérification de l'email.",
                 "operationId": "verifemail",
                 "requestBody": {
                     "required": true,
@@ -484,7 +484,7 @@
                 "tags": [
                     "Password"
                 ],
-                "description": "Vérification du Code OTP",
+                "description": "Vérification du code OTP.",
                 "operationId": "verifotp",
                 "requestBody": {
                     "required": true,
@@ -530,7 +530,7 @@
                 "tags": [
                     "Password"
                 ],
-                "description": "Ajout de Mot de passe",
+                "description": "Ajout de mot de passe.",
                 "operationId": "addpass",
                 "requestBody": {
                     "required": true,
@@ -586,7 +586,7 @@
                 "tags": [
                     "Password"
                 ],
-                "description": "Modification de Mot de passe",
+                "description": "Modification de mot de passe.",
                 "operationId": "editpass",
                 "requestBody": {
                     "required": true,
@@ -640,7 +640,7 @@
                 "tags": [
                     "Phonebooks"
                 ],
-                "description": "Liste des contacts",
+                "description": "Liste des contacts.",
                 "operationId": "listContact",
                 "responses": {
                     "200": {
@@ -665,7 +665,7 @@
                 "tags": [
                     "Phonebooks"
                 ],
-                "description": "Détail d'un Contact",
+                "description": "Détail d'un contact.",
                 "operationId": "showContact",
                 "responses": {
                     "200": {
@@ -688,7 +688,7 @@
                 "tags": [
                     "Phonebooks"
                 ],
-                "description": "Modification d'un Contact",
+                "description": "Modification d'un contact.",
                 "operationId": "editContact",
                 "requestBody": {
                     "required": true,
@@ -751,7 +751,7 @@
                 "tags": [
                     "Phonebooks"
                 ],
-                "description": "Enregistrement d'un Contact",
+                "description": "Enregistrement d'un contact.",
                 "operationId": "storeContact",
                 "requestBody": {
                     "required": true,
@@ -814,7 +814,7 @@
                 "tags": [
                     "Phonebooks"
                 ],
-                "description": "Suppression d'un ou de plusieurs Contacts",
+                "description": "Suppression d'un ou de plusieurs contacts.",
                 "operationId": "deleteContact",
                 "requestBody": {
                     "required": true,
@@ -860,7 +860,7 @@
                 "tags": [
                     "Phonebooks"
                 ],
-                "description": "Importation d'un Contact",
+                "description": "Importation d'un contact.",
                 "operationId": "importNum",
                 "requestBody": {
                     "required": true,
@@ -904,7 +904,7 @@
                 "tags": [
                     "Phonebooks"
                 ],
-                "description": "Ajout/Exclusion de ou de plusieurs Contacts",
+                "description": "Ajout/Exclusion d'un ou de plusieurs contacts.",
                 "operationId": "contactExclu",
                 "requestBody": {
                     "required": true,
@@ -954,7 +954,7 @@
                 "tags": [
                     "Publipostage"
                 ],
-                "description": "Liste des contacts",
+                "description": "Liste des contacts.",
                 "operationId": "listPub",
                 "responses": {
                     "200": {
@@ -979,7 +979,7 @@
                 "tags": [
                     "Publipostage"
                 ],
-                "description": "Détail d'un Contact",
+                "description": "Détail d'un contact.",
                 "operationId": "showPub",
                 "responses": {
                     "200": {
@@ -1002,7 +1002,7 @@
                 "tags": [
                     "Publipostage"
                 ],
-                "description": "Modification d'un Publipostage",
+                "description": "Modification d'un contact.",
                 "operationId": "editPub",
                 "requestBody": {
                     "required": true,
@@ -1065,7 +1065,7 @@
                 "tags": [
                     "Publipostage"
                 ],
-                "description": "Enregistrement d'un Publipostage",
+                "description": "Enregistrement d'un contact.",
                 "operationId": "storePub",
                 "requestBody": {
                     "required": true,
@@ -1128,7 +1128,7 @@
                 "tags": [
                     "Publipostage"
                 ],
-                "description": "Suppression d'un ou de plusieurs Contacts",
+                "description": "Suppression d'un ou de plusieurs contacts.",
                 "operationId": "deletePub",
                 "requestBody": {
                     "required": true,
@@ -1174,7 +1174,7 @@
                 "tags": [
                     "Publipostage"
                 ],
-                "description": "Importation d'un Contact",
+                "description": "Importation d'un contact.",
                 "operationId": "importPub",
                 "requestBody": {
                     "required": true,
@@ -1213,12 +1213,167 @@
                 ]
             }
         },
+        "/api/senders": {
+            "get": {
+                "tags": [
+                    "Senders"
+                ],
+                "description": "Liste des expéditeurs.",
+                "operationId": "listSender",
+                "responses": {
+                    "200": {
+                        "description": "Liste des expéditeurs."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Senders"
+                ],
+                "description": "Enregistrement d'un expéditeur.",
+                "operationId": "storeSender",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "label"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Expéditeur enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/senders/{uid}": {
+            "get": {
+                "tags": [
+                    "Senders"
+                ],
+                "description": "Détail d'un expéditeur.",
+                "operationId": "showSender",
+                "responses": {
+                    "200": {
+                        "description": "Détail d'un expéditeur."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Senders"
+                ],
+                "description": "Modification d'un expéditeur.",
+                "operationId": "editSender",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "label"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Expéditeur modifié avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Senders"
+                ],
+                "description": "Suppression d'un expéditeur.",
+                "operationId": "deleteSender",
+                "responses": {
+                    "201": {
+                        "description": "Expéditeur supprimé avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
                     "Users"
                 ],
-                "description": "Liste des Utilisateurs",
+                "description": "Liste de compte utilisateur.",
                 "operationId": "listUser",
                 "responses": {
                     "200": {
@@ -1243,11 +1398,11 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "Détail d'Utilisateur",
+                "description": "Détail d'un compte utilisateur.",
                 "operationId": "showUser",
                 "responses": {
                     "200": {
-                        "description": "Détail d'Utilisateur."
+                        "description": "Détail d'un compte utilisateur."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -1268,7 +1423,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "Authenticate Platform and Generate JWT",
+                "description": "Authenticate platform and generate JWT.",
                 "operationId": "login",
                 "requestBody": {
                     "required": true,
@@ -1318,7 +1473,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "Account creation",
+                "description": "Creation de compte utilisateur.",
                 "operationId": "registerUser",
                 "requestBody": {
                     "required": true,
@@ -1380,7 +1535,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Création de compte éffectuée avec succès."
+                        "description": "Création de compte utulisateur éffectuée avec succès."
                     },
                     "401": {
                         "description": "Echec de Création de compte."
@@ -1396,7 +1551,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "Modification du profil utilisateur",
+                "description": "Modification du profil utilisateur.",
                 "operationId": "profilUser",
                 "requestBody": {
                     "required": true,
@@ -1471,7 +1626,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "Modification de la photo de profil",
+                "description": "Modification de la photo de profil.",
                 "operationId": "avatars",
                 "requestBody": {
                     "required": true,
@@ -1515,7 +1670,7 @@
                 "tags": [
                     "Users"
                 ],
-                "description": "Deconnecte l'utilisateur en supprimant son token d'accès",
+                "description": "Deconnecte l'utilisateur en supprimant son token d'accès.",
                 "operationId": "logout",
                 "responses": {
                     "200": {
@@ -1553,6 +1708,10 @@
         {
             "name": "Publipostage",
             "description": "Publipostage"
+        },
+        {
+            "name": "Senders",
+            "description": "Senders"
         },
         {
             "name": "Users",

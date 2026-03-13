@@ -19,7 +19,7 @@ class PublipostageController extends BaseController
     *   path="/api/publipostage?num=1&limit=10&search=''",
     *   tags={"Publipostage"},
     *   operationId="listPub",
-    *   description="Liste des contacts",
+    *   description="Liste des contacts.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Liste des contacts."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -73,7 +73,7 @@ class PublipostageController extends BaseController
     *   path="/api/publipostage/{uid}",
     *   tags={"Publipostage"},
     *   operationId="showPub",
-    *   description="Détail d'un Contact",
+    *   description="Détail d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Détail d'un Contact."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -113,7 +113,7 @@ class PublipostageController extends BaseController
     *   path="/api/publipostage",
     *   tags={"Publipostage"},
     *   operationId="storePub",
-    *   description="Enregistrement d'un Publipostage",
+    *   description="Enregistrement d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -195,7 +195,7 @@ class PublipostageController extends BaseController
     *   path="/api/publipostage/{uid}",
     *   tags={"Publipostage"},
     *   operationId="editPub",
-    *   description="Modification d'un Publipostage",
+    *   description="Modification d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -281,7 +281,7 @@ class PublipostageController extends BaseController
     *   path="/api/publipostage/delete",
     *   tags={"Publipostage"},
     *   operationId="deletePub",
-    *   description="Suppression d'un ou de plusieurs Contacts",
+    *   description="Suppression d'un ou de plusieurs contacts.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -340,7 +340,7 @@ class PublipostageController extends BaseController
     *   path="/api/publipostage/imports",
     *   tags={"Publipostage"},
     *   operationId="importPub",
-    *   description="Importation d'un Contact",
+    *   description="Importation d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,

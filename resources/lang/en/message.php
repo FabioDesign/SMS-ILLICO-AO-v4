@@ -53,6 +53,13 @@ return [
     'delgroup' => "Group successfully deleted.",
     'detgroup' => "Details about a group.",
 
+    // Senders
+    'listsender' => "Sender list.",
+    'addsender' => "Sender successfully registered.",
+    'editsender' => "Sender successfully modified.",
+    'delsender' => "Sender successfully deleted.",
+    'detsender' => "Details about a sender.",
+
     // Files
     'fileformat' => "The type of attachment is not allowed, use the recommended format",
     'filesize' => "The size of the uploaded file must be less than or equal to 2MB",

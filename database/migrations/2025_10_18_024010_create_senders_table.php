@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->uuid('uid');
             $table->string('label', 15);
-            $table->timestamp('validated_at')->nullable();
             $table->tinyInteger('status')->default('0');
+            $table->timestamp('validated_at')->nullable();
             $table->timestamps();
             $table->bigInteger('user_id');
             $table->unique(['label', 'user_id']);

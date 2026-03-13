@@ -17,7 +17,7 @@ class UserController extends BaseController
     *   path="/api/users",
     *   tags={"Users"},
     *   operationId="listUser",
-    *   description="Liste des Utilisateurs",
+    *   description="Liste de compte utilisateur.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Liste des Utilisateurs."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -65,9 +65,9 @@ class UserController extends BaseController
     *   path="/api/users/{uid}",
     *   tags={"Users"},
     *   operationId="showUser",
-    *   description="Détail d'Utilisateur",
+    *   description="Détail d'un compte utilisateur.",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=200, description="Détail d'Utilisateur."),
+    *   @OA\Response(response=200, description="Détail d'un compte utilisateur."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -125,7 +125,7 @@ class UserController extends BaseController
     *   path="/api/users/auth",
     *   tags={"Users"},
     *   operationId="login",
-    *   description="Authenticate Platform and Generate JWT",
+    *   description="Authenticate platform and generate JWT.",
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
@@ -236,7 +236,7 @@ class UserController extends BaseController
     *   path="/api/users/register",
     *   tags={"Users"},
     *   operationId="registerUser",
-    *   description="Account creation",
+    *   description="Creation de compte utilisateur.",
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
@@ -255,7 +255,7 @@ class UserController extends BaseController
     *             @OA\Property(property="g_recaptcha_response", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Création de compte éffectuée avec succès."),
+    *   @OA\Response(response=201, description="Création de compte utulisateur éffectuée avec succès."),
     *   @OA\Response(response=401, description="Echec de Création de compte."),
     *   @OA\Response(response=404, description="Page introuvable."),
     * )
@@ -407,7 +407,7 @@ class UserController extends BaseController
     *   path="/api/users/profiles",
     *   tags={"Users"},
     *   operationId="profilUser",
-    *   description="Modification du profil utilisateur",
+    *   description="Modification du profil utilisateur.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -495,7 +495,7 @@ class UserController extends BaseController
      *   path="/api/users/avatars",
      *   tags={"Users"},
      *   operationId="avatars",
-     *   description="Modification de la photo de profil",
+     *   description="Modification de la photo de profil.",
      *   security={{"bearer":{}}},
      *   @OA\RequestBody(
      *      required=true,
@@ -556,7 +556,7 @@ class UserController extends BaseController
     *   path="/api/users/logout",
     *   tags={"Users"},
     *   operationId="logout",
-    *   description="Deconnecte l'utilisateur en supprimant son token d'accès",
+    *   description="Deconnecte l'utilisateur en supprimant son token d'accès.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Déconnexion éffectuée avec succès."),
     *   @OA\Response(response=404, description="Page introuvable.")

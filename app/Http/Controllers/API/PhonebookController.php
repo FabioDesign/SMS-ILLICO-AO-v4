@@ -19,7 +19,7 @@ class PhonebookController extends BaseController
     *   path="/api/phonebooks?num=1&limit=10&search=''",
     *   tags={"Phonebooks"},
     *   operationId="listContact",
-    *   description="Liste des contacts",
+    *   description="Liste des contacts.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Liste des contacts."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -74,7 +74,7 @@ class PhonebookController extends BaseController
     *   path="/api/phonebooks/{uid}",
     *   tags={"Phonebooks"},
     *   operationId="showContact",
-    *   description="Détail d'un Contact",
+    *   description="Détail d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Détail d'un Contact."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
@@ -114,7 +114,7 @@ class PhonebookController extends BaseController
     *   path="/api/phonebooks",
     *   tags={"Phonebooks"},
     *   operationId="storeContact",
-    *   description="Enregistrement d'un Contact",
+    *   description="Enregistrement d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -195,7 +195,7 @@ class PhonebookController extends BaseController
     *   path="/api/phonebooks/{uid}",
     *   tags={"Phonebooks"},
     *   operationId="editContact",
-    *   description="Modification d'un Contact",
+    *   description="Modification d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -281,7 +281,7 @@ class PhonebookController extends BaseController
     *   path="/api/phonebooks/delete",
     *   tags={"Phonebooks"},
     *   operationId="deleteContact",
-    *   description="Suppression d'un ou de plusieurs Contacts",
+    *   description="Suppression d'un ou de plusieurs contacts.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -342,7 +342,7 @@ class PhonebookController extends BaseController
     *   path="/api/phonebooks/imports",
     *   tags={"Phonebooks"},
     *   operationId="importNum",
-    *   description="Importation d'un Contact",
+    *   description="Importation d'un contact.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
@@ -390,7 +390,7 @@ class PhonebookController extends BaseController
     *   path="/api/phonebooks/blacklist",
     *   tags={"Phonebooks"},
     *   operationId="contactExclu",
-    *   description="Ajout/Exclusion de ou de plusieurs Contacts",
+    *   description="Ajout/Exclusion d'un ou de plusieurs contacts.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,

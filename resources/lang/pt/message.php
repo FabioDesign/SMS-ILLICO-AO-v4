@@ -53,6 +53,13 @@ return [
     'delgroup' => "Groupo eliminado com sucesso.",
     'detgroup' => "Detalhes sobre um grupo.",
 
+    // Senders
+    'listsender' => "Lista de remetentes.",
+    'addsender' => "Remetente registado com sucesso.",
+    'editsender' => "Remetente modificado com sucesso.",
+    'delsender' => "Remetente eliminado com sucesso.",
+    'detsender' => "Detalhes sobre um remetente.",
+
     // Files
     'fileformat' => "O tipo de anexo não é permitido, use o formato recomendado",
     "filesize" => "O tamanho do ficheiro carregado deve ser menor ou igual a 2 MB",

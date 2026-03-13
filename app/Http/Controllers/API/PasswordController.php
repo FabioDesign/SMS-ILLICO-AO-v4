@@ -17,7 +17,7 @@ class PasswordController extends BaseController
     *   path="/api/password/verifemail",
     *   tags={"Password"},
     *   operationId="verifemail",
-    *   description="Vérification de l'email",
+    *   description="Vérification de l'email.",
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
@@ -114,7 +114,7 @@ class PasswordController extends BaseController
     *   path="/api/password/verifotp",
     *   tags={"Password"},
     *   operationId="verifotp",
-    *   description="Vérification du Code OTP",
+    *   description="Vérification du code OTP.",
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
@@ -171,7 +171,7 @@ class PasswordController extends BaseController
     *   path="/api/password/addpass",
     *   tags={"Password"},
     *   operationId="addpass",
-    *   description="Ajout de Mot de passe",
+    *   description="Ajout de mot de passe.",
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
@@ -238,7 +238,7 @@ class PasswordController extends BaseController
     *   path="/api/password/editpass",
     *   tags={"Password"},
     *   operationId="editpass",
-    *   description="Modification de Mot de passe",
+    *   description="Modification de mot de passe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,

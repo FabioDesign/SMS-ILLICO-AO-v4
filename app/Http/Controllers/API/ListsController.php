@@ -15,7 +15,7 @@ class ListsController extends BaseController
     *   path="/api/towns/list/{lg}",
     *   tags={"Lists"},
     *   operationId="towns",
-    *   description="Liste de Villes.",
+    *   description="Liste de villes.",
     *   @OA\Response(response=200, description="Liste de Villes."),
     *   @OA\Response(response=400, description="Bad Request."),
     *   @OA\Response(response=404, description="Page introuvable.")
@@ -42,7 +42,7 @@ class ListsController extends BaseController
     *   path="/api/accountyp/list/{lg}",
     *   tags={"Lists"},
     *   operationId="accountyp",
-    *   description="Liste de Type de Compte.",
+    *   description="Liste de type de compte.",
     *   @OA\Response(response=200, description="Liste de Type de Compte."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
