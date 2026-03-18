@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->year('year', 4);
             $table->tinyInteger('month');
-            $table->decimal('volume', 10, 0);
+            $table->decimal('volume_sms', 10, 0);
             $table->bigInteger('user_id');
         });
     }

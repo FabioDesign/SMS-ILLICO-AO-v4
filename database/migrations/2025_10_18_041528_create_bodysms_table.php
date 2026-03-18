@@ -16,7 +16,7 @@ return new class extends Migration
             $table->uuid('uid');
             $table->string('sender', 15);
             $table->text('message');
-            $table->decimal('volume', 10, 0);
+            $table->decimal('volume_sms', 10, 0);
             $table->decimal('chars', 10, 0);
             $table->decimal('pages', 10, 0);
             $table->timestamp('sending_at');

@@ -13,7 +13,7 @@ class Numbersms extends Model
         'uid',
         'status',
         'number',
-        'volume',
+        'volume_sms',
         'bodysms_id',
         'sending_at',
     ];

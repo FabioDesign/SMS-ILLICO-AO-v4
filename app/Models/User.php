@@ -25,7 +25,6 @@ class User extends Authenticatable
         'avatar',
         'email',
         'number',
-        'volume',
         'otp_at',
         'status',
         'website',
@@ -38,6 +37,7 @@ class User extends Authenticatable
         'lastname',
         'password',
         'firstname',
+        'volume_sms',
         'password_at',
         'accountyp_id',
     ];

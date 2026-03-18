@@ -47,9 +47,9 @@ class UserController extends BaseController
                 'email' => $data->email,
                 'company' => $data->company,
                 'status' => match((int)$data->status) {
-                    0 => 'Inactif',
-                    1 => 'Actif',
-                    2 => 'Bloqué'
+                    0 => __('message.inactive'),
+                    1 => __('message.active'),
+                    2 => __('message.blocked'),
                 },
                 'created_at' => $data->created_at->format('d/m/Y H:i'),
             ]);
@@ -95,7 +95,7 @@ class UserController extends BaseController
                 'nif'       => Auth::user()->nif,
                 'address'   => Auth::user()->address,
                 'website'   => Auth::user()->website,
-                'volume'    => Auth::user()->volume,
+                'volume_sms' => Auth::user()->volume_sms,
                 'towns' => Auth::user()->town ? [
                     'id'    => Auth::user()->town->id,
                     'label' => Auth::user()->town->label,
@@ -105,10 +105,9 @@ class UserController extends BaseController
                     'label' => Auth::user()->lg === 'en' ? Auth::user()->accountType->en : Auth::user()->accountType->fr,
                 ] : null,
                 'status' => match((int) Auth::user()->status) {
-                    0 => 'Inactif',
-                    1 => 'Actif',
-                    2 => 'Bloqué',
-                    default => 'Inconnu'
+                    0 => __('message.inactive'),
+                    1 => __('message.active'),
+                    2 => __('message.blocked'),
                 },
                 'created_at' => Auth::user()->created_at->format('d/m/Y H:i'),
                 'avatar' => asset('assets/avatars/' . (Auth::user()->avatar ?? 'avatar.jpg')),
@@ -143,7 +142,7 @@ class UserController extends BaseController
     */
     public function login(Request $request): JsonResponse
     {
-        //Validator
+        // Validator
         $validator = Validator::make($request->all(), [
           'lg' => 'required',
           'login' => 'required',
@@ -151,7 +150,7 @@ class UserController extends BaseController
           'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
-        //Error field
+        // Error field
         if ($validator->fails()) {
             Log::warning("User::login - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
           return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
@@ -263,7 +262,7 @@ class UserController extends BaseController
     public function store(Request $request): JsonResponse
     {
         Log::notice("User::store : " . json_encode($request->all()));
-        //Validator
+        // Validator
         $validator = Validator::make($request->all(), [
             'lg' => 'required|in:en,pt',
             'lastname' => 'required',
@@ -275,7 +274,7 @@ class UserController extends BaseController
             'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
-        //Error field
+        // Error field
         if ($validator->fails()) {
             Log::warning("User::store - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
@@ -345,7 +344,7 @@ class UserController extends BaseController
                 // Création de l'utilisateur
                 User::create($set);
                 DB::commit(); // Valider la transaction
-                // Languagename
+                // Username
                 $username = "{$request->firstname} {$request->lastname}";
                 // Subject
                 $subject = __('message.creataccount');
@@ -360,10 +359,10 @@ class UserController extends BaseController
                 <hr style='color:#156082;'>"
                 . __('message.bestregard')
                 . env('MAIL_SIGNATURE')
-                . "<hr style='color:#156082;'></div>";
+                . "</div>";
                 // Envoi de l'email
                 $this->sendMail(env('MAIL_FROM_ADDRESS'), $email, $username, env('MAIL_CC'), $subject, $message);
-                //send SMS to Customer
+                // Send SMS to Customer
                 if ($request->lg == 'en') {
                     $content = "Dear M./Mrs. {$username}<br /><br />
                     Thank you for your registration on SMS illico, our platform of sending SMS through the web.<br />
@@ -380,7 +379,7 @@ class UserController extends BaseController
                 . "<hr style='color:#156082;'>"
                 . __('message.bestregard')
                 . env('MAIL_SIGNATURE')
-                . "<hr style='color:#156082;'></div>";
+                . "</div>";
                 // Envoi de l'email
                 $this->sendMail($email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
                 // Retourner les données de l'utilisateur
@@ -442,7 +441,7 @@ class UserController extends BaseController
             'town_id' => 'required|integer|min:1',
             'accountyp_id' => 'required|integer|min:1',
         ]);
-        //Error field
+        // Error field
         if ($validator->fails()) {
             Log::warning("User::profiles - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);

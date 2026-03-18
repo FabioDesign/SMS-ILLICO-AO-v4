@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('nif', 50)->nullable();
             $table->string('address', 255)->nullable();
             $table->string('website', 255)->nullable();
-            $table->decimal('volume', 10, 0)->default('0');
+            $table->decimal('volume_sms', 10, 0)->default('0');
             $table->char('lg', 2);
             $table->string('avatar', 20)->nullable();
             $table->timestamp('avatar_at')->nullable();

@@ -15,9 +15,9 @@ class Bodysms extends Model
         'chars',
         'status',
         'sender',
-        'volume',
         'user_id',
         'message',
+        'volume_sms',
         'smstype_id',
         'sending_at',
     ];
@@ -41,5 +41,5 @@ class Bodysms extends Model
                 $model->uid = Str::uuid()->toString();
             }
         });
-    }    
+    }
 }

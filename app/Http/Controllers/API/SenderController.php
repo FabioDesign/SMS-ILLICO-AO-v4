@@ -42,7 +42,12 @@ class SenderController extends BaseController
             $data = $senders->map(fn($data) => [
                 'uid' => $data->uid,
                 'label' => $data->label,
-                'status' => $data->status,
+                'status' => match((int)$data->status) {
+                    0 => __('message.draft'),
+                    1 => __('message.pending'),
+                    2 => __('message.validated'),
+                    3 => __('message.declined'),
+                },
             ]);
             return $this->sendSuccess(__('message.listsender'), $data);
         } catch (\Exception $e) {
@@ -112,7 +117,7 @@ class SenderController extends BaseController
         $validator = Validator::make($request->all(), [
             'label' => [
                 'required',
-                'digits:11',
+                'regex:/^(?=.*[A-Za-z])[A-Za-z0-9]{3,11}$/',
                 Rule::unique('senders')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id);
                 }),
@@ -168,7 +173,7 @@ class SenderController extends BaseController
         $validator = Validator::make($request->all(), [
             'label' => [
                 'required',
-                'digits:11',
+                'regex:/^(?=.*[A-Za-z])[A-Za-z0-9]{3,11}$/',
                 Rule::unique('senders')->where(function ($query) use ($user) {
                     return $query->where('user_id', $user->id);
                 }),
@@ -186,18 +191,64 @@ class SenderController extends BaseController
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
-        $set = [
-            'label' => $request->label,
-        ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
-            $senders->update($set);
+            $senders->update([
+                'label' => $request->label,
+            ]);
             // Valider la transaction
             DB::commit();
             return $this->sendSuccess(__('message.editsender'), [], 201);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Sender::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
+            return $this->sendError(__('message.error'));
+        }
+	}
+    // Validation d'un expéditeur
+    /**
+    * @OA\Post(
+    *   path="/api/senders/validated",
+    *   tags={"Senders"},
+    *   operationId="validSender",
+    *   description="Validation d'un expéditeur.",
+    *   security={{"bearer":{}}},
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\JsonContent(
+    *         required={"uid"},
+    *         @OA\Property(property="uid", type="string"),
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Expéditeur validé avec succès."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function validated(request $request): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        //Validator
+        $validator = Validator::make($request->all(), [
+            'uid' => 'required|exists:senders,uid',
+        ]);
+        //Error field
+        if($validator->fails()){
+            Log::warning("Sender::validated - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+        }
+        // Data to save
+        DB::beginTransaction(); // Démarrer une transaction
+        try {
+            Sender::where('uid', $request->uid)->update([
+                'status' => 1,
+            ]);
+            // Valider la transaction
+            DB::commit();
+            return $this->sendSuccess(__('message.editsender'), [], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Annuler la transaction en cas d'erreur
+            Log::warning("Sender::validated - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
 	}

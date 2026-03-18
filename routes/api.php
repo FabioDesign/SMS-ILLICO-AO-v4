@@ -89,4 +89,6 @@ Route::middleware(['auth:api'])->group(function () {
     // Route pour importation
     Route::post('publipostage/imports', 'imports');
   });
+  // Route pour les senders
+  Route::post('senders/validated', [SenderController::class, 'validated']);
 });

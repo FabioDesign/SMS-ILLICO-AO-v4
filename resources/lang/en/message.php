@@ -22,6 +22,13 @@ return [
     'usersucc' => "User successfully registered.",
     'profilsucc' => "User profile successfully modified.",
     'recaptcha' => "Incorrect Recaptcha, please try again.",
+    'inactive' => "Inactive",
+    'active' => "Active",
+    'blocked' => "Blocked",
+    'draft' => "Draft",
+    'pending' => "Pending",
+    'validated' => "Validated",
+    'declined' => "Declined",
 
     // Password
     'forgotpwd' => "Forgot password.",
@@ -66,6 +73,13 @@ return [
     'editmodel' => "Model successfully modified.",
     'delmodel' => "Model successfully deleted.",
     'detmodel' => "Details about a model.",
+
+    // Bills
+    'listbill' => "Sender list.",
+    'addbill' => "Sender successfully registered.",
+    'editbill' => "Sender successfully modified.",
+    'delbill' => "Sender successfully deleted.",
+    'detbill' => "Details about a sender.",
 
     // Files
     'fileformat' => "The type of attachment is not allowed, use the recommended format",

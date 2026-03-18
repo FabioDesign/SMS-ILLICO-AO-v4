@@ -22,6 +22,13 @@ return [
     'usersucc' => "Utilizador registado com sucesso.",
     'profilsucc' => "Perfil do utilizador alterado com sucesso.",
     'recaptcha' => "Recaptcha incorreto, tente novamente.",
+    'inactive' => "Inativo",
+    'active' => "Ativo",
+    'blocked' => "Bloqueado",
+    'draft' => "Rascunho",
+    "pending" => "Pendente",
+    "validated" => "Validado",
+    "declined" => "Recusado",
 
     // Password
     'forgotpwd' => "Esqueci a senha.",
@@ -66,6 +73,13 @@ return [
     'editmodel' => "Modelo modificado com sucesso.",
     'delmodel' => "Modelo eliminado com sucesso.",
     'detmodel' => "Detalhes sobre um modelo.",
+
+    // Bills
+    'listbill' => "Lista de remetentes.",
+    'addbill' => "Remetente registado com sucesso.",
+    'editbill' => "Remetente alterado com sucesso.",
+    'delbill' => "Remetente eliminado com sucesso.",
+    'detbill' => "Detalhes sobre um remetente.",
 
     // Files
     'fileformat' => "O tipo de anexo não é permitido, use o formato recomendado",

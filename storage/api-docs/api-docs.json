@@ -5,6 +5,227 @@
         "version": "1.0"
     },
     "paths": {
+        "/api/bills?num=1&limit=10": {
+            "get": {
+                "tags": [
+                    "Bills"
+                ],
+                "description": "Liste des factures.",
+                "operationId": "listBill",
+                "responses": {
+                    "200": {
+                        "description": "Liste des factures."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/bills/{uid}": {
+            "get": {
+                "tags": [
+                    "Bills"
+                ],
+                "description": "Détail d'une facture.",
+                "operationId": "showBill",
+                "responses": {
+                    "200": {
+                        "description": "Détail d'une facture."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Bills"
+                ],
+                "description": "Modification d'une facture.",
+                "operationId": "editBill",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "label",
+                                    "number"
+                                ],
+                                "properties": {
+                                    "label": {
+                                        "type": "string"
+                                    },
+                                    "number": {
+                                        "type": "number"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "date_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "field1": {
+                                        "type": "string"
+                                    },
+                                    "field2": {
+                                        "type": "string"
+                                    },
+                                    "field3": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact modifié avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/bills": {
+            "post": {
+                "tags": [
+                    "Bills"
+                ],
+                "description": "Enregistrement d'une facture.",
+                "operationId": "storeBill",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "volume2_sms",
+                                    "number",
+                                    "number"
+                                ],
+                                "properties": {
+                                    "volume2_sms": {
+                                        "type": "string"
+                                    },
+                                    "number": {
+                                        "type": "number"
+                                    },
+                                    "gender": {
+                                        "type": "string"
+                                    },
+                                    "date_at": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "field1": {
+                                        "type": "string"
+                                    },
+                                    "field2": {
+                                        "type": "string"
+                                    },
+                                    "field3": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contact enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/bills/delete": {
+            "delete": {
+                "tags": [
+                    "Bills"
+                ],
+                "description": "Suppression d'un ou de plusieurs factures.",
+                "operationId": "deleteBill",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "contacts"
+                                ],
+                                "properties": {
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Contacts supprimés avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/groups": {
             "get": {
                 "tags": [
@@ -1556,6 +1777,49 @@
                 ]
             }
         },
+        "/api/senders/validated": {
+            "post": {
+                "tags": [
+                    "Senders"
+                ],
+                "description": "Validation d'un expéditeur.",
+                "operationId": "validSender",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "uid"
+                                ],
+                                "properties": {
+                                    "uid": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Expéditeur validé avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -1877,6 +2141,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Bills",
+            "description": "Bills"
+        },
         {
             "name": "Groups",
             "description": "Groups"
