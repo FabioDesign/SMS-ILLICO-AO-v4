@@ -226,8 +226,10 @@ class PhonebookController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 0);
+                Rule::unique('contacts')->where(function ($query) use ($user, $uid) {
+                    return $query->where('user_id', $user->id)
+                    ->where('uid', '!=', $uid)
+                    ->where('publipostage', 0);
                 }),
             ],
             'gender' => 'present',
@@ -239,7 +241,7 @@ class PhonebookController extends BaseController
         // Error field
         if ($validator->fails()) {
             Log::warning("Phonebook::update - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier préfixe
         $prefix = substr($request->number, 0, 2);
@@ -250,7 +252,7 @@ class PhonebookController extends BaseController
         // Vérifier si l'ID est présent et valide
         $contact = Contact::where('uid', $uid)->first();
         if (!$contact) {
-            Log::warning("Phonebook::update - Aucun Contact trouvé pour l'ID : {$uid}");
+            Log::warning("Phonebook::update - Aucun Contact trouvé pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
@@ -310,7 +312,7 @@ class PhonebookController extends BaseController
         if ($validator->fails()) {
             Log::warning("Phonebook::destroy - Validator : {$validator->errors()->first()} - " . json_encode($request->all())
             );
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
             DB::beginTransaction();
@@ -418,9 +420,9 @@ class PhonebookController extends BaseController
             'contacts.*' => 'required|string'
         ]);
         // Error field
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning("Phonebook::blacklist - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
             DB::beginTransaction();

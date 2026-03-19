@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\{
+    BillController,
     GroupController,
     ListsController,
     ModelsController,
@@ -52,6 +53,7 @@ Route::controller(ListsController::class)->group(function () {
 
 Route::middleware(['auth:api'])->group(function () {
   Route::resources([
+    'bills' => BillController::class,
     'users' => UserController::class,
     'groups' => GroupController::class,
     'models' => ModelController::class,
@@ -91,4 +93,6 @@ Route::middleware(['auth:api'])->group(function () {
   });
   // Route pour les senders
   Route::post('senders/validated', [SenderController::class, 'validated']);
+  // Route pour les bills
+  Route::post('bills/validated', [BillController::class, 'validated']);
 });

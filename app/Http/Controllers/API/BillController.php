@@ -50,7 +50,14 @@ class BillController extends BaseController
                 'volume2_sms' => $data->volume2_sms,
                 'price' => $data->price,
                 'fees' => $data->fees,
-                'total' => $data->price * $data->fees,
+                'total' => $data->fees != 0 ? $data->price * $data->fees : $data->price,
+                'status' => $data->status,
+                'libelle' => match((int)$data->status) {
+                    0 => __('message.draft'),
+                    1 => __('message.pending'),
+                    2 => __('message.validated'),
+                    3 => __('message.declined'),
+                },
                 'created_at' => Carbon::parse($data->created_at)->format('d/m/Y H:i'),
             ]);
             return $this->sendSuccess(__('message.listbill'), [
@@ -95,7 +102,7 @@ class BillController extends BaseController
                 'volume2_sms' => $bills->volume2_sms,
                 'price' => $bills->price,
                 'fees' => $bills->fees,
-                'total' => $bills->price * $bills->fees,
+                'total' => $bills->fees != 0 ? $bills->price * $bills->fees : $bills->price,
             ];
             return $this->sendSuccess(__('message.detbill'), $data);
         } catch (\Exception $e) {
@@ -109,62 +116,50 @@ class BillController extends BaseController
     *   path="/api/bills",
     *   tags={"Bills"},
     *   operationId="storeBill",
-    *   description="Enregistrement d'une facture.",
+    *   description="Enregistrement d'un volume.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"volume2_sms", "number", "number"},
-    *         @OA\Property(property="volume2_sms", type="string"),
-    *         @OA\Property(property="number", type="number"),
-    *         @OA\Property(property="gender", type="string"),
-    *         @OA\Property(property="date_at", type="date"),
-    *         @OA\Property(property="field1", type="string"),
-    *         @OA\Property(property="field2", type="string"),
-    *         @OA\Property(property="field3", type="string"),
+    *         required={"volume2_sms", "price"},
+    *         @OA\Property(property="volume2_sms", type="integer"),
+    *         @OA\Property(property="price", type="number", format="float"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Contact enregisté avec succès."),
+    *   @OA\Response(response=201, description="Volume enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
     public function store(Request $request): JsonResponse {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
-            'volume2_sms' => 'required',
-            'number' => [
-                'required',
-                'digits:9',
-                'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 0);
-                }),
-            ],
-            'gender' => 'present',
-            'date_at' => 'nullable|date|date_format:Y-m-d',
-            'field1' => 'present',
-            'field2' => 'present',
-            'field3' => 'present',
+            'volume2_sms' => 'required|integer|min:1',
+            'price' => 'required|numeric|exists:prices,amount',
         ]);
         // Error field
         if ($validator->fails()) {
             Log::warning("Bill::store - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
+        $nbr = 1;
+        $bills = Bill::where('created_at', 'LIKE', date('Y-m') . '%')
+        ->orderByDesc('created_at')
+        ->first();
+		if ($bills) $nbr += substr($bills->reference, -4);		    
+		// Zerofill
+		$nbr = sprintf('%04d', $nbr);
+		// Référence
+		$ref = 'SI-' . date('ym') . '-' . $nbr;
         // Data to save
         $set = [
+            'reference' => $ref,
+            'price' => $request->price,
             'user_id' => Auth::user()->id,
-            'volume1_sms' => Auth::user()->volume,
+            'volume1_sms' => Auth::user()->volume_sms,
             'volume2_sms' => $request->volume2_sms,
-            'gender' => $request->gender,
-            'date_at' => $request->date_at,
-            'field1' => $request->field1,
-            'field2' => $request->field2,
-            'field3' => $request->field3,
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
@@ -184,77 +179,48 @@ class BillController extends BaseController
     *   path="/api/bills/{uid}",
     *   tags={"Bills"},
     *   operationId="editBill",
-    *   description="Modification d'une facture.",
+    *   description="Modification d'un volume.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"label", "number"},
-    *         @OA\Property(property="label", type="string"),
-    *         @OA\Property(property="number", type="number"),
-    *         @OA\Property(property="gender", type="string"),
-    *         @OA\Property(property="date_at", type="date"),
-    *         @OA\Property(property="field1", type="string"),
-    *         @OA\Property(property="field2", type="string"),
-    *         @OA\Property(property="field3", type="string"),
+    *         required={"volume2_sms", "price"},
+    *         @OA\Property(property="volume2_sms", type="integer"),
+    *         @OA\Property(property="price", type="number", format="float"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Contact modifié avec succès."),
+    *   @OA\Response(response=201, description="Voume modifié avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
     public function update(request $request, string $uid): JsonResponse {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
-            'label' => 'required',
-            'number' => [
-                'required',
-                'digits:9',
-                'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 0);
-                }),
-            ],
-            'gender' => 'present',
-            'date_at' => 'nullable|date|date_format:Y-m-d',
-            'field1' => 'present',
-            'field2' => 'present',
-            'field3' => 'present',
+            'volume2_sms' => 'required|integer|min:1',
+            'price' => 'required|numeric|exists:prices,amount',
         ]);
         // Error field
         if ($validator->fails()) {
             Log::warning("Bill::update - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
-        }
-        // Vérifier préfixe
-        $prefix = substr($request->number, 0, 2);
-        if (!Prefix::where('label', $prefix)->exists()) {
-            Log::warning("Bill::update - Validator number : " . json_encode($request->all()));
-            return $this->sendError(__('message.numbernot'), [], 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'ID est présent et valide
-        $contact = Bill::where('uid', $uid)->first();
-        if (!$contact) {
-            Log::warning("Bill::update - Aucune facture trouvée pour l'ID : {$uid}");
+        $bills = Bill::where('uid', $uid)->first();
+        if (!$bills) {
+            Log::warning("Bill::update - Aucune facture trouvée pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
-        $set = [
-            'label' => $request->label,
-            'number' => $request->number,
-            'gender' => $request->gender,
-            'date_at' => $request->date_at,
-            'field1' => $request->field1,
-            'field2' => $request->field2,
-            'field3' => $request->field3,
-        ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
-            $contact->update($set);
+            $bills->update([
+                'price' => $request->price,
+                'volume1_sms' => Auth::user()->volume_sms,
+                'volume2_sms' => $request->volume2_sms,
+            ]);
             // Valider la transaction
             DB::commit();
             return $this->sendSuccess(__('message.editbill'), [], 201);
@@ -267,62 +233,96 @@ class BillController extends BaseController
     // Suppression d'une facture
     /**
     *   @OA\Delete(
-    *   path="/api/bills/delete",
+    *   path="/api/bills/{uid}",
     *   tags={"Bills"},
     *   operationId="deleteBill",
-    *   description="Suppression d'un ou de plusieurs factures.",
+    *   description="Suppression d'une facture.",
     *   security={{"bearer":{}}},
-    *   @OA\RequestBody(
-    *      required=true,
-    *      @OA\JsonContent(
-    *         required={"contacts"},
-    *         @OA\Property(property="contacts", type="array", @OA\Items(
-    *               example="['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
-    *           )
-    *         ),
-    *      )
-    *   ),
-    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
+    *   @OA\Response(response=201, description="Facture supprimée avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(Request $request): JsonResponse
-    {
+    public function destroy(string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
-        // Validator        
-        $validator = Validator::make($request->all(), [
-            'contacts' => 'required|array',
-            'contacts.*' => 'required|uuid',
-        ]);
-        if ($validator->fails()) {
-            Log::warning("Bill::destroy - Validator : {$validator->errors()->first()} - " . json_encode($request->all())
-            );
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
-        }
         try {
-            DB::beginTransaction();
-            // Récupérer tous les factures en une seule requête
-            $contactIds = Bill::whereIn('uid', $request->contacts)
-                ->where('user_id', Auth::user()->id)
-                ->where('publipostage', 0)
-                ->pluck('id');
-            if ($contactIds->isEmpty()) {
-                DB::rollBack();
-                Log::warning("Bill::destroy - Aucune factures trouveés : " . json_encode($request->contacts));
-                return $this->sendSuccess(__('message.nodata'));
+            // Vérification si le Groupe est attribué à une demande
+            $deleted = Bill::where('uid', $uid)->delete();
+            if (!$deleted) {
+                Log::warning("Bill::destroy - Tentative de suppression d'une facture inexistante : {$uid}");
+                return $this->sendError(__('message.error'), [], 403);
             }
-            // Supprimer tous les pivots liés
-            GroupBill::whereIn('contact_id', $contactIds)->delete();
-            // Supprimer tous les factures en masse
-            Bill::whereIn('id', $contactIds)->delete();
-            DB::commit();
             return $this->sendSuccess(__('message.delbill'), [], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
+        } catch(\Exception $e) {
             Log::warning("Bill::destroy - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }
+    // Validation d'une facture
+    /**
+    * @OA\Post(
+    *   path="/api/bills/validated",
+    *   tags={"Bills"},
+    *   operationId="validBill",
+    *   description="Validation d'une facture.",
+    *   security={{"bearer":{}}},
+    *   @OA\RequestBody(
+    *      required=true,
+    *      @OA\JsonContent(
+    *         required={"uid"},
+    *         @OA\Property(property="uid", type="string"),
+    *      )
+    *   ),
+    *   @OA\Response(response=201, description="Facture validée avec succès."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function validated(request $request): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        //Validator
+        $validator = Validator::make($request->all(), [
+            'uid' => 'required|exists:bills,uid',
+        ]);
+        //Error field
+        if ($validator->fails()) {
+            Log::warning("Bill::validated - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
+        }
+        // Vérifier si l'UID est présent et valide
+        $bills = Bill::where('uid', $request->uid)->first();
+        // Data to save
+        DB::beginTransaction(); // Démarrer une transaction
+        try {
+            $bills->update([
+                'status' => 1,
+            ]);
+            // Valider la transaction
+            DB::commit();
+            // Username
+            $username = Auth::user()->firstname . " " . Auth::user()->lastname;            
+            // Subject
+            $subject = "Sender name";            
+            // Send SMS to LogicMind
+            $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
+            Dear Sir,<br /><br />
+            The user <b>{$username}</b> has placed an order of SS.</b><br />M
+            Reference : <b>{$bills->reference }</b><br />
+            Volume SMS : <b>{$bills->volume2_sms}</b><br /><br />
+            <a href='" . env('URL_BACKOFFICE') . "'>Connection to Management Plateforme</a><br /><br />
+            <hr style='color:#156082;'>"
+            . __('message.bestregard')
+            . env('MAIL_SIGNATURE')
+            . "</div>";
+            // Envoi de l'email
+            $this->sendMail(env('MAIL_FROM_ADDRESS'), Auth::user()->email, $username, env('MAIL_CC'), $subject, $message);
+            return $this->sendSuccess(__('message.editbill'), [], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Annuler la transaction en cas d'erreur
+            Log::warning("Bill::validated - Erreur : {$e->getMessage()} " . json_encode($request->all()));
+            return $this->sendError(__('message.error'));
+        }
+	}
 }

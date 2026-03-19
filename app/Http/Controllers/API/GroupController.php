@@ -170,19 +170,20 @@ class GroupController extends BaseController
             'label' => [
                 'required',
                 Rule::unique('groups')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id);
+                    return $query->where('user_id', $user->id)
+                    ->where('uid', '!=', $request->uid);
                 }),
             ],
         ]);
         //Error field
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning("Group::update - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'ID est présent et valide
         $groups = Group::where('uid', $uid)->first();
         if (!$groups) {
-            Log::warning("Group::update - Aucun Groupe trouvé pour l'ID : {$uid}");
+            Log::warning("Group::update - Aucun Groupe trouvé pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
@@ -344,7 +345,7 @@ class GroupController extends BaseController
             'field3' => 'present',
         ]);
         // Error field
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning(
                 "Group::contact - Validator : {$validator->errors()->first()} - " .
                 json_encode($request->all())
@@ -354,7 +355,7 @@ class GroupController extends BaseController
         // Vérifier groupe
         $groups = Group::where('uid', $uid)->first();
         if (!$groups) {
-            Log::warning("Group::contact - Aucun Groupe trouvé pour l'ID : {$uid}");
+            Log::warning("Group::contact - Aucun Groupe trouvé pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Vérifier préfixe
@@ -423,14 +424,14 @@ class GroupController extends BaseController
             'contacts.*' => 'required|uuid',
         ]);
         // Error field
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning("Group::contacts - Validator : {$validator->errors()->first()} - " . json_encode($request->all())
             );
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         $groups = Group::where('uid', $uid)->first();
         if (!$groups) {
-            Log::warning("Group::contacts - Aucun Groupe trouvé pour l'ID : {$uid}");
+            Log::warning("Group::contacts - Aucun Groupe trouvé pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         try {
@@ -509,7 +510,7 @@ class GroupController extends BaseController
         // Vérifier si l'ID est présent et valide
         $groups = Group::where('uid', $uid)->first();
         if (!$groups) {
-            Log::warning("Group::imports - Aucun Groupe trouvé pour l'ID : {$uid}");
+            Log::warning("Group::imports - Aucun Groupe trouvé pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         $import = new ContactImport(Auth::user(), 0);
@@ -571,14 +572,14 @@ class GroupController extends BaseController
             'contacts.*' => 'required|string'
         ]);
         // Error field
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning("Group::blacklist - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'ID est présent et valide
         $groups = Group::where('uid', $uid)->first();
         if (!$groups) {
-            Log::warning("Group::blacklist - Aucun Groupe trouvé pour l'ID : {$uid}");
+            Log::warning("Group::blacklist - Aucun Groupe trouvé pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         try {

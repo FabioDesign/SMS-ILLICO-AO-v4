@@ -178,14 +178,14 @@ class ModelController extends BaseController
             ],
         ]);
         //Error field
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning("Models::update - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'ID est présent et valide
         $models = Models::where('uid', $uid)->first();
         if (!$models) {
-            Log::warning("Models::update - Aucun modèle trouvé pour l'ID : {$uid}");
+            Log::warning("Models::update - Aucun modèle trouvé pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save

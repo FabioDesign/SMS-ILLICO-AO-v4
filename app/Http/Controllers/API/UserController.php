@@ -147,41 +147,41 @@ class UserController extends BaseController
           'lg' => 'required',
           'login' => 'required',
           'password' => 'required',
-          'g_recaptcha_response' => 'required',
+        //   'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         // Error field
         if ($validator->fails()) {
             Log::warning("User::login - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-          return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+          return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
             // Paramètre de Recapcha
-            $url = 'https://www.google.com/recaptcha/api/siteverify';
-            $data = [
-                'remoteip' => $request->ip(),
-                'secret' => env('RECAPTCHAV3_SECRET'),
-                'response' => $request->input('g_recaptcha_response'),
-            ];
-            // Initialiser cURL
-            $curl = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $url);
-            curl_setopt($curl, CURLOPT_POST, true);
-            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-            $result = curl_exec($curl);
-            // Vérifier les erreurs cURL
-            if (curl_error($curl)) {
-                Log::warning("User::login - cURL Error : " . curl_error($curl));
-                return $this->sendError(__('message.error'));
-            }
-            curl_close($curl);
-            $resultJson = json_decode($result);
-            if ($resultJson->success == false || $resultJson->score < 0.5) {
-                Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
-                return $this->sendError(__('message.recaptcha'));
-            }
+            // $url = 'https://www.google.com/recaptcha/api/siteverify';
+            // $data = [
+            //     'remoteip' => $request->ip(),
+            //     'secret' => env('RECAPTCHAV3_SECRET'),
+            //     'response' => $request->input('g_recaptcha_response'),
+            // ];
+            // // Initialiser cURL
+            // $curl = curl_init();
+            // curl_setopt($curl, CURLOPT_URL, $url);
+            // curl_setopt($curl, CURLOPT_POST, true);
+            // curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+            // curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            // curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+            // $result = curl_exec($curl);
+            // // Vérifier les erreurs cURL
+            // if (curl_error($curl)) {
+            //     Log::warning("User::login - cURL Error : " . curl_error($curl));
+            //     return $this->sendError(__('message.error'));
+            // }
+            // curl_close($curl);
+            // $resultJson = json_decode($result);
+            // if ($resultJson->success == false || $resultJson->score < 0.5) {
+            //     Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
+            //     return $this->sendError(__('message.recaptcha'));
+            // }
             $credentialNum = [
                 'number' => $request->login,
                 'password' => $request->password,
@@ -350,7 +350,7 @@ class UserController extends BaseController
                 $subject = __('message.creataccount');
                 // Send SMS to LogicMind
                 $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
-                Dear Mr.,<br /><br />
+                Dear Sir,<br /><br />
                 Confirmation mail of registration of <b>{$username}</b><br />
                 Contact : <b>{$request->number}</b><br />
                 Email : <b>{$email}</b><br />
@@ -444,7 +444,7 @@ class UserController extends BaseController
         // Error field
         if ($validator->fails()) {
             Log::warning("User::profiles - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Test sur DID
         if ($request->accountyp_id != 1) {
@@ -522,7 +522,7 @@ class UserController extends BaseController
         // Error field
         if ($validator->fails()) {
             Log::warning("User::avatars - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Upload photo
         $dir = 'assets/avatars';

@@ -15,6 +15,7 @@ class Sender extends Model
         'label',
         'status',
         'user_id',
+        'bydefault',
         'validated_at',
     ];
 

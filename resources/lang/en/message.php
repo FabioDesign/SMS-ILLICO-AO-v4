@@ -62,6 +62,7 @@ return [
 
     // Senders
     'listsender' => "Sender list.",
+    'sendsender' => "Sender has been successfully sent.",
     'addsender' => "Sender successfully registered.",
     'editsender' => "Sender successfully modified.",
     'delsender' => "Sender successfully deleted.",
@@ -75,11 +76,11 @@ return [
     'detmodel' => "Details about a model.",
 
     // Bills
-    'listbill' => "Sender list.",
-    'addbill' => "Sender successfully registered.",
-    'editbill' => "Sender successfully modified.",
-    'delbill' => "Sender successfully deleted.",
-    'detbill' => "Details about a sender.",
+    'listbill' => "Bill list.",
+    'addbill' => "Bill successfully registered.",
+    'editbill' => "Bill successfully modified.",
+    'delbill' => "Bill successfully deleted.",
+    'detbill' => "Details about a bill.",
 
     // Files
     'fileformat' => "The type of attachment is not allowed, use the recommended format",

@@ -62,6 +62,7 @@ return [
 
     // Senders
     'listsender' => "Lista de remetentes.",
+    'sendsender' => "A mensagem foi enviada com sucesso.",
     'addsender' => "Remetente registado com sucesso.",
     'editsender' => "Remetente modificado com sucesso.",
     'delsender' => "Remetente eliminado com sucesso.",
@@ -75,11 +76,11 @@ return [
     'detmodel' => "Detalhes sobre um modelo.",
 
     // Bills
-    'listbill' => "Lista de remetentes.",
-    'addbill' => "Remetente registado com sucesso.",
-    'editbill' => "Remetente alterado com sucesso.",
-    'delbill' => "Remetente eliminado com sucesso.",
-    'detbill' => "Detalhes sobre um remetente.",
+    'listbill' => "Lista de contas.",
+    'addbill' => "Conta registado com sucesso.",
+    'editbill' => "Conta alterado com sucesso.",
+    'delbill' => "Conta eliminado com sucesso.",
+    'detbill' => "Detalhes sobre um conta.",
 
     // Files
     'fileformat' => "O tipo de anexo não é permitido, use o formato recomendado",

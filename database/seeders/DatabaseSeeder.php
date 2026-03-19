@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
                 AccountTypeSeeder::class,
                 // Ville
                 TownSeeder::class,
+                // Tarif
+                PriceSeeder::class,
             ]);
         } catch (QueryException $e) {
             $this->command->info('Erreur d’insertion détectée. Processus de seed ignoré pour cet enregistrement.');

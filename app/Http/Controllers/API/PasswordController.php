@@ -43,7 +43,7 @@ class PasswordController extends BaseController
         //Error field
         if ($validator->fails()) {
             Log::warning("Password::verifemail - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
             // Paramètre de Recapcha
@@ -140,7 +140,7 @@ class PasswordController extends BaseController
         //Error field
         if ($validator->fails()) {
             Log::warning("Password::verifotp - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
             // Récupérer les données
@@ -207,7 +207,7 @@ class PasswordController extends BaseController
         //Error field
         if ($validator->fails()) {
             Log::warning("Password::addpass - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Récupérer les données
         $user = User::where([
@@ -272,7 +272,7 @@ class PasswordController extends BaseController
         //Error field
         if ($validator->fails()) {
             Log::warning("Password::editpass - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendSuccess(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérification de l'ancien mot de passe
         if (!Hash::check($request->oldpass, Auth::user()->password)) {

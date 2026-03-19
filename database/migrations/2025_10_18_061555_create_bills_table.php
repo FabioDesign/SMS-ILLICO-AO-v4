@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('bills', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uid');
             $table->string('reference', 15);
             $table->decimal('volume1_sms', 10, 0);
             $table->decimal('volume2_sms', 10, 0);
-            $table->decimal('price', 5, 0);
-            $table->decimal('fees', 5, 0);
+            $table->decimal('price', 10, 0)->default('0');
+            $table->decimal('fees', 5, 0)->default('0');
             $table->tinyInteger('status')->default('0');
             $table->timestamps();
             $table->bigInteger('user_id');

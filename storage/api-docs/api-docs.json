@@ -58,7 +58,7 @@
                 "tags": [
                     "Bills"
                 ],
-                "description": "Modification d'une facture.",
+                "description": "Modification d'un volume.",
                 "operationId": "editBill",
                 "requestBody": {
                     "required": true,
@@ -66,31 +66,16 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "label",
-                                    "number"
+                                    "volume2_sms",
+                                    "price"
                                 ],
                                 "properties": {
-                                    "label": {
-                                        "type": "string"
+                                    "volume2_sms": {
+                                        "type": "integer"
                                     },
-                                    "number": {
-                                        "type": "number"
-                                    },
-                                    "gender": {
-                                        "type": "string"
-                                    },
-                                    "date_at": {
-                                        "type": "string",
-                                        "format": "date"
-                                    },
-                                    "field1": {
-                                        "type": "string"
-                                    },
-                                    "field2": {
-                                        "type": "string"
-                                    },
-                                    "field3": {
-                                        "type": "string"
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float"
                                     }
                                 },
                                 "type": "object"
@@ -100,7 +85,30 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Contact modifié avec succès."
+                        "description": "Voume modifié avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Bills"
+                ],
+                "description": "Suppression d'une facture.",
+                "operationId": "deleteBill",
+                "responses": {
+                    "201": {
+                        "description": "Facture supprimée avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -121,7 +129,7 @@
                 "tags": [
                     "Bills"
                 ],
-                "description": "Enregistrement d'une facture.",
+                "description": "Enregistrement d'un volume.",
                 "operationId": "storeBill",
                 "requestBody": {
                     "required": true,
@@ -130,31 +138,15 @@
                             "schema": {
                                 "required": [
                                     "volume2_sms",
-                                    "number",
-                                    "number"
+                                    "price"
                                 ],
                                 "properties": {
                                     "volume2_sms": {
-                                        "type": "string"
+                                        "type": "integer"
                                     },
-                                    "number": {
-                                        "type": "number"
-                                    },
-                                    "gender": {
-                                        "type": "string"
-                                    },
-                                    "date_at": {
-                                        "type": "string",
-                                        "format": "date"
-                                    },
-                                    "field1": {
-                                        "type": "string"
-                                    },
-                                    "field2": {
-                                        "type": "string"
-                                    },
-                                    "field3": {
-                                        "type": "string"
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float"
                                     }
                                 },
                                 "type": "object"
@@ -164,7 +156,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Contact enregisté avec succès."
+                        "description": "Volume enregisté avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -180,27 +172,24 @@
                 ]
             }
         },
-        "/api/bills/delete": {
-            "delete": {
+        "/api/bills/validated": {
+            "post": {
                 "tags": [
                     "Bills"
                 ],
-                "description": "Suppression d'un ou de plusieurs factures.",
-                "operationId": "deleteBill",
+                "description": "Validation d'une facture.",
+                "operationId": "validBill",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "contacts"
+                                    "uid"
                                 ],
                                 "properties": {
-                                    "contacts": {
-                                        "type": "array",
-                                        "items": {
-                                            "example": "['335d5855-31b1-44f7-81fd-56e7e7c82a07', 'e504f670-a605-4827-a148-77746018e83f', 'd77b6ee9-8121-4d84-9678-290f7988248d']"
-                                        }
+                                    "uid": {
+                                        "type": "string"
                                     }
                                 },
                                 "type": "object"
@@ -210,7 +199,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Contacts supprimés avec succès."
+                        "description": "Facture validée avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -1658,11 +1647,19 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "label"
+                                    "label",
+                                    "bydefault"
                                 ],
                                 "properties": {
                                     "label": {
                                         "type": "string"
+                                    },
+                                    "bydefault": {
+                                        "type": "integer",
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -1724,11 +1721,19 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "label"
+                                    "label",
+                                    "bydefault"
                                 ],
                                 "properties": {
                                     "label": {
                                         "type": "string"
+                                    },
+                                    "bydefault": {
+                                        "type": "integer",
+                                        "enum": [
+                                            0,
+                                            1
+                                        ]
                                     }
                                 },
                                 "type": "object"

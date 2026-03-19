@@ -145,7 +145,8 @@ class PublipostageController extends BaseController
                 'digits:9',
                 'numeric',
                 Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 1);
+                    return $query->where('user_id', $user->id)
+                    ->where('publipostage', 1);
                 }),
             ],
             'gender' => 'required|in:M,F',
@@ -226,8 +227,10 @@ class PublipostageController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 1);
+                Rule::unique('contacts')->where(function ($query) use ($user, $uid) {
+                    return $query->where('user_id', $user->id)
+                    ->where('uid', '!=', $uid)
+                    ->where('publipostage', 1);
                 }),
             ],
             'gender' => 'required|in:M,F',
@@ -237,9 +240,9 @@ class PublipostageController extends BaseController
             'field3' => 'present',
         ]);
         // Error field
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning("Publipostage::update - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier préfixe
         $prefix = substr($request->number, 0, 2);
@@ -250,7 +253,7 @@ class PublipostageController extends BaseController
         // Vérifier si l'ID est présent et valide
         $contact = Contact::where('uid', $uid)->first();
         if (!$contact) {
-            Log::warning("Publipostage::update - Aucun Contact trouvé pour l'ID : {$uid}");
+            Log::warning("Publipostage::update - Aucun Contact trouvé pour l'UID : {$uid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
@@ -310,7 +313,7 @@ class PublipostageController extends BaseController
         if ($validator->fails()) {
             Log::warning("Publipostage::destroy - Validator : {$validator->errors()->first()} - " . json_encode($request->all())
             );
-            return $this->sendError(__('message.fielderr'), $validator->errors(), 422);
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
             DB::beginTransaction();
