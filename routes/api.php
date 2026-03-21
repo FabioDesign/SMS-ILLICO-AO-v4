@@ -7,7 +7,7 @@ use App\Http\Controllers\API\{
     BillController,
     GroupController,
     ListsController,
-    ModelsController,
+    ModelController,
     PasswordController,
     PhonebookController,
     PublipostageController,
