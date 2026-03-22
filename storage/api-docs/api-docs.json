@@ -679,11 +679,19 @@
                             "schema": {
                                 "required": [
                                     "title",
+                                    "chars",
+                                    "pages",
                                     "message"
                                 ],
                                 "properties": {
                                     "title": {
                                         "type": "string"
+                                    },
+                                    "chars": {
+                                        "type": "number"
+                                    },
+                                    "pages": {
+                                        "type": "number"
                                     },
                                     "message": {
                                         "type": "string"
@@ -749,11 +757,19 @@
                             "schema": {
                                 "required": [
                                     "title",
+                                    "chars",
+                                    "pages",
                                     "message"
                                 ],
                                 "properties": {
                                     "title": {
                                         "type": "string"
+                                    },
+                                    "chars": {
+                                        "type": "number"
+                                    },
+                                    "pages": {
+                                        "type": "number"
                                     },
                                     "message": {
                                         "type": "string"
