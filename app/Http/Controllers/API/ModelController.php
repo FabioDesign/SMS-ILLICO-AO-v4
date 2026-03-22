@@ -28,7 +28,7 @@ class ModelController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Code to list modèles
-            $models = Models::select('uid', 'title', 'chars', 'pages', 'message')
+            $models = Models::select('uid', 'title', 'chars', 'pages', 'message', 'created_at')
             ->where('user_id', Auth::user()->id)
             ->orderBy('title')
             ->get();
