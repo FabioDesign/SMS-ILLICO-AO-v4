@@ -49,7 +49,7 @@ class BillController extends BaseController
                 'volume2_sms' => $data->volume2_sms,
                 'price' => $data->price,
                 'fees' => $data->fees,
-                'total' => $data->fees != 0 ? $data->price * $data->fees : $data->price,
+                'total' => ceil(($data->price * $data->volume2_sms + $data->fees) * 1.05),
                 'status' => $data->status,
                 'libelle' => match((int)$data->status) {
                     0 => __('message.draft'),
@@ -101,7 +101,7 @@ class BillController extends BaseController
                 'volume2_sms' => $bills->volume2_sms,
                 'price' => $bills->price,
                 'fees' => $bills->fees,
-                'total' => $bills->fees != 0 ? $bills->price * $bills->fees : $bills->price,
+                'total' => ceil(($bills->price * $bills->volume2_sms + $bills->fees) * 1.05),
             ];
             return $this->sendSuccess(__('message.detbill'), $data);
         } catch (\Exception $e) {

@@ -704,7 +704,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "modèle enregisté avec succès."
+                        "description": "Modèle enregisté avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -782,7 +782,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "modèle modifié avec succès."
+                        "description": "Modèle modifié avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -805,7 +805,7 @@
                 "operationId": "deleteModel",
                 "responses": {
                     "201": {
-                        "description": "modèle supprimé avec succès."
+                        "description": "Modèle supprimé avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
