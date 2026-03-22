@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API;
 
-use \Carbon\Carbon;
 use App\Models\Models;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\{Request, JsonResponse};
@@ -45,6 +44,7 @@ class ModelController extends BaseController
                 'chars' => $data->chars,
                 'pages' => $data->pages,
                 'message' => $data->message,
+                'created_at' => $data->created_at->format('d/m/Y H:i'),
             ]);
             return $this->sendSuccess(__('message.listmodel'), $data);
         } catch (\Exception $e) {

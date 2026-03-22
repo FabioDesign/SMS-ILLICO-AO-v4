@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use Excel;
-use \Carbon\Carbon;
 use App\Models\Bill;
 use App\Imports\ContactImport;
 use Illuminate\Validation\Rule;
@@ -58,7 +57,7 @@ class BillController extends BaseController
                     2 => __('message.validated'),
                     3 => __('message.declined'),
                 },
-                'created_at' => Carbon::parse($data->created_at)->format('d/m/Y H:i'),
+                'created_at' => $data->created_at->format('d/m/Y H:i'),
             ]);
             return $this->sendSuccess(__('message.listbill'), [
                 'lists' => $data,

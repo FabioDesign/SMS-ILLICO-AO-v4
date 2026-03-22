@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\API;
 
-use \Carbon\Carbon;
 use App\Models\Sender;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\{Request, JsonResponse};
@@ -50,8 +49,8 @@ class SenderController extends BaseController
                     2 => __('message.validated'),
                     3 => __('message.declined'),
                 },
-                'created_at' => Carbon::parse($data->created_at)->format('d/m/Y H:i'),
-                'validated_at' => $data->validated_at != null ? Carbon::parse($data->validated_at)->format('d/m/Y H:i') : '',
+                'created_at' => $data->created_at->format('d/m/Y H:i'),
+                'validated_at' => $data->validated_at != null ? $data->validated_at->format('d/m/Y H:i') : '',
             ]);
             return $this->sendSuccess(__('message.listsender'), $data);
         } catch (\Exception $e) {
