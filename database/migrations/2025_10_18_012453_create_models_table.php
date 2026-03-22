@@ -16,6 +16,8 @@ return new class extends Migration
             $table->uuid('uid');
             $table->string('title', 20);
             $table->text('message');
+            $table->decimal('chars', 10, 0);
+            $table->decimal('pages', 10, 0);
             $table->timestamps();
             $table->bigInteger('user_id');
         });

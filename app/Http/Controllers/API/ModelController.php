@@ -29,7 +29,7 @@ class ModelController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Code to list modèles
-            $models = Models::select('uid', 'title', 'message')
+            $models = Models::select('uid', 'title', 'chars', 'pages', 'message')
             ->where('user_id', Auth::user()->id)
             ->orderBy('title')
             ->get();
@@ -42,6 +42,8 @@ class ModelController extends BaseController
             $data = $models->map(fn($data) => [
                 'uid' => $data->uid,
                 'title' => $data->title,
+                'chars' => $data->chars,
+                'pages' => $data->pages,
                 'message' => $data->message,
             ]);
             return $this->sendSuccess(__('message.listmodel'), $data);
@@ -77,6 +79,8 @@ class ModelController extends BaseController
             // Data to save
             $data = [
                 'title' => $models->title,
+                'chars' => $models->chars,
+                'pages' => $models->pages,
                 'message' => $models->message,
             ];
             return $this->sendSuccess(__('message.detmodel'), $data);
@@ -96,8 +100,10 @@ class ModelController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"title", "message"},
+    *         required={"title", "chars", "pages", "message"},
     *         @OA\Property(property="title", type="string"),
+    *         @OA\Property(property="chars", type="number"),
+    *         @OA\Property(property="pages", type="number"),
     *         @OA\Property(property="message", type="string"),
     *      )
     *   ),
@@ -118,6 +124,8 @@ class ModelController extends BaseController
                     return $query->where('user_id', $user->id);
                 }),
             ],
+            'chars' => 'required|numeric',
+            'pages' => 'required|numeric',
             'message' => 'required',
         ]);
         //Error field
@@ -128,6 +136,8 @@ class ModelController extends BaseController
         // Data to save
         $set = [
             'title' => $request->title,
+            'chars' => $request->chars,
+            'pages' => $request->pages,
             'message' => $request->message,
             'user_id' => Auth::user()->id,
         ];
@@ -154,8 +164,10 @@ class ModelController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"title", "message"},
+    *         required={"title", "chars", "pages", "message"},
     *         @OA\Property(property="title", type="string"),
+    *         @OA\Property(property="chars", type="number"),
+    *         @OA\Property(property="pages", type="number"),
     *         @OA\Property(property="message", type="string"),
     *      )
     *   ),
@@ -176,6 +188,9 @@ class ModelController extends BaseController
                     return $query->where('user_id', $user->id);
                 }),
             ],
+            'chars' => 'required|numeric',
+            'pages' => 'required|numeric',
+            'message' => 'required',
         ]);
         //Error field
         if ($validator->fails()) {
@@ -191,6 +206,8 @@ class ModelController extends BaseController
         // Data to save
         $set = [
             'title' => $request->title,
+            'chars' => $request->chars,
+            'pages' => $request->pages,
             'message' => $request->message,
         ];
         DB::beginTransaction(); // Démarrer une transaction
