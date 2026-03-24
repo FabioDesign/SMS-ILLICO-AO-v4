@@ -8,14 +8,7 @@ class SmsType extends Model
 {
     public $table = 'sms_type';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'label',
-    ];
+    protected $guarded = [];
     
     public $timestamps = false;
 }

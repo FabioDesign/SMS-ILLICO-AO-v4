@@ -10,11 +10,7 @@ class Group extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'uid',
-        'label',
-        'user_id',
-    ];
+    protected $guarded = [];
 
     // Génération de UUID unique
     protected static function boot()

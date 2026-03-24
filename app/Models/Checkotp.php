@@ -8,8 +8,5 @@ class Checkotp extends Model
 {
     public $table = 'checkotp';
 
-    protected $fillable = [
-        'otp',
-        'email',
-    ];
+    protected $guarded = [];
 }

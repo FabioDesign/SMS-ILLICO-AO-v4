@@ -10,16 +10,7 @@ class Bill extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'uid',
-        'fees',
-        'price',
-        'status',
-        'user_id',
-        'reference',
-        'volume1_sms',
-        'volume2_sms',
-    ];
+    protected $guarded = [];
 
     // Génération de UUID unique
     protected static function boot()

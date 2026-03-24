@@ -13,10 +13,7 @@ class Prefix extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'label',
-        'network_id',
-    ];
+    protected $guarded = [];
     
     public $timestamps = false;
 }

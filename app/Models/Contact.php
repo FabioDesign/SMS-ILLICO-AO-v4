@@ -10,20 +10,7 @@ class Contact extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'uid',
-        'label',
-        'field1',
-        'field2',
-        'field3',
-        'status',
-        'number',
-        'gender',
-        'user_id',
-        'date_at',
-        'blacklist',
-        'publipostage',
-    ];
+    protected $guarded = [];
 
     // Génération de UUID unique
     protected static function boot()

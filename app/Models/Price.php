@@ -9,13 +9,7 @@ class Price extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'en',
-        'pt',
-        'min',
-        'max',
-        'amount',
-    ];
+    protected $guarded = [];
     
     public $timestamps = false;
 }

@@ -13,10 +13,7 @@ class AccountType extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'en',
-        'pt',
-    ];
+    protected $guarded = [];
     
     public $timestamps = false;
 }

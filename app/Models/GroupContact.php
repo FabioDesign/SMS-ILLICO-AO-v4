@@ -13,11 +13,7 @@ class GroupContact extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'group_id',
-        'blacklist',
-        'contact_id',
-    ];
+    protected $guarded = [];
     
     public $timestamps = false;
 }

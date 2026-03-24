@@ -9,14 +9,7 @@ class Numbersms extends Model
 {
     public $table = 'numbersms';
 
-    protected $fillable = [
-        'uid',
-        'status',
-        'number',
-        'volume_sms',
-        'bodysms_id',
-        'sending_at',
-    ];
+    protected $guarded = [];
     
     public $timestamps = false;
 

@@ -10,14 +10,7 @@ class Sender extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'uid',
-        'label',
-        'status',
-        'user_id',
-        'bydefault',
-        'validated_at',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be cast.

@@ -9,14 +9,7 @@ class Models extends Model
 {
     public $table = 'models';
 
-    protected $fillable = [
-        'uid',
-        'title',
-        'chars',
-        'pages',
-        'message',
-        'user_id',
-    ];
+    protected $guarded = [];
 
     // Génération de UUID unique
     protected static function boot()

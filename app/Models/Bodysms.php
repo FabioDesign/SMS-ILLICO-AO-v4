@@ -9,18 +9,7 @@ class Bodysms extends Model
 {
     public $table = 'bodysms';
 
-    protected $fillable = [
-        'uid',
-        'pages',
-        'chars',
-        'status',
-        'sender',
-        'user_id',
-        'message',
-        'volume_sms',
-        'smstype_id',
-        'sending_at',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be cast.

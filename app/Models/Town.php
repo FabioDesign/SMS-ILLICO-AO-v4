@@ -9,10 +9,7 @@ class Town extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'label',
-        'country_id',
-    ];
+    protected $guarded = [];
     
     public $timestamps = false;
 }
