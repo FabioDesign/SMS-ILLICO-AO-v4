@@ -261,7 +261,6 @@ class UserController extends BaseController
     */
     public function store(Request $request): JsonResponse
     {
-        Log::notice("User::store : " . json_encode($request->all()));
         // Validator
         $validator = Validator::make($request->all(), [
             'lg' => 'required|in:en,pt',
