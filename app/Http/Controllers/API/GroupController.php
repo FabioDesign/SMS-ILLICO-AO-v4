@@ -169,9 +169,8 @@ class GroupController extends BaseController
         $validator = Validator::make($request->all(), [
             'label' => [
                 'required',
-                Rule::unique('groups')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)
-                    ->where('uid', '!=', $request->uid);
+                Rule::unique('groups')->where(function ($query) use ($user, $uid) {
+                    return $query->where('user_id', $user->id)->where('uid', '!=', $uid);
                 }),
             ],
         ]);
@@ -259,8 +258,8 @@ class GroupController extends BaseController
             $limit = isset($request->limit) ? (int) $request->limit:10;
             $search = isset($request->search) ? (int) $request->search:'';
             $groupContact = GroupContact::select('contacts.uid', 'contacts.label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
-            ->join('contacts', 'group_contact.contact_id', '=', 'contacts.id')
-            ->join('groups', 'group_contact.group_id', '=', 'groups.id')
+            ->join('contacts', 'contacts.id', '=', 'group_contact.contact_id')
+            ->join('groups', 'groups.id', '=', 'group_contact.group_id')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%' . $search . '%'))
             ->where('groups.user_id', Auth::user()->id)
             ->where('group_contact.blacklist', 0)
@@ -333,10 +332,10 @@ class GroupController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(fn($query) =>
-                    $query->where('user_id', $user->id)
-                        ->where('publipostage', 0)
-                ),
+                Rule::unique('contacts')->where(function ($query) use ($user) {
+                    return $query->where('user_id', $user->id)
+                    ->where('publipostage', 0);
+                }),
             ],
             'gender' => 'present',
             'date_at' => 'nullable|date_format:Y-m-d',
