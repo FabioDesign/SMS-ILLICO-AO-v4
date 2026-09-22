@@ -65,8 +65,7 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse
-    {
+    public function show(string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -239,7 +238,7 @@ class GroupController extends BaseController
     // Liste des contacts d'un groupe
     /**
     * @OA\Get(
-    *   path="/api/groups/contactlist/{uid}?num=1&limit=10&search=''",
+    *   path="/api/groups/contactlist/{uid}?page=1&limit=10&search=''",
     *   tags={"Groups"},
     *   operationId="listContactGroup",
     *   description="Liste des contacts d'un groupe.",
@@ -249,14 +248,14 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function contactlist(Request $request, string $uid): JsonResponse
-    {
+    public function contactlist(Request $request, string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
-            $num = isset($request->num) ? (int) $request->num:1;
-            $limit = isset($request->limit) ? (int) $request->limit:10;
-            $search = isset($request->search) ? (int) $request->search:'';
+            $page = $request->page ?? 1;
+            $limit = $request->limit ?? 10;
+            $search = $request->search ?? '';
+            // Code to list contact list
             $groupContact = GroupContact::select('contacts.uid', 'contacts.label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->join('contacts', 'contacts.id', '=', 'group_contact.contact_id')
             ->join('groups', 'groups.id', '=', 'group_contact.group_id')
@@ -267,8 +266,8 @@ class GroupController extends BaseController
             ->where('groups.uid', $uid)
             ->where('publipostage', 0)
             ->orderBy('label')
-            ->paginate($limit, ['*'], 'page', $num);
-
+            ->paginate($limit, ['*'], 'page', $page);
+            // Vérifier si les données existent
             if ($groupContact->isEmpty()) {
                 Log::warning("Group::show - Aucun contact trouvé pour l'UID : {$uid}");
                 return $this->sendSuccess(__('message.nodata'));
@@ -321,8 +320,7 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function contact(Request $request, string $uid): JsonResponse
-    {
+    public function contact(Request $request, string $uid): JsonResponse {
         $user = Auth::user();
         App::setLocale($user->lg);
         // Validation
@@ -412,8 +410,7 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function contacts(Request $request, string $uid): JsonResponse
-    {
+    public function contacts(Request $request, string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator

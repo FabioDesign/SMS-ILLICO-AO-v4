@@ -15,7 +15,7 @@ class BillController extends BaseController
     //Liste des factures
     /**
     * @OA\Get(
-    *   path="/api/bills?num=1&limit=10",
+    *   path="/api/bills?page=1&limit=10",
     *   tags={"Bills"},
     *   operationId="listBill",
     *   description="Liste des factures.",
@@ -29,13 +29,13 @@ class BillController extends BaseController
         // Language
         App::setLocale(Auth::user()->lg);
         try {
-            $num = isset($request->num) ? (int) $request->num:1;
-            $limit = isset($request->limit) ? (int) $request->limit:10;
+            $page = $request->page ?? 1;
+            $limit = $request->limit ?? 10;
             // Code to list factures
             $bills = Bill::select('uid', 'reference', 'volume1_sms', 'volume2_sms', 'price', 'fees', 'status', 'created_at')
             ->where('user_id', Auth::user()->id)
             ->orderByDesc('created_at')
-            ->paginate($limit, ['*'], 'page', $num);
+            ->paginate($limit, ['*'], 'page', $page);
             // Vérifier si les données existent
             if ($bills->isEmpty()) {
                 Log::warning("Bill::index - Aucune facture trouvée.");
@@ -83,8 +83,7 @@ class BillController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse
-    {
+    public function show(string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {

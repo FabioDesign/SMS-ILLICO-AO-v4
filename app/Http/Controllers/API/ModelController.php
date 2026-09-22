@@ -65,8 +65,7 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse
-    {
+    public function show(string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {

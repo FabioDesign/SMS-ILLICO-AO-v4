@@ -72,8 +72,7 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse
-    {
+    public function show(string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -140,22 +139,22 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function login(Request $request): JsonResponse
-    {
+    public function login(Request $request): JsonResponse {
         // Validator
         $validator = Validator::make($request->all(), [
           'lg' => 'required',
           'login' => 'required',
           'password' => 'required',
-          'g_recaptcha_response' => 'required',
+        //   'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         // Error field
         if ($validator->fails()) {
             Log::warning("User::login - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
-          return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
+            return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
+            /*
             // Paramètre de Recapcha
             $url = 'https://www.google.com/recaptcha/api/siteverify';
             $data = [
@@ -182,6 +181,7 @@ class UserController extends BaseController
                 Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
                 return $this->sendError(__('message.recaptcha'));
             }
+            */
             $credentialNum = [
                 'number' => $request->login,
                 'password' => $request->password,
@@ -259,8 +259,7 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable."),
     * )
     */
-    public function store(Request $request): JsonResponse
-    {
+    public function store(Request $request): JsonResponse {
         // Validator
         $validator = Validator::make($request->all(), [
             'lg' => 'required|in:en,pt',
@@ -510,8 +509,7 @@ class UserController extends BaseController
      *   @OA\Response(response=404, description="Page introuvable."),
      * )
      */
-    public function avatars(Request $request)
-    {
+    public function avatars(Request $request): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -560,8 +558,7 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function logout(Request $request)
-    {
+    public function logout(Request $request): JsonResponse {
         try {
             $request->user()->token()->revoke();
             return $this->sendSuccess(__('message.logoutsucc'));

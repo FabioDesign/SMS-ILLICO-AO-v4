@@ -36,16 +36,12 @@ Route::fallback(function() {
   return response()->json($response, 404);
 });
 // Route pour la connexion
-Route::prefix('users')
-  ->controller(UserController::class)
-  ->group(function () {
-    Route::post('auth', 'login');
-    Route::post('register', 'store');
+Route::controller(UserController::class)->prefix('users')->group(function () {
+  Route::post('auth', 'login');
+  Route::post('register', 'store');
 });
 // Routes pour les mots de passe oubliés
-Route::prefix('password')
-  ->controller(PasswordController::class)
-  ->group(function () {
+Route::controller(PasswordController::class)->prefix('password')->group(function () {
     Route::post('verifemail', 'verifemail');
     Route::post('verifotp', 'verifotp');
     Route::put('addpass', 'addpass');
@@ -58,9 +54,7 @@ Route::controller(ListsController::class)->group(function () {
 
 Route::middleware(['auth:api'])->group(function () {
   // Route pour la modification du profil utilisateur
-  Route::prefix('users')
-    ->controller(UserController::class)
-    ->group(function () {
+  Route::controller(UserController::class)->prefix('users')->group(function () {
       Route::get('profiles', 'profiles');
       Route::post('avatars', 'avatars');
       Route::post('logout', 'logout')->name('logout');
@@ -68,21 +62,19 @@ Route::middleware(['auth:api'])->group(function () {
   // Route pour les mots de passe
   Route::put('password/editpass', [PasswordController::class, 'editpass']);
   // Route pour les contacts
-  Route::controller(PhonebookController::class)->group(function () {
+  Route::controller(PhonebookController::class)->prefix('phonebooks')->group(function () {
     // Route pour importation
-    Route::get('contacts/blacklist', 'contacts');
-    Route::post('phonebooks/imports', 'imports');
-    Route::post('phonebooks/blacklist', 'blacklist');
+    Route::get('blacklist', 'contacts');
+    Route::post('imports', 'imports');
+    Route::post('blacklist', 'blacklist');
   });
   // Route pour les groupes
-  Route::prefix('groups')
-    ->controller(GroupController::class)
-    ->group(function () {
-      Route::post('contact/{uid}', 'contact');
-      Route::post('imports/{uid}', 'imports');
-      Route::post('contacts/{uid}', 'contacts');
-      Route::post('blacklist/{uid}', 'blacklist');
-      Route::post('contactlist/{uid}', 'contactlist');
+  Route::controller(GroupController::class)->prefix('groups')->group(function () {
+    Route::post('contact/{uid}', 'contact');
+    Route::post('imports/{uid}', 'imports');
+    Route::post('contacts/{uid}', 'contacts');
+    Route::post('blacklist/{uid}', 'blacklist');
+    Route::get('contactlist/{uid}', 'contactlist');
   });
   // Route pour les Publipostages
   Route::controller(PublipostageController::class)->group(function () {

@@ -16,7 +16,7 @@ class PublipostageController extends BaseController
     //Liste des contacts
     /**
     * @OA\Get(
-    *   path="/api/publipostage?num=1&limit=10&search=''",
+    *   path="/api/publipostage?page=1&limit=10&search=''",
     *   tags={"Publipostage"},
     *   operationId="listPub",
     *   description="Liste des contacts.",
@@ -30,16 +30,16 @@ class PublipostageController extends BaseController
         // Language
         App::setLocale(Auth::user()->lg);
         try {
-            $num = isset($request->num) ? (int) $request->num:1;
-            $limit = isset($request->limit) ? (int) $request->limit:10;
-            $search = isset($request->search) ? (int) $request->search:'';
+            $page = $request->page ?? 1;
+            $limit = $request->limit ?? 10;
+            $search = $request->search ?? '';
             // Code to list contacts
             $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%'.$search.'%'))
             ->where('user_id', Auth::user()->id)
             ->where('publipostage', 1)
             ->orderBy('label')
-            ->paginate($limit, ['*'], 'page', $num);
+            ->paginate($limit, ['*'], 'page', $page);
             // Vérifier si les données existent
             if ($contacts->isEmpty()) {
                 Log::warning("Publipostage::index - Aucun Contact trouvé.");
@@ -80,8 +80,7 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse
-    {
+    public function show(string $uid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -301,8 +300,7 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(Request $request): JsonResponse
-    {
+    public function destroy(Request $request): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator        

@@ -16,7 +16,7 @@ class PhonebookController extends BaseController
     //Liste des contacts
     /**
     * @OA\Get(
-    *   path="/api/phonebooks?num=1&limit=10&search=''",
+    *   path="/api/phonebooks?page=1&limit=10&search=''",
     *   tags={"Phonebooks"},
     *   operationId="listContact",
     *   description="Liste des contacts.",
@@ -30,9 +30,9 @@ class PhonebookController extends BaseController
         // Language
         App::setLocale(Auth::user()->lg);
         try {
-            $num = isset($request->num) ? (int) $request->num:1;
-            $limit = isset($request->limit) ? (int) $request->limit:10;
-            $search = isset($request->search) ? (int) $request->search:'';
+            $page = $request->page ?? 1;
+            $limit = $request->limit ?? 10;
+            $search = $request->search ?? '';
             // Code to list contacts
             $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%' . $search . '%'))
@@ -40,7 +40,7 @@ class PhonebookController extends BaseController
             ->where('blacklist', 0)
             ->where('publipostage', 0)
             ->orderBy('label')
-            ->paginate($limit, ['*'], 'page', $num);
+            ->paginate($limit, ['*'], 'page', $page);
             // Vérifier si les données existent
             if ($contacts->isEmpty()) {
                 Log::warning("Phonebook::index - Aucun Contact trouvé.");
@@ -450,7 +450,7 @@ class PhonebookController extends BaseController
     //Liste des contacts exclus
     /**
     * @OA\Get(
-    *   path="/api/contacts/blacklist?num=1&limit=10",
+    *   path="/api/phonebooks/blacklist?page=1&limit=10",
     *   tags={"Phonebooks"},
     *   operationId="contactBlacklist",
     *   description="Liste des contacts exclus.",
@@ -464,9 +464,9 @@ class PhonebookController extends BaseController
         // Language
         App::setLocale(Auth::user()->lg);
         try {
-            $num = isset($request->num) ? (int) $request->num:1;
-            $limit = isset($request->limit) ? (int) $request->limit:10;
-            // Code to list contacts
+            $page = $request->page ?? 1;
+            $limit = $request->limit ?? 10;
+            // Code to list contacts blacklist
             $contactsOnly = DB::table('contacts as c')
             ->where('c.user_id', Auth::user()->id)
             ->where('c.blacklist', 1)
@@ -485,7 +485,7 @@ class PhonebookController extends BaseController
             $contacts = $contactsOnly
             ->unionAll($contactsGroups)
             ->orderBy('contact')
-            ->paginate($limit, ['*'], 'page', $num);
+            ->paginate($limit, ['*'], 'page', $page);
             // Vérifier si les données existent
             if ($contacts->isEmpty()) {
                 Log::warning("Phonebook::contacts - Aucun contact trouvé.");

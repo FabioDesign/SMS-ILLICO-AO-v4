@@ -5,7 +5,7 @@
         "version": "1.0"
     },
     "paths": {
-        "/api/bills?num=1&limit=10": {
+        "/api/bills?page=1&limit=10": {
             "get": {
                 "tags": [
                     "Bills"
@@ -370,7 +370,7 @@
                 ]
             }
         },
-        "/api/groups/contactlist/{uid}?num=1&limit=10&search=''": {
+        "/api/groups/contactlist/{uid}?page=1&limit=10&search=''": {
             "get": {
                 "tags": [
                     "Groups"
@@ -1024,7 +1024,7 @@
                 ]
             }
         },
-        "/api/phonebooks?num=1&limit=10&search=''": {
+        "/api/phonebooks?page=1&limit=10&search=''": {
             "get": {
                 "tags": [
                     "Phonebooks"
@@ -1338,7 +1338,7 @@
                 ]
             }
         },
-        "/api/contacts/blacklist?num=1&limit=10": {
+        "/api/phonebooks/blacklist?page=1&limit=10": {
             "get": {
                 "tags": [
                     "Phonebooks"
@@ -1363,7 +1363,7 @@
                 ]
             }
         },
-        "/api/publipostage?num=1&limit=10&search=''": {
+        "/api/publipostage?page=1&limit=10&search=''": {
             "get": {
                 "tags": [
                     "Publipostage"
