@@ -72,10 +72,11 @@ class BaseController extends Controller
       $mail->isHTML(true);                	// Set email comment format to HTML
       $mail->Subject = $subject;
       $mail->Body = $message;
-      if ($mail->send())
+      if ($mail->send()) {
         Log::info('SendMail - Success : Email has been sent to ' . $to);
-      else
+      } else {
         Log::warning('SendMail - Failed : Email could not be sent to ' . $to);
+      }
     } catch(Exception $e) {
       Log::warning('SendMail - Error : ' . $e->getMessage());
     }

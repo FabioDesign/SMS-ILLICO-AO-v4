@@ -295,9 +295,9 @@ class SenderController extends BaseController
             // Valider la transaction
             DB::commit();
             // Username
-            $username = Auth::user()->firstname . " " . Auth::user()->lastname;            
+            $username = Auth::user()->firstname . " " . Auth::user()->lastname;
             // Subject
-            $subject = "Sender name";            
+            $subject = "Sender name";
             // Send SMS to LogicMind
             $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
             Dear Sir,<br /><br />
