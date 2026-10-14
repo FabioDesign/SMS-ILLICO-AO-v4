@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Bodysms extends Model
+class BodySms extends Model
 {
     public $table = 'bodysms';
 

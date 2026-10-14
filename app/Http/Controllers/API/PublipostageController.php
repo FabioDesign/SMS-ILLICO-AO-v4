@@ -36,7 +36,7 @@ class PublipostageController extends BaseController
             // Code to list contacts
             $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%'.$search.'%'))
-            ->where('user_id', Auth::user()->id)
+            ->where('user_id', Auth::id())
             ->where('publipostage', 1)
             ->orderBy('label')
             ->paginate($limit, ['*'], 'page', $page);
@@ -168,7 +168,7 @@ class PublipostageController extends BaseController
         // Data to save
         $set = [
             'publipostage' => 1,
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
             'label' => $request->label,
             'number' => $request->number,
             'gender' => $request->gender,
@@ -182,7 +182,7 @@ class PublipostageController extends BaseController
             Contact::create($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.addcontact'), [], 201);
+            return $this->sendSuccess(__('message.addcontact'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Publipostage::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -270,7 +270,7 @@ class PublipostageController extends BaseController
             $contact->update($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.editcontact'), [], 201);
+            return $this->sendSuccess(__('message.editcontact'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Publipostage::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -317,7 +317,7 @@ class PublipostageController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('uid', $request->contacts)
-                ->where('user_id', Auth::user()->id)
+                ->where('user_id', Auth::id())
                 ->where('publipostage', 1)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
@@ -328,7 +328,7 @@ class PublipostageController extends BaseController
             // Supprimer tous les contacts en masse
             Contact::whereIn('id', $contactIds)->delete();
             DB::commit();
-            return $this->sendSuccess(__('message.delcontact'), [], 201);
+            return $this->sendSuccess(__('message.delcontact'));
         } catch (\Exception $e) {
             DB::rollBack();
             Log::warning("Publipostage::destroy - Erreur : {$e->getMessage()} " . json_encode($request->all()));

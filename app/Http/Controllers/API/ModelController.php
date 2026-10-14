@@ -29,7 +29,7 @@ class ModelController extends BaseController
         try {
             // Code to list modèles
             $models = Models::select('uid', 'title', 'chars', 'pages', 'message', 'created_at')
-            ->where('user_id', Auth::user()->id)
+            ->where('user_id', Auth::id())
             ->orderBy('title')
             ->get();
             // Vérifier si les données existent
@@ -138,14 +138,14 @@ class ModelController extends BaseController
             'chars' => $request->chars,
             'pages' => $request->pages,
             'message' => $request->message,
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
             Models::create($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.addmodel'), [], 201);
+            return $this->sendSuccess(__('message.addmodel'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Models::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -214,7 +214,7 @@ class ModelController extends BaseController
             $models->update($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.editmodel'), [], 201);
+            return $this->sendSuccess(__('message.editmodel'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Models::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -246,7 +246,7 @@ class ModelController extends BaseController
                 Log::warning("Models::destroy - Tentative de suppression d'un modèle inexistante : {$uid}");
                 return $this->sendError(__('message.error'), [], 403);
             }
-            return $this->sendSuccess(__('message.delmodel'), [], 201);
+            return $this->sendSuccess(__('message.delmodel'));
         } catch(\Exception $e) {
             Log::warning("Models::destroy - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));

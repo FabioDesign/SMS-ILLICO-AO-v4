@@ -32,7 +32,7 @@ class GroupController extends BaseController
         try {
             // Code to list groupes
             $groups = Group::select('id', 'uid', 'label')
-            ->where('user_id', Auth::user()->id)
+            ->where('user_id', Auth::id())
             ->orderBy('label')
             ->get();
             // Vérifier si les données existent
@@ -126,14 +126,14 @@ class GroupController extends BaseController
         // Data to save
         $set = [
             'label' => $request->label,
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
             Group::create($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.addgroup'), [], 201);
+            return $this->sendSuccess(__('message.addgroup'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Group::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -193,7 +193,7 @@ class GroupController extends BaseController
             $groups->update($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.editgroup'), [], 201);
+            return $this->sendSuccess(__('message.editgroup'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Group::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -229,7 +229,7 @@ class GroupController extends BaseController
             if ($find) {
                 GroupContact::where('group_id', $groups->id)->delete();
             }
-            return $this->sendSuccess(__('message.delgroup'), [], 201);
+            return $this->sendSuccess(__('message.delgroup'));
         } catch(\Exception $e) {
             Log::warning("Group::destroy - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
@@ -260,7 +260,7 @@ class GroupController extends BaseController
             ->join('contacts', 'contacts.id', '=', 'group_contact.contact_id')
             ->join('groups', 'groups.id', '=', 'group_contact.group_id')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%' . $search . '%'))
-            ->where('groups.user_id', Auth::user()->id)
+            ->where('groups.user_id', Auth::id())
             ->where('group_contact.blacklist', 0)
             ->where('contacts.blacklist', 0)
             ->where('groups.uid', $uid)
@@ -380,7 +380,7 @@ class GroupController extends BaseController
                     'contact_id' => $contact->id,
                 ]);
             });
-            return $this->sendSuccess(__('message.addcontact'), [], 201);
+            return $this->sendSuccess(__('message.addcontact'));
         } catch (\Throwable $e) {
             Log::warning("Group::contact - Erreur : {$e->getMessage()} " . json_encode($data));
             return $this->sendError(__('message.error'));
@@ -434,7 +434,7 @@ class GroupController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contacts = Contact::whereIn('uid', $request->contacts)
-                ->where('user_id', Auth::user()->id)
+                ->where('user_id', Auth::id())
                 ->where('publipostage', 0)
                 ->pluck('id');
             if ($contacts->isEmpty()) {
@@ -460,7 +460,7 @@ class GroupController extends BaseController
                     ->delete();
                 DB::commit();
             }
-            return $this->sendSuccess($msg, [], 201);
+            return $this->sendSuccess($msg);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::warning("Group::contacts - Erreur : {$e->getMessage()} " . json_encode($request->all())
@@ -582,7 +582,7 @@ class GroupController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('uid', $request->contacts)
-                ->where('user_id', Auth::user()->id)
+                ->where('user_id', Auth::id())
                 ->where('publipostage', 0)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
@@ -596,7 +596,7 @@ class GroupController extends BaseController
                 ->update(['blacklist' => $request->status]);
             DB::commit();
             $message = $request->status == 1 ? __('message.addcontact') : __('message.delcontact');
-            return $this->sendSuccess($message, [], 201);
+            return $this->sendSuccess($message);
         } catch(\Exception $e) {
             DB::rollBack();
             Log::warning("Group::blacklist - Erreur : {$e->getMessage()} " . json_encode($request->all()));

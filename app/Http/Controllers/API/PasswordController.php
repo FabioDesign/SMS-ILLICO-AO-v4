@@ -94,7 +94,7 @@ class PasswordController extends BaseController
                         'otp' => str_replace(' ', '', $otp),
                         'otp_at' => now(),
                     ]);
-                    return $this->sendSuccess(__('message.sendmailsucc'), [], 201);
+                    return $this->sendSuccess(__('message.sendmailsucc'));
                 } catch(\Exception $e) {
                     Log::warning("Password::verifemail - Erreur d'envoi de mail : {$e->getMessage()}");
                     return $this->sendError(__('message.sendmailerr'));
@@ -226,7 +226,7 @@ class PasswordController extends BaseController
                 'password_at' => now(),
                 'password' => Hash::make($request->password),
             ]);
-            return $this->sendSuccess(__('message.passwordsucc'), [], 201);
+            return $this->sendSuccess(__('message.passwordsucc'));
         } catch(\Exception $e) {
             Log::warning("Password::addpass - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
@@ -276,16 +276,16 @@ class PasswordController extends BaseController
         }
         // Vérification de l'ancien mot de passe
         if (!Hash::check($request->oldpass, Auth::user()->password)) {
-            Log::warning("Password::editpass - Ancien mot de passe incorrect pour l'utilisateur ID : {Auth::user()->id}");
+            Log::warning("Password::editpass - Ancien mot de passe incorrect pour l'utilisateur ID : {Auth::id()}");
             return $this->sendError(__('message.passworderr'));
         }
         try {
             // Mettre à jour du password
-            User::findOrFail(Auth::user()->id)->update([
+            User::findOrFail(Auth::id())->update([
                 'password_at' => now(),
                 'password' => Hash::make($request->password),
             ]);
-            return $this->sendSuccess(__('message.passwordsucc'), [], 201);
+            return $this->sendSuccess(__('message.passwordsucc'));
         } catch(\Exception $e) {
             Log::warning("Password::editpass - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));

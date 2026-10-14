@@ -30,7 +30,7 @@ class UserController extends BaseController
         try {
             // Récupérer les données
             $users = User::select('uid', 'lastname', 'firstname', 'number', 'email', 'company', 'status', 'created_at')
-            ->where('id', '!=', Auth::user()->id)
+            ->where('id', '!=', Auth::id())
             ->orderByDesc('created_at')
             ->get();
             // Vérifier si les données existent
@@ -211,7 +211,7 @@ class UserController extends BaseController
                             'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
                         ]
                     ];
-                    User::findOrFail(Auth::user()->id)->update([
+                    User::findOrFail(Auth::id())->update([
                         'login_at' => now(),
                         'lg' => $request->lg,
                     ]);
@@ -434,8 +434,8 @@ class UserController extends BaseController
         $validator = Validator::make($request->all(), [
             'lastname' => 'required',
             'firstname' => 'required',
-            'number' => 'required|unique:users,number,' . Auth::user()->id . ',id',
-            'email'  => 'required|email|unique:users,email,' . Auth::user()->id . ',id',
+            'number' => 'required|unique:users,number,' . Auth::id() . ',id',
+            'email'  => 'required|email|unique:users,email,' . Auth::id() . ',id',
             'town_id' => 'required|integer|min:1',
             'accountyp_id' => 'required|integer|min:1',
         ]);
@@ -477,7 +477,7 @@ class UserController extends BaseController
         try {
             DB::beginTransaction(); // Démarrer une transaction
             // Création de l'utilisateur
-            User::findOrFail(Auth::user()->id)->update($set);
+            User::findOrFail(Auth::id())->update($set);
             DB::commit(); // Valider la transaction
             return $this->sendSuccess(__('message.profilsucc'), $set, 201);
         } catch (\Exception $e) {
@@ -536,7 +536,7 @@ class UserController extends BaseController
                 'avatar' => $avatar,
                 'avatar_at' => now(),
             ];
-            User::findOrFail(Auth::user()->id)->update($set);
+            User::findOrFail(Auth::id())->update($set);
             $data = [
                 'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
             ];

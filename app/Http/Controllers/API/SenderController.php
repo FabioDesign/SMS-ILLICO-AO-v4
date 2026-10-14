@@ -29,7 +29,7 @@ class SenderController extends BaseController
         try {
             // Code to list expéditeurs
             $senders = Sender::select('uid', 'label', 'bydefault', 'status', 'validated_at', 'created_at')
-            ->where('user_id', Auth::user()->id)
+            ->where('user_id', Auth::id())
             ->orderByDesc('created_at')
             ->get();
             // Vérifier si les données existent
@@ -140,7 +140,7 @@ class SenderController extends BaseController
         // Data to save
         $set = [
             'label' => $request->label,
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
             'bydefault' => $request->bydefault,
         ];
         DB::beginTransaction(); // Démarrer une transaction
@@ -148,7 +148,7 @@ class SenderController extends BaseController
             Sender::create($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.addsender'), [], 201);
+            return $this->sendSuccess(__('message.addsender'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Sender::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -216,7 +216,7 @@ class SenderController extends BaseController
             ]);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.editsender'), [], 201);
+            return $this->sendSuccess(__('message.editsender'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Sender::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -246,7 +246,7 @@ class SenderController extends BaseController
                 Log::warning("Sender::destroy - Tentative de suppression d'un expéditeur inexistante : {$uid}");
                 return $this->sendError(__('message.error'), [], 403);
             }
-            return $this->sendSuccess(__('message.delsender'), [], 201);
+            return $this->sendSuccess(__('message.delsender'));
         } catch(\Exception $e) {
             Log::warning("Sender::destroy - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
@@ -310,7 +310,7 @@ class SenderController extends BaseController
             . "</div>";
             // Envoi de l'email
             $this->sendMail(env('MAIL_FROM_ADDRESS'), Auth::user()->email, $username, env('MAIL_CC'), $subject, $message);
-            return $this->sendSuccess(__('message.sendsender'), [], 201);
+            return $this->sendSuccess(__('message.sendsender'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Sender::validated - Erreur : {$e->getMessage()} " . json_encode($request->all()));

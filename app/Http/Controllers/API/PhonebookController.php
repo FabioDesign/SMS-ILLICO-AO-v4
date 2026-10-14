@@ -36,7 +36,7 @@ class PhonebookController extends BaseController
             // Code to list contacts
             $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%' . $search . '%'))
-            ->where('user_id', Auth::user()->id)
+            ->where('user_id', Auth::id())
             ->where('blacklist', 0)
             ->where('publipostage', 0)
             ->orderBy('label')
@@ -168,7 +168,7 @@ class PhonebookController extends BaseController
         }
         // Data to save
         $set = [
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
             'label' => $request->label,
             'number' => $request->number,
             'gender' => $request->gender,
@@ -182,7 +182,7 @@ class PhonebookController extends BaseController
             Contact::create($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.addcontact'), [], 201);
+            return $this->sendSuccess(__('message.addcontact'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Phonebook::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -270,7 +270,7 @@ class PhonebookController extends BaseController
             $contact->update($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.editcontact'), [], 201);
+            return $this->sendSuccess(__('message.editcontact'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Phonebook::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -318,7 +318,7 @@ class PhonebookController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('uid', $request->contacts)
-                ->where('user_id', Auth::user()->id)
+                ->where('user_id', Auth::id())
                 ->where('publipostage', 0)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
@@ -331,7 +331,7 @@ class PhonebookController extends BaseController
             // Supprimer tous les contacts en masse
             Contact::whereIn('id', $contactIds)->delete();
             DB::commit();
-            return $this->sendSuccess(__('message.delcontact'), [], 201);
+            return $this->sendSuccess(__('message.delcontact'));
         } catch (\Exception $e) {
             DB::rollBack();
             Log::warning("Phonebook::destroy - Erreur : {$e->getMessage()}");
@@ -428,7 +428,7 @@ class PhonebookController extends BaseController
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
             $contactIds = Contact::whereIn('uid', $request->contacts)
-                ->where('user_id', Auth::user()->id)
+                ->where('user_id', Auth::id())
                 ->where('publipostage', 0)
                 ->pluck('id');
             if ($contactIds->isEmpty()) {
@@ -440,7 +440,7 @@ class PhonebookController extends BaseController
             Contact::whereIn('id', $contactIds)->update(['blacklist' => $request->status]);
             DB::commit();
             $message = $request->status == 1 ? __('message.addcontact') : __('message.delcontact');
-            return $this->sendSuccess($message, [], 201);
+            return $this->sendSuccess($message);
         } catch(\Exception $e) {
             DB::rollBack();
             Log::warning("Phonebook::blacklist - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -468,14 +468,14 @@ class PhonebookController extends BaseController
             $limit = $request->limit ?? 10;
             // Code to list contacts blacklist
             $contactsOnly = DB::table('contacts as c')
-            ->where('c.user_id', Auth::user()->id)
+            ->where('c.user_id', Auth::id())
             ->where('c.blacklist', 1)
             ->selectRaw('c.number as contact, NULL as `group`');
 
             $contactsGroups = DB::table('group_contact as gc')
             ->join('contacts as c', 'c.id', '=', 'gc.contact_id')
             ->join('groups as g', 'g.id', '=', 'gc.group_id')
-            ->where('c.user_id', Auth::user()->id)
+            ->where('c.user_id', Auth::id())
             ->where(function ($q) {
                 $q->where('gc.blacklist', 1)
                 ->orWhere('c.blacklist', 1);

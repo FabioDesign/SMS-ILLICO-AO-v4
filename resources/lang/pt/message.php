@@ -30,6 +30,13 @@ return [
     "validated" => "Validado",
     "declined" => "Recusado",
 
+    // SMS
+    'addsms' => "SMS registado com sucesso.",
+    'limitsms' => "Não tem mais créditos de SMS. Por favor, recarregue a sua conta.",
+    'editsms' => "SMS alterado com sucesso.",
+    'delsms' => "SMS eliminado com sucesso.",
+    'detsms' => "Detalhes sobre um SMS.",
+
     // Password
     'forgotpwd' => "Esqueci a senha.",
     'otp' => "O código OTP é",

@@ -40,6 +40,13 @@ return [
     'emailerr' => "Incorrect email or OTP code.",
     'passworderr' => "Incorrect old password.",
 
+    // SMS
+    'addsms' => "SMS successfully registered.",
+    'limitsms' => "You have no more SMS credits. Please recharge your account.",
+    'editsms' => "SMS successfully modified.",
+    'delsms' => "SMS successfully deleted.",
+    'detsms' => "Details about a SMS.",
+
     // Photo
     'photosucc' => "Profile photo successfully updated.",
     'photodown' => "Error downloading photo.",

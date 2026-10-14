@@ -33,7 +33,7 @@ class BillController extends BaseController
             $limit = $request->limit ?? 10;
             // Code to list factures
             $bills = Bill::select('uid', 'reference', 'volume1_sms', 'volume2_sms', 'price', 'fees', 'status', 'created_at')
-            ->where('user_id', Auth::user()->id)
+            ->where('user_id', Auth::id())
             ->orderByDesc('created_at')
             ->paginate($limit, ['*'], 'page', $page);
             // Vérifier si les données existent
@@ -146,7 +146,9 @@ class BillController extends BaseController
         $bills = Bill::where('created_at', 'LIKE', date('Y-m') . '%')
         ->orderByDesc('created_at')
         ->first();
-		if ($bills) $nbr += substr($bills->reference, -4);		    
+		if ($bills) {
+            $nbr += substr($bills->reference, -4);
+        }
 		// Zerofill
 		$nbr = sprintf('%04d', $nbr);
 		// Référence
@@ -155,7 +157,7 @@ class BillController extends BaseController
         $set = [
             'reference' => $ref,
             'price' => $request->price,
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
             'volume1_sms' => Auth::user()->volume_sms,
             'volume2_sms' => $request->volume2_sms,
         ];
@@ -164,7 +166,7 @@ class BillController extends BaseController
             Bill::create($set);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.addbill'), [], 201);
+            return $this->sendSuccess(__('message.addbill'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Bill::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -221,7 +223,7 @@ class BillController extends BaseController
             ]);
             // Valider la transaction
             DB::commit();
-            return $this->sendSuccess(__('message.editbill'), [], 201);
+            return $this->sendSuccess(__('message.editbill'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Bill::update - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -251,7 +253,7 @@ class BillController extends BaseController
                 Log::warning("Bill::destroy - Tentative de suppression d'une facture inexistante : {$uid}");
                 return $this->sendError(__('message.error'), [], 403);
             }
-            return $this->sendSuccess(__('message.delbill'), [], 201);
+            return $this->sendSuccess(__('message.delbill'));
         } catch(\Exception $e) {
             Log::warning("Bill::destroy - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
@@ -316,7 +318,7 @@ class BillController extends BaseController
             . "</div>";
             // Envoi de l'email
             $this->sendMail(env('MAIL_FROM_ADDRESS'), Auth::user()->email, $username, env('MAIL_CC'), $subject, $message);
-            return $this->sendSuccess(__('message.editbill'), [], 201);
+            return $this->sendSuccess(__('message.editbill'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("Bill::validated - Erreur : {$e->getMessage()} " . json_encode($request->all()));

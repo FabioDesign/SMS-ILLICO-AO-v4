@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Numbersms extends Model
+class NumberSms extends Model
 {
     public $table = 'numbersms';
 
