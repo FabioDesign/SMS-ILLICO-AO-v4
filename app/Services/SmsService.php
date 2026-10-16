@@ -30,7 +30,7 @@ class SmsService
                     'username' => config('services.sms.username'),
                     'password' => config('services.sms.password'),
                     'from' => $expediteur,
-                    'to' => $numeros,
+                    'to' => '+244' . $numeros,
                     'text' => $message,
                     'coding' => 2,
                     'charset' => 'UTF-8',
