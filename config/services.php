@@ -31,4 +31,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    
+    'sms' => [
+        'url' => env('SMS_GTW_URL'),
+        'username' => env('SMS_GTW_USERNAME'),
+        'password' => env('SMS_GTW_PASSWORD'),
+        'dlr_url' => env('SMS_DLR_URL'),
+    ],
+
 ];
