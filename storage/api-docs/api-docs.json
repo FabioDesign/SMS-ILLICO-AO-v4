@@ -1841,6 +1841,56 @@
                 ]
             }
         },
+        "/api/sms/send": {
+            "post": {
+                "tags": [
+                    "SMS"
+                ],
+                "description": "Enregistrement d'un SMS.",
+                "operationId": "sendSMS",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "contacts",
+                                    "message"
+                                ],
+                                "properties": {
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "SMS enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -2193,6 +2243,10 @@
         {
             "name": "Senders",
             "description": "Senders"
+        },
+        {
+            "name": "SMS",
+            "description": "SMS"
         },
         {
             "name": "Users",
