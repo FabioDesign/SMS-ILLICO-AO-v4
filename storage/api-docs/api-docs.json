@@ -1854,18 +1854,22 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "contacts",
-                                    "message"
+                                    "sender",
+                                    "message",
+                                    "contacts"
                                 ],
                                 "properties": {
+                                    "sender": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    },
                                     "contacts": {
                                         "type": "array",
                                         "items": {
                                             "type": "string"
                                         }
-                                    },
-                                    "message": {
-                                        "type": "string"
                                     }
                                 },
                                 "type": "object"

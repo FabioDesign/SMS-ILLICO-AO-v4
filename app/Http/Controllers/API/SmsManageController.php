@@ -21,9 +21,10 @@ class SmsManageController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"contacts", "message"},
-    *         @OA\Property(property="contacts", type="array", @OA\Items(type="string")),
+    *         required={"sender", "message", "contacts"},
+    *         @OA\Property(property="sender", type="string"),
     *         @OA\Property(property="message", type="string"),
+    *         @OA\Property(property="contacts", type="array", @OA\Items(type="string")),
     *      )
     *   ),
     *   @OA\Response(response=201, description="SMS enregisté avec succès."),
