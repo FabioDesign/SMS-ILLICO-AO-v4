@@ -29,7 +29,7 @@ class UserController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Récupérer les données
-            $users = User::select('uid', 'lastname', 'firstname', 'number', 'email', 'company', 'status', 'created_at')
+            $users = User::select('uuid', 'lastname', 'firstname', 'number', 'email', 'company', 'status', 'created_at')
             ->where('id', '!=', Auth::id())
             ->orderByDesc('created_at')
             ->get();
@@ -40,7 +40,7 @@ class UserController extends BaseController
             }
             // Transformer les données
             $data = $users->map(fn($data) => [
-                'uid' => $data->uid,
+                'uuid' => $data->uuid,
                 'lastname' => $data->lastname,
                 'firstname' => $data->firstname,
                 'number' => $data->number,
@@ -62,7 +62,7 @@ class UserController extends BaseController
     // Détail d'Utilisateur
     /**
     * @OA\Get(
-    *   path="/api/users/{uid}",
+    *   path="/api/users/{uuid}",
     *   tags={"Users"},
     *   operationId="showUser",
     *   description="Détail d'un compte utilisateur.",
@@ -72,16 +72,16 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse {
+    public function show(string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
             // Eager Loading (1 seule requête optimisée)
             $user = User::with(['town', 'accountType'])
-                ->where('uid', $uid)
+                ->where('uuid', $uuid)
                 ->first();
             if (!$user) {
-                Log::warning("User::show - Aucun utilisateur trouvé pour l'UID : {$uid}");
+                Log::warning("User::show - Aucun utilisateur trouvé pour l'UUID : {$uuid}");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Data to save
@@ -203,7 +203,7 @@ class UserController extends BaseController
                     $data = [
                         'access_token' =>  Auth::user()->createToken('MyApp')->accessToken,
                         'infos' => [
-                            'uid' => Auth::user()->uid,
+                            'uuid' => Auth::user()->uuid,
                             'lastname' => Auth::user()->lastname,
                             'firstname' => Auth::user()->firstname,
                             'number' => Auth::user()->number,

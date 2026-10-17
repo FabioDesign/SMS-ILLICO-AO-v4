@@ -30,7 +30,7 @@
                 ]
             }
         },
-        "/api/bills/{uid}": {
+        "/api/bills/{uuid}": {
             "get": {
                 "tags": [
                     "Bills"
@@ -185,10 +185,10 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "uid"
+                                    "uuid"
                                 ],
                                 "properties": {
-                                    "uid": {
+                                    "uuid": {
                                         "type": "string"
                                     }
                                 },
@@ -281,7 +281,7 @@
                 ]
             }
         },
-        "/api/groups/{uid}": {
+        "/api/groups/{uuid}": {
             "get": {
                 "tags": [
                     "Groups"
@@ -370,7 +370,7 @@
                 ]
             }
         },
-        "/api/groups/contactlist/{uid}?page=1&limit=10&search=''": {
+        "/api/groups/contactlist/{uuid}?page=1&limit=10&search=''": {
             "get": {
                 "tags": [
                     "Groups"
@@ -395,7 +395,7 @@
                 ]
             }
         },
-        "/api/groups/contact/{uid}": {
+        "/api/groups/contact/{uuid}": {
             "post": {
                 "tags": [
                     "Groups"
@@ -458,7 +458,7 @@
                 ]
             }
         },
-        "/api/groups/contacts/{uid}": {
+        "/api/groups/contacts/{uuid}": {
             "post": {
                 "tags": [
                     "Groups"
@@ -508,7 +508,7 @@
                 ]
             }
         },
-        "/api/groups/imports/{uid}": {
+        "/api/groups/imports/{uuid}": {
             "post": {
                 "tags": [
                     "Groups"
@@ -552,7 +552,7 @@
                 ]
             }
         },
-        "/api/groups/blacklist/{uid}": {
+        "/api/groups/blacklist/{uuid}": {
             "post": {
                 "tags": [
                     "Groups"
@@ -720,7 +720,7 @@
                 ]
             }
         },
-        "/api/models/{uid}": {
+        "/api/models/{uuid}": {
             "get": {
                 "tags": [
                     "Models"
@@ -1049,7 +1049,7 @@
                 ]
             }
         },
-        "/api/phonebooks/{uid}": {
+        "/api/phonebooks/{uuid}": {
             "get": {
                 "tags": [
                     "Phonebooks"
@@ -1388,7 +1388,7 @@
                 ]
             }
         },
-        "/api/publipostage/{uid}": {
+        "/api/publipostage/{uuid}": {
             "get": {
                 "tags": [
                     "Publipostage"
@@ -1701,7 +1701,7 @@
                 ]
             }
         },
-        "/api/senders/{uid}": {
+        "/api/senders/{uuid}": {
             "get": {
                 "tags": [
                     "Senders"
@@ -1811,10 +1811,10 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "uid"
+                                    "uuid"
                                 ],
                                 "properties": {
-                                    "uid": {
+                                    "uuid": {
                                         "type": "string"
                                     }
                                 },
@@ -1920,7 +1920,7 @@
                 ]
             }
         },
-        "/api/users/{uid}": {
+        "/api/users/{uuid}": {
             "get": {
                 "tags": [
                     "Users"

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uid');
+            $table->uuid('uuid');
             $table->string('lastname', 255);
             $table->string('firstname', 255);
             $table->string('number', 20)->unique();
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('nif', 50)->nullable();
             $table->string('address', 255)->nullable();
             $table->string('website', 255)->nullable();
-            $table->decimal('volume_sms', 10, 0)->default('0');
+            $table->decimal('volume', 10, 0)->default('0');
             $table->char('lg', 2);
             $table->string('avatar', 20)->nullable();
             $table->timestamp('avatar_at')->nullable();

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uid');
+            $table->uuid('uuid');
             $table->string('label', 50);
             $table->timestamps();
             $table->bigInteger('user_id');

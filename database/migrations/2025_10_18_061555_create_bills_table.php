@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('bills', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uid');
+            $table->uuid('uuid');
             $table->string('reference', 15);
             $table->decimal('volume1_sms', 10, 0);
             $table->decimal('volume2_sms', 10, 0);

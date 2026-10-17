@@ -28,7 +28,7 @@ class ModelController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Code to list modèles
-            $models = Models::select('uid', 'title', 'chars', 'pages', 'message', 'created_at')
+            $models = Models::select('uuid', 'title', 'chars', 'pages', 'message', 'created_at')
             ->where('user_id', Auth::id())
             ->orderBy('title')
             ->get();
@@ -39,7 +39,7 @@ class ModelController extends BaseController
             }
             // Transformer les données
             $data = $models->map(fn($data) => [
-                'uid' => $data->uid,
+                'uuid' => $data->uuid,
                 'title' => $data->title,
                 'chars' => $data->chars,
                 'pages' => $data->pages,
@@ -55,7 +55,7 @@ class ModelController extends BaseController
     // Détail d'un modèle
     /**
     * @OA\Get(
-    *   path="/api/models/{uid}",
+    *   path="/api/models/{uuid}",
     *   tags={"Models"},
     *   operationId="showModel",
     *   description="Détail d'un modèle.",
@@ -65,14 +65,14 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse {
+    public function show(string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
             // Eager Loading (1 seule requête optimisée)
-            $models = Models::where('uid', $uid)->first();
+            $models = Models::where('uuid', $uuid)->first();
             if (!$models) {
-                Log::warning("Models::show - Aucun modèle trouvé pour l'UID : {$uid}");
+                Log::warning("Models::show - Aucun modèle trouvé pour l'UUID : {$uuid}");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Data to save
@@ -155,7 +155,7 @@ class ModelController extends BaseController
     // Modification
     /**
     * @OA\Put(
-    *   path="/api/models/{uid}",
+    *   path="/api/models/{uuid}",
     *   tags={"Models"},
     *   operationId="editModel",
     *   description="Modification d'un modèle.",
@@ -175,7 +175,7 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, string $uid): JsonResponse {
+    public function update(request $request, string $uuid): JsonResponse {
         // Language
         $user = Auth::user();
         App::setLocale($user->lg);
@@ -197,9 +197,9 @@ class ModelController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'ID est présent et valide
-        $models = Models::where('uid', $uid)->first();
+        $models = Models::where('uuid', $uuid)->first();
         if (!$models) {
-            Log::warning("Models::update - Aucun modèle trouvé pour l'UID : {$uid}");
+            Log::warning("Models::update - Aucun modèle trouvé pour l'UUID : {$uuid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
@@ -224,7 +224,7 @@ class ModelController extends BaseController
     // Suppression d'un modèle
     /**
     *   @OA\Delete(
-    *   path="/api/models/{uid}",
+    *   path="/api/models/{uuid}",
     *   tags={"Models"},
     *   operationId="deleteModel",
     *   description="Suppression d'un modèle.",
@@ -234,16 +234,16 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(string $uid): JsonResponse {
+    public function destroy(string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
             // Vérification si le Groupe est attribué à une demande
-            $models = Models::where('uid', $uid)->first();
+            $models = Models::where('uuid', $uuid)->first();
             // Suppression
             $deleted = Models::destroy($models->id);
             if (!$deleted) {
-                Log::warning("Models::destroy - Tentative de suppression d'un modèle inexistante : {$uid}");
+                Log::warning("Models::destroy - Tentative de suppression d'un modèle inexistante : {$uuid}");
                 return $this->sendError(__('message.error'), [], 403);
             }
             return $this->sendSuccess(__('message.delmodel'));

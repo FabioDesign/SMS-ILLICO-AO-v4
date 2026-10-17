@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('bodysms', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uid');
+            $table->uuid('uuid');
             $table->string('sender', 15);
             $table->text('message');
-            $table->decimal('volume_sms', 10, 0);
+            $table->decimal('volume', 10, 0);
             $table->decimal('chars', 10, 0);
             $table->decimal('pages', 10, 0);
             $table->timestamp('sending_at');

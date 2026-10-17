@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('numbersms', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uid');
+            $table->uuid('uuid');
             $table->string('number', 20);
-            $table->decimal('volume_sms', 2, 0);
+            $table->decimal('volume', 2, 0);
             $table->timestamp('sending_at')->nullable();
             $table->tinyInteger('status')->default('0');
             $table->bigInteger('bodysms_id');

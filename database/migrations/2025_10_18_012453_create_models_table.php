@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('models', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uid');
+            $table->uuid('uuid');
             $table->string('title', 20);
             $table->text('message');
             $table->decimal('chars', 10, 0);

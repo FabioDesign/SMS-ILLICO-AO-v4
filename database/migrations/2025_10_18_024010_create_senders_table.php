@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('senders', function (Blueprint $table) {
             $table->id();
-            $table->uuid('uid');
+            $table->uuid('uuid');
             $table->string('label', 15);
             $table->tinyInteger('bydefault')->default('0');
             $table->tinyInteger('status')->default('0');

@@ -32,7 +32,7 @@ class BillController extends BaseController
             $page = $request->page ?? 1;
             $limit = $request->limit ?? 10;
             // Code to list factures
-            $bills = Bill::select('uid', 'reference', 'volume1_sms', 'volume2_sms', 'price', 'fees', 'status', 'created_at')
+            $bills = Bill::select('uuid', 'reference', 'volume1_sms', 'volume2_sms', 'price', 'fees', 'status', 'created_at')
             ->where('user_id', Auth::id())
             ->orderByDesc('created_at')
             ->paginate($limit, ['*'], 'page', $page);
@@ -43,7 +43,7 @@ class BillController extends BaseController
             }
             // Transformer les données
             $data = $bills->map(fn($data) => [
-                'uid' => $data->uid,
+                'uuid' => $data->uuid,
                 'reference' => $data->reference,
                 'volume1_sms' => $data->volume1_sms,
                 'volume2_sms' => $data->volume2_sms,
@@ -73,7 +73,7 @@ class BillController extends BaseController
     // Détail d'une facture
     /**
     * @OA\Get(
-    *   path="/api/bills/{uid}",
+    *   path="/api/bills/{uuid}",
     *   tags={"Bills"},
     *   operationId="showBill",
     *   description="Détail d'une facture.",
@@ -83,14 +83,14 @@ class BillController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse {
+    public function show(string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
             // Eager Loading (1 seule requête optimisée)
-            $bills = Bill::where('uid', $uid)->first();
+            $bills = Bill::where('uuid', $uuid)->first();
             if (!$bills) {
-                Log::warning("Bill::show - Aucune facture trouvée pour l'UID : {$uid}");
+                Log::warning("Bill::show - Aucune facture trouvée pour l'UUID : {$uuid}");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Data to save
@@ -176,7 +176,7 @@ class BillController extends BaseController
     // Modification
     /**
     * @OA\Put(
-    *   path="/api/bills/{uid}",
+    *   path="/api/bills/{uuid}",
     *   tags={"Bills"},
     *   operationId="editBill",
     *   description="Modification d'un volume.",
@@ -194,7 +194,7 @@ class BillController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, string $uid): JsonResponse {
+    public function update(request $request, string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -208,9 +208,9 @@ class BillController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'ID est présent et valide
-        $bills = Bill::where('uid', $uid)->first();
+        $bills = Bill::where('uuid', $uuid)->first();
         if (!$bills) {
-            Log::warning("Bill::update - Aucune facture trouvée pour l'UID : {$uid}");
+            Log::warning("Bill::update - Aucune facture trouvée pour l'UUID : {$uuid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
@@ -233,7 +233,7 @@ class BillController extends BaseController
     // Suppression d'une facture
     /**
     *   @OA\Delete(
-    *   path="/api/bills/{uid}",
+    *   path="/api/bills/{uuid}",
     *   tags={"Bills"},
     *   operationId="deleteBill",
     *   description="Suppression d'une facture.",
@@ -243,14 +243,14 @@ class BillController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(string $uid): JsonResponse {
+    public function destroy(string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
             // Vérification si le Groupe est attribué à une demande
-            $deleted = Bill::where('uid', $uid)->delete();
+            $deleted = Bill::where('uuid', $uuid)->delete();
             if (!$deleted) {
-                Log::warning("Bill::destroy - Tentative de suppression d'une facture inexistante : {$uid}");
+                Log::warning("Bill::destroy - Tentative de suppression d'une facture inexistante : {$uuid}");
                 return $this->sendError(__('message.error'), [], 403);
             }
             return $this->sendSuccess(__('message.delbill'));
@@ -270,8 +270,8 @@ class BillController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"uid"},
-    *         @OA\Property(property="uid", type="string"),
+    *         required={"uuid"},
+    *         @OA\Property(property="uuid", type="string"),
     *      )
     *   ),
     *   @OA\Response(response=201, description="Facture validée avec succès."),
@@ -284,15 +284,15 @@ class BillController extends BaseController
         App::setLocale(Auth::user()->lg);
         //Validator
         $validator = Validator::make($request->all(), [
-            'uid' => 'required|exists:bills,uid',
+            'uuid' => 'required|exists:bills,uuid',
         ]);
         //Error field
         if ($validator->fails()) {
             Log::warning("Bill::validated - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
-        // Vérifier si l'UID est présent et valide
-        $bills = Bill::where('uid', $request->uid)->first();
+        // Vérifier si l'UUID est présent et valide
+        $bills = Bill::where('uuid', $request->uuid)->first();
         // Data to save
         DB::beginTransaction(); // Démarrer une transaction
         try {

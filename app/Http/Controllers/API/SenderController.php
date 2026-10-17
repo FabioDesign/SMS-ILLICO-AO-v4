@@ -28,7 +28,7 @@ class SenderController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Code to list expéditeurs
-            $senders = Sender::select('uid', 'label', 'bydefault', 'status', 'validated_at', 'created_at')
+            $senders = Sender::select('uuid', 'label', 'bydefault', 'status', 'validated_at', 'created_at')
             ->where('user_id', Auth::id())
             ->orderByDesc('created_at')
             ->get();
@@ -39,7 +39,7 @@ class SenderController extends BaseController
             }
             // Transformer les données
             $data = $senders->map(fn($data) => [
-                'uid' => $data->uid,
+                'uuid' => $data->uuid,
                 'label' => $data->label,
                 'bydefault' => $data->bydefault,
                 'status' => $data->status,
@@ -61,7 +61,7 @@ class SenderController extends BaseController
     // Détail d'un expéditeur
     /**
     * @OA\Get(
-    *   path="/api/senders/{uid}",
+    *   path="/api/senders/{uuid}",
     *   tags={"Senders"},
     *   operationId="showSender",
     *   description="Détail d'un expéditeur.",
@@ -71,14 +71,14 @@ class SenderController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse {
+    public function show(string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
             // Eager Loading (1 seule requête optimisée)
-            $senders = Sender::where('uid', $uid)->first();
+            $senders = Sender::where('uuid', $uuid)->first();
             if (!$senders) {
-                Log::warning("Sender::show - Aucun expéditeur trouvé pour l'UID : {$uid}");
+                Log::warning("Sender::show - Aucun expéditeur trouvé pour l'UUID : {$uuid}");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Data to save
@@ -158,7 +158,7 @@ class SenderController extends BaseController
     // Modification
     /**
     * @OA\Put(
-    *   path="/api/senders/{uid}",
+    *   path="/api/senders/{uuid}",
     *   tags={"Senders"},
     *   operationId="editSender",
     *   description="Modification d'un expéditeur.",
@@ -176,14 +176,14 @@ class SenderController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, string $uid): JsonResponse {
+    public function update(request $request, string $uuid): JsonResponse {
         // Language
         $user = Auth::user();
         App::setLocale($user->lg);
         // Vérifier si l'ID est présent et valide
-        $senders = Sender::where('uid', $uid)->first();
+        $senders = Sender::where('uuid', $uuid)->first();
         if (!$senders) {
-            Log::warning("Sender::update - Aucun expéditeur trouvé pour l'UID : {$uid}");
+            Log::warning("Sender::update - Aucun expéditeur trouvé pour l'UUID : {$uuid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         //Validator
@@ -191,9 +191,9 @@ class SenderController extends BaseController
             'label' => [
                 'required',
                 'regex:/^(?=.*[A-Za-z])[A-Za-z0-9]{3,11}$/',
-                Rule::unique('senders')->where(function ($query) use ($user, $uid) {
+                Rule::unique('senders')->where(function ($query) use ($user, $uuid) {
                     return $query->where('user_id', $user->id)
-                    ->where('uid', '!=', $uid);
+                    ->where('uuid', '!=', $uuid);
                 }),
             ],
             'bydefault' => 'required|integer|in:0,1',
@@ -226,7 +226,7 @@ class SenderController extends BaseController
     // Suppression d'un expéditeur
     /**
     *   @OA\Delete(
-    *   path="/api/senders/{uid}",
+    *   path="/api/senders/{uuid}",
     *   tags={"Senders"},
     *   operationId="deleteSender",
     *   description="Suppression d'un expéditeur.",
@@ -236,14 +236,14 @@ class SenderController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(string $uid): JsonResponse {
+    public function destroy(string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
             // Vérification si le Groupe est attribué à une demande
-            $deleted = Sender::where('uid', $uid)->delete();
+            $deleted = Sender::where('uuid', $uuid)->delete();
             if (!$deleted) {
-                Log::warning("Sender::destroy - Tentative de suppression d'un expéditeur inexistante : {$uid}");
+                Log::warning("Sender::destroy - Tentative de suppression d'un expéditeur inexistante : {$uuid}");
                 return $this->sendError(__('message.error'), [], 403);
             }
             return $this->sendSuccess(__('message.delsender'));
@@ -263,8 +263,8 @@ class SenderController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"uid"},
-    *         @OA\Property(property="uid", type="string"),
+    *         required={"uuid"},
+    *         @OA\Property(property="uuid", type="string"),
     *      )
     *   ),
     *   @OA\Response(response=201, description="Expéditeur validé avec succès."),
@@ -277,15 +277,15 @@ class SenderController extends BaseController
         App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
-            'uid' => 'required|exists:senders,uid',
+            'uuid' => 'required|exists:senders,uuid',
         ]);
         // Error field
         if ($validator->fails()) {
             Log::warning("Sender::validated - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
-        // Vérifier si l'UID est présent et valide
-        $senders = Sender::where('uid', $request->uid)->first();
+        // Vérifier si l'UUID est présent et valide
+        $senders = Sender::where('uuid', $request->uuid)->first();
         // Data to save
         DB::beginTransaction(); // Démarrer une transaction
         try {

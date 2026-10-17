@@ -34,7 +34,7 @@ class PublipostageController extends BaseController
             $limit = $request->limit ?? 10;
             $search = $request->search ?? '';
             // Code to list contacts
-            $contacts = Contact::select('uid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
+            $contacts = Contact::select('uuid', 'label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
             ->when(($search != ''), fn($q) => $q->where('label', 'LIKE', '%'.$search.'%'))
             ->where('user_id', Auth::id())
             ->where('publipostage', 1)
@@ -47,7 +47,7 @@ class PublipostageController extends BaseController
             }
             // Transformer les données
             $data = $contacts->map(fn($data) => [
-                'uid' => $data->uid,
+                'uuid' => $data->uuid,
                 'label' => $data->label,
                 'number' => $data->number,
                 'gender' => $data->gender,
@@ -70,7 +70,7 @@ class PublipostageController extends BaseController
     // Détail d'un Contact
     /**
     * @OA\Get(
-    *   path="/api/publipostage/{uid}",
+    *   path="/api/publipostage/{uuid}",
     *   tags={"Publipostage"},
     *   operationId="showPub",
     *   description="Détail d'un contact.",
@@ -80,14 +80,14 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uid): JsonResponse {
+    public function show(string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
             // Eager Loading (1 seule requête optimisée)
-            $contacts = Contact::where('uid', $uid)->first();
+            $contacts = Contact::where('uuid', $uuid)->first();
             if (!$contacts) {
-                Log::warning("Contact::show - Aucun contact trouvé pour l'UID : {$uid}");
+                Log::warning("Contact::show - Aucun contact trouvé pour l'UUID : {$uuid}");
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Data to save
@@ -192,7 +192,7 @@ class PublipostageController extends BaseController
     // Modification
     /**
     * @OA\Put(
-    *   path="/api/publipostage/{uid}",
+    *   path="/api/publipostage/{uuid}",
     *   tags={"Publipostage"},
     *   operationId="editPub",
     *   description="Modification d'un contact.",
@@ -215,7 +215,7 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, string $uid): JsonResponse {
+    public function update(request $request, string $uuid): JsonResponse {
         // Language
         $user = Auth::user();
         App::setLocale(Auth::user()->lg);
@@ -226,9 +226,9 @@ class PublipostageController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user, $uid) {
+                Rule::unique('contacts')->where(function ($query) use ($user, $uuid) {
                     return $query->where('user_id', $user->id)
-                    ->where('uid', '!=', $uid)
+                    ->where('uuid', '!=', $uuid)
                     ->where('publipostage', 1);
                 }),
             ],
@@ -250,9 +250,9 @@ class PublipostageController extends BaseController
             return $this->sendError(__('message.numbernot'), [], 422);
         }
         // Vérifier si l'ID est présent et valide
-        $contact = Contact::where('uid', $uid)->first();
+        $contact = Contact::where('uuid', $uuid)->first();
         if (!$contact) {
-            Log::warning("Publipostage::update - Aucun Contact trouvé pour l'UID : {$uid}");
+            Log::warning("Publipostage::update - Aucun Contact trouvé pour l'UUID : {$uuid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         // Data to save
@@ -316,7 +316,7 @@ class PublipostageController extends BaseController
         try {
             DB::beginTransaction();
             // Récupérer tous les contacts en une seule requête
-            $contactIds = Contact::whereIn('uid', $request->contacts)
+            $contactIds = Contact::whereIn('uuid', $request->contacts)
                 ->where('user_id', Auth::id())
                 ->where('publipostage', 1)
                 ->pluck('id');
