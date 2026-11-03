@@ -15,7 +15,7 @@ class SenderController extends BaseController
     * @OA\Get(
     *   path="/api/senders",
     *   tags={"Senders"},
-    *   operationId="listSender",
+    *   operationId="listSenders",
     *   description="Liste des expéditeurs.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Liste des expéditeurs."),
@@ -55,6 +55,45 @@ class SenderController extends BaseController
             return $this->sendSuccess(__('message.listsender'), $data);
         } catch (\Exception $e) {
             Log::warning("Sender::index - Erreur : {$e->getMessage()}");
+            return $this->sendError(__('message.error'));
+        }
+    }
+    //Liste des expéditeurs
+    /**
+    * @OA\Get(
+    *   path="/api/senders/list",
+    *   tags={"Senders"},
+    *   operationId="listSender",
+    *   description="Liste des expéditeurs validés.",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Liste des expéditeurs validés."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function list(): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        try {
+            // Code to list validated expéditeurs
+            $senders = Sender::select('label', 'bydefault')
+            ->where('user_id', Auth::id())
+            ->where('status', 2)
+            ->orderBy('label')
+            ->get();
+            // Vérifier si les données existent
+            if ($senders->isEmpty()) {
+                Log::warning("Sender::list - Aucun expéditeur validé trouvé.");
+                return $this->sendSuccess(__('message.nodata'));
+            }
+            // Transformer les données
+            $data = $senders->map(fn($data) => [
+                'label' => $data->label,
+                'bydefault' => $data->bydefault,
+            ]);
+            return $this->sendSuccess(__('message.listsender'), $data);
+        } catch (\Exception $e) {
+            Log::warning("Sender::list - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
         }
     }

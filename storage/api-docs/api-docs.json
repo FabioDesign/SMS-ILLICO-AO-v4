@@ -1633,7 +1633,7 @@
                     "Senders"
                 ],
                 "description": "Liste des expéditeurs.",
-                "operationId": "listSender",
+                "operationId": "listSenders",
                 "responses": {
                     "200": {
                         "description": "Liste des expéditeurs."
@@ -1686,6 +1686,31 @@
                 "responses": {
                     "201": {
                         "description": "Expéditeur enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/senders/list": {
+            "get": {
+                "tags": [
+                    "Senders"
+                ],
+                "description": "Liste des expéditeurs validés.",
+                "operationId": "listSender",
+                "responses": {
+                    "200": {
+                        "description": "Liste des expéditeurs validés."
                     },
                     "400": {
                         "description": "Serveur indisponible."

@@ -111,6 +111,12 @@ Route::middleware(['auth:api'])->group(function () {
     ->group(function () {
     Route::post('send', 'sendsms');
   });
+  // Route pour les senders
+  Route::controller(SenderController::class)
+    ->prefix('senders')
+    ->group(function () {
+    Route::get('list', 'list');
+  });
   // Route pour les models
   Route::resources([
     'bills' => BillController::class,
