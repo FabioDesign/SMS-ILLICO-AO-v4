@@ -155,7 +155,7 @@ class PasswordController extends BaseController
                 return $this->sendError(__('message.otperr'), [], 404);
             }
             // Vérifier si l'OTP a expiré
-            if (!($user->otp_at >= now()->subMinutes(5))) {
+            if ($user->otp_at < now()->subMinutes(5)) {
                 Log::warning("Password::verifotp - Code OTP a expiré : " . json_encode($request->all()));
                 return $this->sendError(__('message.otpexp'), [], 404);
             }

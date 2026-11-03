@@ -35,8 +35,7 @@ class SmsManageController extends BaseController
     public function sendsms(Request $request, SmsCounter $counter): JsonResponse
     {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         $validator = Validator::make($request->all(), [
             'sender'     => ['required', 'string', 'max:11'],
             'message'    => ['required', 'string'],
@@ -54,7 +53,7 @@ class SmsManageController extends BaseController
         $contacts = $request->input('contacts');
         $data = $counter->volume($message, $contacts);
 
-        $volume = $user->volume_sms - $data['total_sms'];
+        $volume = Auth::user()->volume_sms - $data['total_sms'];
         if ($volume < 0) {
             Log::warning("SmsManage::sendsms - Volume restant : {$volume} - " . json_encode($request->all()));
             return $this->sendError(__('message.limitsms'), ['volume' => $volume], 400);

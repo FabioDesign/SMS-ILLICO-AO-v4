@@ -113,14 +113,13 @@ class ModelController extends BaseController
     */
     public function store(Request $request): JsonResponse {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         //Validator
         $validator = Validator::make($request->all(), [
             'title' => [
                 'required',
-                Rule::unique('models')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id);
+                Rule::unique('models')->where(function ($query) {
+                    return $query->where('user_id', Auth::id());
                 }),
             ],
             'chars' => 'required|numeric',
@@ -177,14 +176,13 @@ class ModelController extends BaseController
     */
     public function update(request $request, string $uuid): JsonResponse {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         //Validator
         $validator = Validator::make($request->all(), [
             'title' => [
                 'required',
-                Rule::unique('models')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id);
+                Rule::unique('models')->where(function ($query) {
+                    return $query->where('user_id', Auth::id());
                 }),
             ],
             'chars' => 'required|numeric',

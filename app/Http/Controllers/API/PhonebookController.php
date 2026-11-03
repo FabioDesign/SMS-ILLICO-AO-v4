@@ -136,8 +136,7 @@ class PhonebookController extends BaseController
     */
     public function store(Request $request): JsonResponse {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
@@ -145,8 +144,8 @@ class PhonebookController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id)->where('publipostage', 0);
+                Rule::unique('contacts')->where(function ($query) {
+                    return $query->where('user_id', Auth::id())->where('publipostage', 0);
                 }),
             ],
             'gender' => 'present',
@@ -217,8 +216,7 @@ class PhonebookController extends BaseController
     */
     public function update(request $request, string $uuid): JsonResponse {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
             'label' => 'required',
@@ -226,8 +224,8 @@ class PhonebookController extends BaseController
                 'required',
                 'digits:9',
                 'numeric',
-                Rule::unique('contacts')->where(function ($query) use ($user, $uuid) {
-                    return $query->where('user_id', $user->id)
+                Rule::unique('contacts')->where(function ($query) use ($uuid) {
+                    return $query->where('user_id', Auth::id())
                     ->where('uuid', '!=', $uuid)
                     ->where('publipostage', 0);
                 }),

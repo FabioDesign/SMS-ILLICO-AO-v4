@@ -115,15 +115,14 @@ class SenderController extends BaseController
     */
     public function store(Request $request): JsonResponse {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         //Validator
         $validator = Validator::make($request->all(), [
             'label' => [
                 'required',
                 'regex:/^(?=.*[A-Za-z])[A-Za-z0-9]{3,11}$/',
-                Rule::unique('senders')->where(function ($query) use ($user) {
-                    return $query->where('user_id', $user->id);
+                Rule::unique('senders')->where(function ($query) {
+                    return $query->where('user_id', Auth::id());
                 }),
             ],
             'bydefault' => 'required|integer|in:0,1',
@@ -135,7 +134,7 @@ class SenderController extends BaseController
         }
         // Vérifier si l'expéditeur par défaut existe déjà
         if ($request->bydefault == 1) {
-            Sender::where('user_id', $user->id)->update(['bydefault' => 0]);
+            Sender::where('user_id', Auth::id())->update(['bydefault' => 0]);
         }
         // Data to save
         $set = [
@@ -178,8 +177,7 @@ class SenderController extends BaseController
     */
     public function update(request $request, string $uuid): JsonResponse {
         // Language
-        $user = Auth::user();
-        App::setLocale($user->lg);
+        App::setLocale(Auth::user()->lg);
         // Vérifier si l'ID est présent et valide
         $senders = Sender::where('uuid', $uuid)->first();
         if (!$senders) {
@@ -191,8 +189,8 @@ class SenderController extends BaseController
             'label' => [
                 'required',
                 'regex:/^(?=.*[A-Za-z])[A-Za-z0-9]{3,11}$/',
-                Rule::unique('senders')->where(function ($query) use ($user, $uuid) {
-                    return $query->where('user_id', $user->id)
+                Rule::unique('senders')->where(function ($query) use ($uuid) {
+                    return $query->where('user_id', Auth::id())
                     ->where('uuid', '!=', $uuid);
                 }),
             ],
@@ -205,7 +203,7 @@ class SenderController extends BaseController
         }
         // Vérifier si l'expéditeur par défaut existe déjà
         if ($request->bydefault == 1) {
-            Sender::where('user_id', $user->id)->update(['bydefault' => 0]);
+            Sender::where('user_id', Auth::id())->update(['bydefault' => 0]);
         }
         // Data to save
         DB::beginTransaction(); // Démarrer une transaction
