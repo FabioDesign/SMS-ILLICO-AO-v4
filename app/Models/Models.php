@@ -21,5 +21,5 @@ class Models extends Model
                 $model->uuid = Str::uuid()->toString();
             }
         });
-    }    
+    }
 }

@@ -22,5 +22,5 @@ class Bill extends Model
                 $model->uuid = Str::uuid()->toString();
             }
         });
-    }    
+    }
 }

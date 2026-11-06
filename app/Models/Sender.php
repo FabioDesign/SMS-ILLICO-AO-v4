@@ -31,5 +31,5 @@ class Sender extends Model
                 $model->uuid = Str::uuid()->toString();
             }
         });
-    }    
+    }
 }

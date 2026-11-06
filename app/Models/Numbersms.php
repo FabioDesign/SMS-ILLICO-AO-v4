@@ -32,5 +32,5 @@ class NumberSms extends Model
                 $model->uuid = Str::uuid()->toString();
             }
         });
-    }    
+    }
 }
