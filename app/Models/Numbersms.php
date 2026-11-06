@@ -20,6 +20,7 @@ class NumberSms extends Model
      */
     protected $casts = [
         'sending_at' => 'datetime',
+        'processing_at' => 'datetime',
     ];
 
     // Génération de UUID unique

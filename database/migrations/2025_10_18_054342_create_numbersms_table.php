@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('volume', 2, 0);
             $table->tinyInteger('attempts')->default(0);
             $table->timestamp('sending_at')->nullable();
+            $table->timestamp('processing_at')->nullable();
             $table->tinyInteger('status')->default('0');
             $table->bigInteger('bodysms_id');
         });
