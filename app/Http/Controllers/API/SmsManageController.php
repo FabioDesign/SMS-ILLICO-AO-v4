@@ -70,7 +70,6 @@ class SmsManageController extends BaseController
             'volume' => $data['total_sms'],
             'chars' => $data['characters'],
         ];
-        // dd($set, $volume, $contacts);
         DB::beginTransaction(); // Démarrer une transaction
         try {
             User::findOrFail(Auth::id())->update([

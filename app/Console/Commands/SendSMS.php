@@ -50,6 +50,7 @@ class SendSMS extends Command
                     ->where('bodysms.status', 1)
                     ->where('numbersms.status', self::STATUS_PENDING)
                     ->where('numbersms.attempts', '<', self::MAX_ATTEMPTS)
+                    ->where('numbersms.sending_at', '<', now())
                     ->orderBy('numbersms.id')
                     ->limit(self::MAX_SMS_PER_RUN)
                     ->lockForUpdate()
