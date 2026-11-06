@@ -53,7 +53,7 @@ class SmsManageController extends BaseController
         $contacts = $request->input('contacts');
         $data = $counter->volume($message, $contacts);
 
-        $volume = Auth::user()->volume_sms - $data['total_sms'];
+        $volume = Auth::user()->volume - $data['total_sms'];
         if ($volume < 0) {
             Log::warning("SmsManage::sendsms - Volume restant : {$volume} - " . json_encode($request->all()));
             return $this->sendError(__('message.limitsms'), ['volume' => $volume], 400);
@@ -73,7 +73,7 @@ class SmsManageController extends BaseController
         DB::beginTransaction(); // Démarrer une transaction
         try {
             User::findOrFail(Auth::id())->update([
-                'volume_sms' => $volume,
+                'volume' => $volume,
             ]);
             $bodysms = BodySms::create($set);
             foreach ($contacts as $contact) :
