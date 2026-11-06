@@ -13,11 +13,6 @@ class NumberSms extends Model
     
     public $timestamps = false;
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'sending_at' => 'datetime',
         'processing_at' => 'datetime',
