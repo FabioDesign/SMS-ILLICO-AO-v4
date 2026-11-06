@@ -10,7 +10,7 @@ use Throwable;
 
 class SendSMS extends Command
 {
-    private const MAX_SMS_PER_RUN = 50;
+    private const MAX_SMS_PER_RUN = 100;
     private const MAX_ATTEMPTS = 3;
     private const STATUS_PENDING = 0;
     private const STATUS_SENT = 1;
@@ -30,7 +30,6 @@ class SendSMS extends Command
     public function handle(SmsService $smsService): int
     {
         $this->info('Début du traitement des SMS en attente.');
-
         /*
          * 1. Récupérer les réservations abandonnées.
          * Ne pas remettre en attente les SMS ayant épuisé
@@ -47,25 +46,10 @@ class SendSMS extends Command
             $ids = DB::transaction(function () {
                 $ids = NumberSms::query()
                     ->select('numbersms.id')
-                    ->join(
-                        'bodysms',
-                        'bodysms.id',
-                        '=',
-                        'numbersms.bodysms_id'
-                    )
-                    ->where(
-                        'bodysms.status',
-                        1
-                    )
-                    ->where(
-                        'numbersms.status',
-                        self::STATUS_PENDING
-                    )
-                    ->where(
-                        'numbersms.attempts',
-                        '<',
-                        self::MAX_ATTEMPTS
-                    )
+                    ->join('bodysms', 'bodysms.id', '=', 'numbersms.bodysms_id')
+                    ->where('bodysms.status', 1)
+                    ->where('numbersms.status', self::STATUS_PENDING)
+                    ->where('numbersms.attempts', '<', self::MAX_ATTEMPTS)
                     ->orderBy('numbersms.id')
                     ->limit(self::MAX_SMS_PER_RUN)
                     ->lockForUpdate()
@@ -73,10 +57,7 @@ class SendSMS extends Command
 
                 if ($ids->isNotEmpty()) {
                     NumberSms::whereIn('id', $ids)
-                        ->where(
-                            'status',
-                            self::STATUS_PENDING
-                        )
+                        ->where('status',self::STATUS_PENDING)
                         ->update([
                             'status' => self::STATUS_PROCESSING,
                             'attempts' => DB::raw('attempts + 1'),
@@ -114,17 +95,9 @@ class SendSMS extends Command
                 'bodysms.sender',
                 'bodysms.message'
             )
-            ->join(
-                'bodysms',
-                'bodysms.id',
-                '=',
-                'numbersms.bodysms_id'
-            )
+            ->join('bodysms', 'bodysms.id', '=', 'numbersms.bodysms_id')
             ->whereIn('numbersms.id', $ids)
-            ->where(
-                'numbersms.status',
-                self::STATUS_PROCESSING
-            )
+            ->where('numbersms.status', self::STATUS_PROCESSING)
             ->where('bodysms.status', 1)
             ->orderBy('numbersms.id')
             ->get();
@@ -147,14 +120,8 @@ class SendSMS extends Command
                      * 4. Succès : le SMS est accepté
                      * par la passerelle.
                      */
-                    $updated = NumberSms::where(
-                        'id',
-                        $sms->numbersms_id
-                    )
-                        ->where(
-                            'status',
-                            self::STATUS_PROCESSING
-                        )
+                    $updated = NumberSms::where('id', $sms->numbersms_id)
+                        ->where('status', self::STATUS_PROCESSING)
                         ->update([
                             'status' => self::STATUS_SENT,
                             'sending_at' => now(),
@@ -164,9 +131,7 @@ class SendSMS extends Command
                     if ($updated) {
                         $sent++;
 
-                        $this->info(
-                            "SMS accepté : {$sms->number}"
-                        );
+                        $this->info("SMS accepté : {$sms->number}");
                     }
 
                     continue;
@@ -185,15 +150,11 @@ class SendSMS extends Command
                 if ($isFinalFailure) {
                     $failed++;
 
-                    $this->error(
-                        "Échec définitif du SMS {$sms->numbersms_id}"
-                    );
+                    $this->error("Échec définitif du SMS {$sms->numbersms_id}");
                 } else {
                     $retry++;
 
-                    $this->warn(
-                        "SMS {$sms->numbersms_id} remis en attente."
-                    );
+                    $this->warn("SMS {$sms->numbersms_id} remis en attente.");
                 }
             } catch (Throwable $e) {
                 $isFinalFailure = $this->handleFailure(
@@ -227,11 +188,8 @@ class SendSMS extends Command
     /**
      * Traiter un échec d'envoi.
      */
-    private function handleFailure(
-        int $id,
-        int $attempts,
-        string $message
-    ): bool {
+    private function handleFailure(int $id, int $attempts, string $message): bool
+    {
         $finalFailure = $attempts >= self::MAX_ATTEMPTS;
 
         $updated = NumberSms::where('id', $id)
@@ -266,10 +224,7 @@ class SendSMS extends Command
          * Les SMS dont les tentatives sont épuisées
          * ne doivent pas être remis en attente.
          */
-        $failed = NumberSms::where(
-            'status',
-            self::STATUS_PROCESSING
-        )
+        $failed = NumberSms::where('status', self::STATUS_PROCESSING)
             ->where('processing_at', '<', $threshold)
             ->where('attempts', '>=', self::MAX_ATTEMPTS)
             ->update([
@@ -280,10 +235,7 @@ class SendSMS extends Command
         /*
          * Les autres SMS peuvent être retentés.
          */
-        $released = NumberSms::where(
-            'status',
-            self::STATUS_PROCESSING
-        )
+        $released = NumberSms::where('status', self::STATUS_PROCESSING)
             ->where('processing_at', '<', $threshold)
             ->where('attempts', '<', self::MAX_ATTEMPTS)
             ->update([
