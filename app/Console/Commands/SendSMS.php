@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\NumberSms;
+use Throwable;
 use App\Services\SmsService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{DB, Log};
-use Throwable;
+use App\Models\{NumberSms, Prefix, StatisticAdmin};
 
 class SendSMS extends Command
 {
@@ -48,6 +48,7 @@ class SendSMS extends Command
                     ->select('numbersms.id')
                     ->join('bodysms', 'bodysms.id', '=', 'numbersms.bodysms_id')
                     ->where('bodysms.status', 1)
+                    ->where('bodysms.smstype_id', '!=', 1)
                     ->where('bodysms.sending_at', '<', now())
                     ->where('numbersms.status', self::STATUS_PENDING)
                     ->where('numbersms.attempts', '<', self::MAX_ATTEMPTS)
@@ -92,6 +93,7 @@ class SendSMS extends Command
             ->select(
                 'numbersms.id as numbersms_id',
                 'numbersms.number',
+                'numbersms.volume',
                 'numbersms.attempts',
                 'bodysms.sender',
                 'bodysms.message'
@@ -131,7 +133,20 @@ class SendSMS extends Command
 
                     if ($updated) {
                         $sent++;
-
+                        // Statistiques
+                        $statistic = StatisticAdmin::firstOrNew([
+                            'id' => 1,
+                        ]);
+                        $statistic->sms_sent = ($statistic->exists ? $statistic->sms_sent : 0) + $sms->volume;
+                        $prefix = Prefix::where('label', substr($sms->number, 0, 2))->first();
+                        if ($prefix && $prefix->network_id == 1) {
+                            $statistic->sms_movicel = ($statistic->exists ? $statistic->sms_movicel : 0) + $sms->volume;
+                        } elseif ($prefix && $prefix->network_id == 2) {
+                            $statistic->sms_unitel = ($statistic->exists ? $statistic->sms_unitel : 0) + $sms->volume;
+                        } elseif ($prefix && $prefix->network_id == 3) {
+                            $statistic->sms_africel = ($statistic->exists ? $statistic->sms_africel : 0) + $sms->volume;
+                        }
+                        $statistic->save();
                         $this->info("SMS accepté : {$sms->number}");
                     }
 

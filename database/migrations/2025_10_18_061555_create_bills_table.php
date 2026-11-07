@@ -12,11 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('bills', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->uuid('uuid');
             $table->string('reference', 15);
-            $table->decimal('volume1_sms', 10, 0);
-            $table->decimal('volume2_sms', 10, 0);
+            $table->decimal('volume1', 10, 0);
+            $table->decimal('volume2', 10, 0);
             $table->decimal('price', 5, 0)->default('0');
             $table->decimal('fees', 5, 0)->default('0');
             $table->tinyInteger('status')->default('0');

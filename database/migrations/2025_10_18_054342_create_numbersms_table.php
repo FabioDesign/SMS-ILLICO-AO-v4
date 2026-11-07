@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('numbersms', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->uuid('uuid');
             $table->string('number', 20);

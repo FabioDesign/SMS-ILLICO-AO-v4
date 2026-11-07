@@ -7,8 +7,8 @@ use \Carbon\Carbon;
 use App\Imports\ContactImport;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\{Request, JsonResponse};
-use App\Models\{Contact, Group, GroupContact, Prefix};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
+use App\Models\{Contact, Group, GroupContact, Prefix, StatisticUsers};
 use App\Http\Controllers\API\BaseController as BaseController;
 
 class GroupController extends BaseController
@@ -130,6 +130,12 @@ class GroupController extends BaseController
         DB::beginTransaction(); // Démarrer une transaction
         try {
             Group::create($set);
+            // Statistiques
+            $statistic = StatisticUsers::firstOrNew([
+                'user_id' => Auth::id(),
+            ]);
+            $statistic->groups = ($statistic->exists ? $statistic->groups : 0) + 1;
+            $statistic->save();
             // Valider la transaction
             DB::commit();
             return $this->sendSuccess(__('message.addgroup'));
@@ -227,6 +233,12 @@ class GroupController extends BaseController
             if ($find) {
                 GroupContact::where('group_id', $groups->id)->delete();
             }
+            // Statistiques
+            $statistic = StatisticUsers::firstOrNew([
+                'user_id' => Auth::id(),
+            ]);
+            $statistic->groups = ($statistic->exists ? $statistic->groups : 0) - 1;
+            $statistic->save();
             return $this->sendSuccess(__('message.delgroup'));
         } catch(\Exception $e) {
             Log::warning("Group::destroy - Erreur : {$e->getMessage()}");
@@ -376,6 +388,12 @@ class GroupController extends BaseController
                     'group_id'   => $groups->id,
                     'contact_id' => $contact->id,
                 ]);
+                // Statistiques
+                $statistic = StatisticUsers::firstOrNew([
+                    'user_id' => Auth::id(),
+                ]);
+                $statistic->contacts = ($statistic->exists ? $statistic->contacts : 0) + 1;
+                $statistic->save();
             });
             return $this->sendSuccess(__('message.addcontact'));
         } catch (\Throwable $e) {
@@ -521,6 +539,12 @@ class GroupController extends BaseController
                 })->toArray();
                 GroupContact::insertOrIgnore($data);
             }
+            // Statistiques
+            $statistic = StatisticUsers::firstOrNew([
+                'user_id' => Auth::id(),
+            ]);
+            $statistic->contacts = ($statistic->exists ? $statistic->contacts : 0) + $import->getImportedCount();
+            $statistic->save();
             return $this->sendSuccess(__('message.impcontact'), [
                 'imported' => $import->getImportedCount(),
                 'total' => $import->getTotalRows(),

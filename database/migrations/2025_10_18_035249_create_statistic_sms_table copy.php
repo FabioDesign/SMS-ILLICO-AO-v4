@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('statistic', function (Blueprint $table) {
-            $table->id();
+        Schema::create('statistic_sms', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
+            $table->increments('id');
             $table->year('year', 4);
             $table->tinyInteger('month');
-            $table->decimal('volume_sms', 10, 0);
+            $table->decimal('volume', 10, 0);
             $table->bigInteger('user_id');
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('statistic');
+        Schema::dropIfExists('statistic_sms');
     }
 };

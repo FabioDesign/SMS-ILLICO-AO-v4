@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('checkotp', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->string('email', 255)->unique();
             $table->string('otp', 10);

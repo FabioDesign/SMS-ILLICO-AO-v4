@@ -7,7 +7,7 @@ use \Carbon\Carbon;
 use App\Imports\ContactImport;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\{Request, JsonResponse};
-use App\Models\{Contact, GroupContact, Prefix};
+use App\Models\{Contact, GroupContact, Prefix, StatisticUsers};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
 use App\Http\Controllers\API\BaseController as BaseController;
 
@@ -179,6 +179,12 @@ class PhonebookController extends BaseController
         DB::beginTransaction(); // Démarrer une transaction
         try {
             Contact::create($set);
+            // Statistiques
+            $statistic = StatisticUsers::firstOrNew([
+                'user_id' => Auth::id(),
+            ]);
+            $statistic->contacts = ($statistic->exists ? $statistic->contacts : 0) + 1;
+            $statistic->save();
             // Valider la transaction
             DB::commit();
             return $this->sendSuccess(__('message.addcontact'));
@@ -302,7 +308,7 @@ class PhonebookController extends BaseController
     {
         // Language
         App::setLocale(Auth::user()->lg);
-        // Validator        
+        // Validator
         $validator = Validator::make($request->all(), [
             'contacts' => 'required|array',
             'contacts.*' => 'required|uuid',
@@ -328,6 +334,12 @@ class PhonebookController extends BaseController
             GroupContact::whereIn('contact_id', $contactIds)->delete();
             // Supprimer tous les contacts en masse
             Contact::whereIn('id', $contactIds)->delete();
+            // Statistiques
+            $statistic = StatisticUsers::firstOrNew([
+                'user_id' => Auth::id(),
+            ]);
+            $statistic->contacts = ($statistic->exists ? $statistic->contacts : 0) - 1;
+            $statistic->save();
             DB::commit();
             return $this->sendSuccess(__('message.delcontact'));
         } catch (\Exception $e) {
@@ -374,6 +386,12 @@ class PhonebookController extends BaseController
         $import = new ContactImport(Auth::user(), 0);
         try {
             Excel::import($import, $request->file('files'));
+            // Statistiques
+            $statistic = StatisticUsers::firstOrNew([
+                'user_id' => Auth::id(),
+            ]);
+            $statistic->contacts = ($statistic->exists ? $statistic->contacts : 0) + $import->getImportedCount();
+            $statistic->save();
             return $this->sendSuccess(__('message.impcontact'), [
                 'imported' => $import->getImportedCount(),
                 'total' => $import->getTotalRows(),

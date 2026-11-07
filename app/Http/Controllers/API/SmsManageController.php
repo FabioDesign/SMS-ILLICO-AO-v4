@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Services\SmsCounter;
-use App\Models\{BodySms, NumberSms, User};
 use Illuminate\Http\{Request, JsonResponse};
+use App\Models\{BodySms, NumberSms, StatisticSms, User};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
 use App\Http\Controllers\API\BaseController as BaseController;
 
@@ -37,6 +37,7 @@ class SmsManageController extends BaseController
         // Language
         App::setLocale(Auth::user()->lg);
         $validator = Validator::make($request->all(), [
+            'smstype_id' => ['required', 'integer', 'exists:smstypes,id'],
             'sender'     => ['required', 'string', 'max:11'],
             'message'    => ['required', 'string'],
             'contacts'   => ['required', 'array', 'min:1'],
@@ -51,6 +52,7 @@ class SmsManageController extends BaseController
         $sender = $request->input('sender');
         $message = $request->input('message');
         $contacts = $request->input('contacts');
+        $smstype_id = $request->input('smstype_id');
         $data = $counter->volume($message, $contacts);
 
         $volume = Auth::user()->volume - $data['total_sms'];
@@ -61,20 +63,30 @@ class SmsManageController extends BaseController
         // Data to save
         $set = [
             'status' => 1,
-            'smstype_id' => 2,
             'sender' => $sender,
             'message' => $message,
             'sending_at' => now(),
             'user_id' => Auth::id(),
+            'smstype_id' => $smstype_id,
             'pages' => $data['segments'],
             'volume' => $data['total_sms'],
             'chars' => $data['characters'],
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
-            User::findOrFail(Auth::id())->update([
-                'volume' => $volume,
-            ]);
+            if ($smstype_id != 1) {
+                User::findOrFail(Auth::id())->update([
+                    'volume' => $volume,
+                ]);
+                // Statistiques
+                $statistic = StatisticSms::firstOrNew([
+                    'year' => now()->year,
+                    'month' => now()->month,
+                    'user_id' => Auth::id(),
+                ]);
+                $statistic->volume = ($statistic->exists ? $statistic->volume : 0) + $data['total_sms'];
+                $statistic->save();
+            }
             $bodysms = BodySms::create($set);
             foreach ($contacts as $contact) :
                 $set = [

@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('group_contact', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->tinyInteger('blacklist')->default('0');
             $table->bigInteger('contact_id');

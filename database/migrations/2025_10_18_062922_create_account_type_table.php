@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('account_type', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->increments('id');
             $table->string('en', 50);
             $table->string('pt', 50);

@@ -32,7 +32,7 @@ class BillController extends BaseController
             $page = $request->page ?? 1;
             $limit = $request->limit ?? 10;
             // Code to list factures
-            $bills = Bill::select('uuid', 'reference', 'volume1_sms', 'volume2_sms', 'price', 'fees', 'status', 'created_at')
+            $bills = Bill::select('uuid', 'reference', 'volume1', 'volume2', 'price', 'fees', 'status', 'created_at')
             ->where('user_id', Auth::id())
             ->orderByDesc('created_at')
             ->paginate($limit, ['*'], 'page', $page);
@@ -45,11 +45,11 @@ class BillController extends BaseController
             $data = $bills->map(fn($data) => [
                 'uuid' => $data->uuid,
                 'reference' => $data->reference,
-                'volume1_sms' => $data->volume1_sms,
-                'volume2_sms' => $data->volume2_sms,
+                'volume1' => $data->volume1,
+                'volume2' => $data->volume2,
                 'price' => $data->price,
                 'fees' => $data->fees,
-                'total' => ceil(($data->price * $data->volume2_sms + $data->fees) * 1.05),
+                'total' => ceil(($data->price * $data->volume2 + $data->fees) * 1.05),
                 'status' => $data->status,
                 'libelle' => match((int)$data->status) {
                     0 => __('message.draft'),
@@ -96,11 +96,11 @@ class BillController extends BaseController
             // Data to save
             $data = [
                 'reference' => $bills->reference,
-                'volume1_sms' => $bills->volume1_sms,
-                'volume2_sms' => $bills->volume2_sms,
+                'volume1' => $bills->volume1,
+                'volume2' => $bills->volume2,
                 'price' => $bills->price,
                 'fees' => $bills->fees,
-                'total' => ceil(($bills->price * $bills->volume2_sms + $bills->fees) * 1.05),
+                'total' => ceil(($bills->price * $bills->volume2 + $bills->fees) * 1.05),
             ];
             return $this->sendSuccess(__('message.detbill'), $data);
         } catch (\Exception $e) {
@@ -119,8 +119,8 @@ class BillController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"volume2_sms", "price"},
-    *         @OA\Property(property="volume2_sms", type="integer"),
+    *         required={"volume2", "price"},
+    *         @OA\Property(property="volume2", type="integer"),
     *         @OA\Property(property="price", type="number", format="float"),
     *      )
     *   ),
@@ -134,7 +134,7 @@ class BillController extends BaseController
         App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
-            'volume2_sms' => 'required|integer|min:1',
+            'volume2' => 'required|integer|min:1',
             'price' => 'required|numeric|exists:prices,amount',
         ]);
         // Error field
@@ -158,8 +158,8 @@ class BillController extends BaseController
             'reference' => $ref,
             'price' => $request->price,
             'user_id' => Auth::id(),
-            'volume1_sms' => Auth::user()->volume_sms,
-            'volume2_sms' => $request->volume2_sms,
+            'volume1' => Auth::user()->volume,
+            'volume2' => $request->volume2,
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
@@ -184,8 +184,8 @@ class BillController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"volume2_sms", "price"},
-    *         @OA\Property(property="volume2_sms", type="integer"),
+    *         required={"volume2", "price"},
+    *         @OA\Property(property="volume2", type="integer"),
     *         @OA\Property(property="price", type="number", format="float"),
     *      )
     *   ),
@@ -199,7 +199,7 @@ class BillController extends BaseController
         App::setLocale(Auth::user()->lg);
         // Validator
         $validator = Validator::make($request->all(), [
-            'volume2_sms' => 'required|integer|min:1',
+            'volume2' => 'required|integer|min:1',
             'price' => 'required|numeric|exists:prices,amount',
         ]);
         // Error field
@@ -218,8 +218,8 @@ class BillController extends BaseController
         try {
             $bills->update([
                 'price' => $request->price,
-                'volume1_sms' => Auth::user()->volume_sms,
-                'volume2_sms' => $request->volume2_sms,
+                'volume1' => Auth::user()->volume,
+                'volume2' => $request->volume2,
             ]);
             // Valider la transaction
             DB::commit();
@@ -304,13 +304,13 @@ class BillController extends BaseController
             // Username
             $username = Auth::user()->firstname . " " . Auth::user()->lastname;
             // Subject
-            $subject = "Sender name";
+            $subject = "Volume SMS";
             // Send SMS to LogicMind
             $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
             Dear Sir,<br /><br />
             The user <b>{$username}</b> has placed an order of SS.</b><br />M
             Reference : <b>{$bills->reference }</b><br />
-            Volume SMS : <b>{$bills->volume2_sms}</b><br /><br />
+            Volume SMS : <b>{$bills->volume2}</b><br /><br />
             <a href='" . env('URL_BACKOFFICE') . "'>Connection to Management Plateforme</a><br /><br />
             <hr style='color:#156082;'>"
             . __('message.bestregard')

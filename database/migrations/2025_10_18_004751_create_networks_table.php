@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('networks', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->increments('id');
             $table->string('label', 20);
             $table->integer('country_id');
