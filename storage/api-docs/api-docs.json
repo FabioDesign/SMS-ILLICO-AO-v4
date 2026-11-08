@@ -66,11 +66,11 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "volume2_sms",
+                                    "volume2",
                                     "price"
                                 ],
                                 "properties": {
-                                    "volume2_sms": {
+                                    "volume2": {
                                         "type": "integer"
                                     },
                                     "price": {
@@ -137,11 +137,11 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "volume2_sms",
+                                    "volume2",
                                     "price"
                                 ],
                                 "properties": {
-                                    "volume2_sms": {
+                                    "volume2": {
                                         "type": "integer"
                                     },
                                     "price": {
