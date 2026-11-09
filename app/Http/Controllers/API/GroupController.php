@@ -248,6 +248,56 @@ class GroupController extends BaseController
     // Liste des contacts d'un groupe
     /**
     * @OA\Get(
+    *   path="/api/groups/contacts/{uuid}",
+    *   tags={"Groups"},
+    *   operationId="listContactsGroup",
+    *   description="Liste des contacts d'un groupe.",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Liste des contacts d'un groupe."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function contacts(string $uuid): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        try {
+            // Code to list contact list
+            $groupContact = GroupContact::select('contacts.uuid', 'contacts.label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
+            ->join('contacts', 'contacts.id', '=', 'group_contact.contact_id')
+            ->join('groups', 'groups.id', '=', 'group_contact.group_id')
+            ->where('groups.user_id', Auth::id())
+            ->where('group_contact.blacklist', 0)
+            ->where('contacts.blacklist', 0)
+            ->where('groups.uuid', $uuid)
+            ->where('publipostage', 0)
+            ->orderBy('label')
+            ->get();
+            // Vérifier si les données existent
+            if ($groupContact->isEmpty()) {
+                Log::warning("Group::contacts - Aucun contact trouvé pour l'UUID : {$uuid}");
+                return $this->sendSuccess(__('message.nodata'));
+            };
+            // Transformer les données
+            $data = $groupContact->map(fn($data) => [
+                'uuid' => $data->uuid,
+                'label' => $data->label,
+                'number' => $data->number,
+                'gender' => $data->gender ?? '',
+                'date_at' => $data->date_at != null ? Carbon::parse($data->date_at)->format('d/m/Y'):'',
+                'field1' => $data->field1 ?? '',
+                'field2' => $data->field2 ?? '',
+                'field3' => $data->field3 ?? '',
+            ]);
+            return $this->sendSuccess(__('message.listcontact'), $data);
+        } catch (\Exception $e) {
+            Log::warning("Group::contacts - Erreur : {$e->getMessage()}");
+            return $this->sendError(__('message.error'));
+        }
+    }
+    // Liste des contacts d'un groupe
+    /**
+    * @OA\Get(
     *   path="/api/groups/contactlist/{uuid}?page=1&limit=10&search=''",
     *   tags={"Groups"},
     *   operationId="listContactGroup",
@@ -307,9 +357,9 @@ class GroupController extends BaseController
     // Ajout d'un Contact dans un Groupe
     /**
     *   @OA\Post(
-    *   path="/api/groups/contact/{uuid}",
+    *   path="/api/groups/addcontact/{uuid}",
     *   tags={"Groups"},
-    *   operationId="ContactGroup",
+    *   operationId="addContactGroup",
     *   description="Ajout d'un contact dans un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
@@ -330,7 +380,7 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function contact(Request $request, string $uuid): JsonResponse {
+    public function addcontact(Request $request, string $uuid): JsonResponse {
         App::setLocale(Auth::user()->lg);
         // Validation
         $validator = Validator::make($request->all(), [
@@ -404,9 +454,9 @@ class GroupController extends BaseController
     // Ajout/Suppression de Contact dans un Groupe
     /**
     *   @OA\Post(
-    *   path="/api/groups/contacts/{uuid}",
+    *   path="/api/groups/delcontact/{uuid}",
     *   tags={"Groups"},
-    *   operationId="addGroup",
+    *   operationId="delContactGroup",
     *   description="Ajout/Suppression d'un ou de plusieurs contacts dans un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
@@ -425,7 +475,7 @@ class GroupController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function contacts(Request $request, string $uuid): JsonResponse {
+    public function delcontact(Request $request, string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator

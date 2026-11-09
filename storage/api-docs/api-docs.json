@@ -370,6 +370,31 @@
                 ]
             }
         },
+        "/api/groups/contacts/{uuid}": {
+            "get": {
+                "tags": [
+                    "Groups"
+                ],
+                "description": "Liste des contacts d'un groupe.",
+                "operationId": "listContactsGroup",
+                "responses": {
+                    "200": {
+                        "description": "Liste des contacts d'un groupe."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/groups/contactlist/{uuid}?page=1&limit=10&search=''": {
             "get": {
                 "tags": [
@@ -395,13 +420,13 @@
                 ]
             }
         },
-        "/api/groups/contact/{uuid}": {
+        "/api/groups/addcontact/{uuid}": {
             "post": {
                 "tags": [
                     "Groups"
                 ],
                 "description": "Ajout d'un contact dans un groupe.",
-                "operationId": "ContactGroup",
+                "operationId": "addContactGroup",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -458,13 +483,13 @@
                 ]
             }
         },
-        "/api/groups/contacts/{uuid}": {
+        "/api/groups/delcontact/{uuid}": {
             "post": {
                 "tags": [
                     "Groups"
                 ],
                 "description": "Ajout/Suppression d'un ou de plusieurs contacts dans un groupe.",
-                "operationId": "addGroup",
+                "operationId": "delContactGroup",
                 "requestBody": {
                     "required": true,
                     "content": {

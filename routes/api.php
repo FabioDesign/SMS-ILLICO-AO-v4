@@ -81,10 +81,11 @@ Route::middleware(['auth:api'])->group(function () {
   Route::controller(GroupController::class)
     ->prefix('groups')
     ->group(function () {
-    Route::post('contact/{uuid}', 'contact');
     Route::post('imports/{uuid}', 'imports');
-    Route::post('contacts/{uuid}', 'contacts');
+    Route::get('contacts/{uuid}', 'contacts');
     Route::post('blacklist/{uuid}', 'blacklist');
+    Route::post('addcontact/{uuid}', 'addcontact');
+    Route::post('delcontact/{uuid}', 'delcontact');
     Route::get('contactlist/{uuid}', 'contactlist');
   });
   // Route pour les Publipostages
