@@ -38,7 +38,7 @@ class SmsManageController extends BaseController
         // Language
         App::setLocale(Auth::user()->lg);
         $validator = Validator::make($request->all(), [
-            'smstype_id' => ['required', 'integer', 'exists:smstypes,id'],
+            'smstype_id' => ['required', 'integer', 'exists:sms_type,id'],
             'sender'     => ['required', 'string', 'max:11'],
             'message'    => ['required', 'string'],
             'contacts'   => ['required', 'array', 'min:1'],
