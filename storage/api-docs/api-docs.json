@@ -1904,11 +1904,15 @@
                         "application/json": {
                             "schema": {
                                 "required": [
+                                    "smstype_id",
                                     "sender",
                                     "message",
                                     "contacts"
                                 ],
                                 "properties": {
+                                    "smstype_id": {
+                                        "type": "integer"
+                                    },
                                     "sender": {
                                         "type": "string"
                                     },
