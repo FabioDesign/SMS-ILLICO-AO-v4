@@ -1907,7 +1907,8 @@
                                     "smstype_id",
                                     "sender",
                                     "message",
-                                    "contacts"
+                                    "contacts",
+                                    "sending_at"
                                 ],
                                 "properties": {
                                     "smstype_id": {
@@ -1918,6 +1919,10 @@
                                     },
                                     "message": {
                                         "type": "string"
+                                    },
+                                    "sending_at": {
+                                        "type": "string",
+                                        "format": "date"
                                     },
                                     "contacts": {
                                         "type": "array",

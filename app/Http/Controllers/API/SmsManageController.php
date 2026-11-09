@@ -21,10 +21,11 @@ class SmsManageController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"smstype_id", "sender", "message", "contacts"},
+    *         required={"smstype_id", "sender", "message", "contacts", "sending_at"},
     *         @OA\Property(property="smstype_id", type="integer"),
     *         @OA\Property(property="sender", type="string"),
     *         @OA\Property(property="message", type="string"),
+    *         @OA\Property(property="sending_at", type="string", format="date"),
     *         @OA\Property(property="contacts", type="array", @OA\Items(type="string")),
     *      )
     *   ),
@@ -41,6 +42,7 @@ class SmsManageController extends BaseController
             'smstype_id' => ['required', 'integer', 'exists:sms_type,id'],
             'sender'     => ['required', 'string', 'max:11'],
             'message'    => ['required', 'string'],
+            'sending_at' => ['required', 'date_format:Y-m-d'],
             'contacts'   => ['required', 'array', 'min:1'],
             'contacts.*' => ['required', 'distinct', 'digits_between:8,15'],
         ]);
@@ -66,12 +68,12 @@ class SmsManageController extends BaseController
             'status' => 1,
             'sender' => $sender,
             'message' => $message,
-            'sending_at' => now(),
             'user_id' => Auth::id(),
             'smstype_id' => $smstype_id,
             'pages' => $data['segments'],
             'volume' => $data['total_sms'],
             'chars' => $data['characters'],
+            'sending_at' => $request->input('sending_at'),
         ];
         DB::beginTransaction(); // Démarrer une transaction
         try {
