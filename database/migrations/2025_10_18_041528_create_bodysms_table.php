@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('volume', 10, 0);
             $table->decimal('chars', 10, 0);
             $table->decimal('pages', 10, 0);
-            $table->date('sending_at');
+            $table->timestamp('sending_at');
             $table->tinyInteger('status')->default('0');
             $table->timestamps();
             $table->integer('smstype_id');
