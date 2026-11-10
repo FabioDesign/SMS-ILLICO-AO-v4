@@ -110,7 +110,8 @@ Route::middleware(['auth:api'])->group(function () {
   Route::controller(SmsManageController::class)
     ->prefix('sms')
     ->group(function () {
-    Route::post('send', 'sendsms');
+    Route::get('history', 'index');
+    Route::post('send', 'store');
   });
   // Route pour les senders
   Route::controller(SenderController::class)
