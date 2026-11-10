@@ -129,7 +129,7 @@ class PhonebookController extends BaseController
     *         @OA\Property(property="field3", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Contact enregisté avec succès."),
+    *   @OA\Response(response=201, description="Contact enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -161,7 +161,7 @@ class PhonebookController extends BaseController
         }
         // Vérifier préfixe
         $prefix = substr($request->number, 0, 2);
-        if (!Prefix::where('label', $prefix)->exists()) {
+        if (Prefix::where('label', $prefix)->doesntExist()) {
             Log::warning("Phonebook::store - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
@@ -215,7 +215,7 @@ class PhonebookController extends BaseController
     *         @OA\Property(property="field3", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Contact modifié avec succès."),
+    *   @OA\Response(response=201, description="Contact modifié avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -249,7 +249,7 @@ class PhonebookController extends BaseController
         }
         // Vérifier préfixe
         $prefix = substr($request->number, 0, 2);
-        if (!Prefix::where('label', $prefix)->exists()) {
+        if (Prefix::where('label', $prefix)->doesntExist()) {
             Log::warning("Phonebook::update - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
@@ -299,7 +299,7 @@ class PhonebookController extends BaseController
     *         ),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Contacts supprimés avec succès."),
+    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -366,7 +366,7 @@ class PhonebookController extends BaseController
     *          )
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Contact enregisté avec succès."),
+    *   @OA\Response(response=201, description="Contact enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -421,7 +421,7 @@ class PhonebookController extends BaseController
     *         ),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Contacts supprimés avec succès."),
+    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )

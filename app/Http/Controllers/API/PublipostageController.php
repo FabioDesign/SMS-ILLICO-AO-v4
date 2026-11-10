@@ -160,7 +160,7 @@ class PublipostageController extends BaseController
         }
         // Vérifier préfixe
         $prefix = substr($request->number, 0, 2);
-        if (!Prefix::where('label', $prefix)->exists()) {
+        if (Prefix::where('label', $prefix)->doesntExist()) {
             Log::warning("Publipostage::store - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }
@@ -243,7 +243,7 @@ class PublipostageController extends BaseController
         }
         // Vérifier préfixe
         $prefix = substr($request->number, 0, 2);
-        if (!Prefix::where('label', $prefix)->exists()) {
+        if (Prefix::where('label', $prefix)->doesntExist()) {
             Log::warning("Publipostage::update - Validator number : " . json_encode($request->all()));
             return $this->sendError(__('message.numbernot'), [], 422);
         }

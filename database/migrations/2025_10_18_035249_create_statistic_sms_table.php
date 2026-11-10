@@ -17,6 +17,7 @@ return new class extends Migration
             $table->year('year', 4);
             $table->tinyInteger('month');
             $table->decimal('volume', 10, 0);
+            $table->timestamps();
             $table->bigInteger('user_id');
         });
     }

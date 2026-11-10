@@ -4,7 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Services\SmsCounter;
 use Illuminate\Http\{Request, JsonResponse};
-use App\Models\{BodySms, NumberSms, StatisticSms, User};
+use App\Models\{BodySms, NumberSms, Prefix, StatisticSms, User};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
 use App\Http\Controllers\API\BaseController as BaseController;
 
@@ -115,6 +115,14 @@ class SmsManageController extends BaseController
         if ($validator->fails()) {
             Log::warning("SmsManage::sendsms - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
+        }
+        // Vérifier préfixe
+        foreach ($request->contacts as $contact) {
+            $prefix = substr($contact, 0, 2);
+            if (Prefix::where('label', $prefix)->doesntExist()) {
+                Log::warning("SmsManage::store - Validator number : " . json_encode($request->all()));
+                return $this->sendError(__('message.numbernot'), [], 422);
+            }
         }
         // Data from request
         $sender = $request->input('sender');
