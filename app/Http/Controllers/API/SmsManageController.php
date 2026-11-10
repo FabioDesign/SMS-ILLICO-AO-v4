@@ -13,9 +13,9 @@ class SmsManageController extends BaseController
     //Historique des SMS
     /**
     * @OA\Get(
-    *   path="/api/sms/list?page=1&limit=10&search=''",
+    *   path="/api/sms/history?page=1&limit=10&search=''",
     *   tags={"SMS"},
-    *   operationId="listSMS",
+    *   operationId="historySMS",
     *   description="Historique des SMS.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Historique des SMS."),

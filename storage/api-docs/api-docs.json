@@ -1891,13 +1891,13 @@
                 ]
             }
         },
-        "/api/sms/list?page=1&limit=10&search=''": {
+        "/api/sms/history?page=1&limit=10&search=''": {
             "get": {
                 "tags": [
                     "SMS"
                 ],
                 "description": "Historique des SMS.",
-                "operationId": "listSMS",
+                "operationId": "historySMS",
                 "responses": {
                     "200": {
                         "description": "Historique des SMS."
