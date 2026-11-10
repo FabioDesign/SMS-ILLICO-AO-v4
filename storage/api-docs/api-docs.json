@@ -84,7 +84,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Voume modifié avec succès."
                     },
                     "400": {
@@ -107,7 +107,7 @@
                 "description": "Suppression d'une facture.",
                 "operationId": "deleteBill",
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Facture supprimée avec succès."
                     },
                     "400": {
@@ -155,7 +155,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Volume enregisté avec succès."
                     },
                     "400": {
@@ -198,7 +198,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Facture validée avec succès."
                     },
                     "400": {
@@ -264,7 +264,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Groupe enregisté avec succès."
                     },
                     "400": {
@@ -330,7 +330,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Groupe modifié avec succès."
                     },
                     "400": {
@@ -353,7 +353,7 @@
                 "description": "Suppression d'un groupe.",
                 "operationId": "deleteGroup",
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Groupe supprimé avec succès."
                     },
                     "400": {
@@ -466,7 +466,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Ajout d'un Contact dans un Groupe."
                     },
                     "400": {
@@ -516,7 +516,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contacts supprimés avec succès."
                     },
                     "400": {
@@ -560,7 +560,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contact enregisté avec succès."
                     },
                     "400": {
@@ -610,7 +610,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contacts supprimés avec succès."
                     },
                     "400": {
@@ -728,7 +728,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Modèle enregisté avec succès."
                     },
                     "400": {
@@ -806,7 +806,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Modèle modifié avec succès."
                     },
                     "400": {
@@ -829,7 +829,7 @@
                 "description": "Suppression d'un modèle.",
                 "operationId": "deleteModel",
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Modèle supprimé avec succès."
                     },
                     "400": {
@@ -1032,7 +1032,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Mot de passe modifié avec succès."
                     },
                     "400": {
@@ -1143,7 +1143,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contact modifié avec succès."
                     },
                     "400": {
@@ -1206,7 +1206,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contact enregisté avec succès."
                     },
                     "400": {
@@ -1252,7 +1252,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contacts supprimés avec succès."
                     },
                     "400": {
@@ -1296,7 +1296,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contact enregisté avec succès."
                     },
                     "400": {
@@ -1346,7 +1346,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contacts supprimés avec succès."
                     },
                     "400": {
@@ -1482,7 +1482,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contact modifié avec succès."
                     },
                     "400": {
@@ -1545,7 +1545,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contact enregisté avec succès."
                     },
                     "400": {
@@ -1591,7 +1591,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contacts supprimés avec succès."
                     },
                     "400": {
@@ -1635,7 +1635,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Contact enregisté avec succès."
                     },
                     "400": {
@@ -1709,7 +1709,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Expéditeur enregisté avec succès."
                     },
                     "400": {
@@ -1808,7 +1808,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Expéditeur modifié avec succès."
                     },
                     "400": {
@@ -1831,7 +1831,7 @@
                 "description": "Suppression d'un expéditeur.",
                 "operationId": "deleteSender",
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Expéditeur supprimé avec succès."
                     },
                     "400": {
@@ -1874,8 +1874,33 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Expéditeur validé avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/sms/list?page=1&limit=10&search=''": {
+            "get": {
+                "tags": [
+                    "SMS"
+                ],
+                "description": "Historique des SMS.",
+                "operationId": "listSMS",
+                "responses": {
+                    "200": {
+                        "description": "Historique des SMS."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -1922,7 +1947,7 @@
                                     },
                                     "sending_at": {
                                         "type": "string",
-                                        "format": "date"
+                                        "format": "date-time"
                                     },
                                     "contacts": {
                                         "type": "array",
@@ -1937,7 +1962,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "SMS enregisté avec succès."
                     },
                     "400": {
@@ -2042,7 +2067,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Authentification éffectuée avec succès."
                     },
                     "401": {
@@ -2120,7 +2145,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Création de compte utulisateur éffectuée avec succès."
                     },
                     "401": {
@@ -2190,7 +2215,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Profil utilisateur modifié avec succès."
                     },
                     "400": {
@@ -2234,7 +2259,7 @@
                     }
                 },
                 "responses": {
-                    "201": {
+                    "200": {
                         "description": "Photo de profil modifiée avec succès."
                     },
                     "401": {

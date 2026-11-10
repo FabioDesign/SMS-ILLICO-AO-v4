@@ -147,7 +147,7 @@ class SenderController extends BaseController
     *         @OA\Property(property="bydefault", type="integer", enum={0,1}),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Expéditeur enregisté avec succès."),
+    *   @OA\Response(response=200, description="Expéditeur enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -209,7 +209,7 @@ class SenderController extends BaseController
     *         @OA\Property(property="bydefault", type="integer", enum={0,1}),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Expéditeur modifié avec succès."),
+    *   @OA\Response(response=200, description="Expéditeur modifié avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -268,7 +268,7 @@ class SenderController extends BaseController
     *   operationId="deleteSender",
     *   description="Suppression d'un expéditeur.",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=201, description="Expéditeur supprimé avec succès."),
+    *   @OA\Response(response=200, description="Expéditeur supprimé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -304,7 +304,7 @@ class SenderController extends BaseController
     *         @OA\Property(property="uuid", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Expéditeur validé avec succès."),
+    *   @OA\Response(response=200, description="Expéditeur validé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )

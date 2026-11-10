@@ -134,7 +134,7 @@ class UserController extends BaseController
     *         @OA\Property(property="g_recaptcha_response", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Authentification éffectuée avec succès."),
+    *   @OA\Response(response=200, description="Authentification éffectuée avec succès."),
     *   @OA\Response(response=401, description="Echec d'authentification."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -254,7 +254,7 @@ class UserController extends BaseController
     *             @OA\Property(property="g_recaptcha_response", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Création de compte utulisateur éffectuée avec succès."),
+    *   @OA\Response(response=200, description="Création de compte utulisateur éffectuée avec succès."),
     *   @OA\Response(response=401, description="Echec de Création de compte."),
     *   @OA\Response(response=404, description="Page introuvable."),
     * )
@@ -422,7 +422,7 @@ class UserController extends BaseController
     *             @OA\Property(property="website", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Profil utilisateur modifié avec succès."),
+    *   @OA\Response(response=200, description="Profil utilisateur modifié avec succès."),
     *   @OA\Response(response=400, description="Bad Request."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -504,7 +504,7 @@ class UserController extends BaseController
      *          )
      *      )
      *   ),
-     *   @OA\Response(response=201, description="Photo de profil modifiée avec succès."),
+     *   @OA\Response(response=200, description="Photo de profil modifiée avec succès."),
      *   @OA\Response(response=401, description="Non autorisé."),
      *   @OA\Response(response=404, description="Page introuvable."),
      * )

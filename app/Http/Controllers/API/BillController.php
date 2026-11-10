@@ -124,7 +124,7 @@ class BillController extends BaseController
     *         @OA\Property(property="price", type="number", format="float"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Volume enregisté avec succès."),
+    *   @OA\Response(response=200, description="Volume enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -189,7 +189,7 @@ class BillController extends BaseController
     *         @OA\Property(property="price", type="number", format="float"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Voume modifié avec succès."),
+    *   @OA\Response(response=200, description="Voume modifié avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -238,7 +238,7 @@ class BillController extends BaseController
     *   operationId="deleteBill",
     *   description="Suppression d'une facture.",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=201, description="Facture supprimée avec succès."),
+    *   @OA\Response(response=200, description="Facture supprimée avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -274,7 +274,7 @@ class BillController extends BaseController
     *         @OA\Property(property="uuid", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Facture validée avec succès."),
+    *   @OA\Response(response=200, description="Facture validée avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )

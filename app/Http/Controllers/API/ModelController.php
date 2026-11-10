@@ -106,7 +106,7 @@ class ModelController extends BaseController
     *         @OA\Property(property="message", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Modèle enregisté avec succès."),
+    *   @OA\Response(response=200, description="Modèle enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -169,7 +169,7 @@ class ModelController extends BaseController
     *         @OA\Property(property="message", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Modèle modifié avec succès."),
+    *   @OA\Response(response=200, description="Modèle modifié avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -227,7 +227,7 @@ class ModelController extends BaseController
     *   operationId="deleteModel",
     *   description="Suppression d'un modèle.",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=201, description="Modèle supprimé avec succès."),
+    *   @OA\Response(response=200, description="Modèle supprimé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )

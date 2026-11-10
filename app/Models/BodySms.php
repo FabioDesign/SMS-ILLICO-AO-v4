@@ -15,6 +15,16 @@ class BodySms extends Model
         'sending_at' => 'datetime',
     ];
 
+    public function smstype()
+    {
+        return $this->belongsTo(SmsType::class, 'smstype_id');
+    }
+
+    public function numbers()
+    {
+        return $this->hasMany(NumberSms::class, 'bodysms_id');
+    }
+
     // Génération de UUID unique
     protected static function boot()
     {

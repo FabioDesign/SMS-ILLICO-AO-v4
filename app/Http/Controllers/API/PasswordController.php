@@ -249,7 +249,7 @@ class PasswordController extends BaseController
     *         @OA\Property(property="password_confirmation", type="string", format="password")
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Mot de passe modifié avec succès."),
+    *   @OA\Response(response=200, description="Mot de passe modifié avec succès."),
     *   @OA\Response(response=400, description="Bad Request."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )

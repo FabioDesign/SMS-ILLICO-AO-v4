@@ -31,6 +31,7 @@ return [
     "declined" => "Recusado",
 
     // SMS
+    'listsms' => "Lista de SMS.",
     'addsms' => "SMS registado com sucesso.",
     'limitsms' => "Não tem mais créditos de SMS. Por favor, recarregue a sua conta.",
     'editsms' => "SMS alterado com sucesso.",

@@ -100,7 +100,7 @@ class GroupController extends BaseController
     *         @OA\Property(property="label", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Groupe enregisté avec succès."),
+    *   @OA\Response(response=200, description="Groupe enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -160,7 +160,7 @@ class GroupController extends BaseController
     *         @OA\Property(property="label", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Groupe modifié avec succès."),
+    *   @OA\Response(response=200, description="Groupe modifié avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -212,7 +212,7 @@ class GroupController extends BaseController
     *   operationId="deleteGroup",
     *   description="Suppression d'un groupe.",
     *   security={{"bearer":{}}},
-    *   @OA\Response(response=201, description="Groupe supprimé avec succès."),
+    *   @OA\Response(response=200, description="Groupe supprimé avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -375,7 +375,7 @@ class GroupController extends BaseController
     *         @OA\Property(property="field3", type="string"),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Ajout d'un Contact dans un Groupe."),
+    *   @OA\Response(response=200, description="Ajout d'un Contact dans un Groupe."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -470,7 +470,7 @@ class GroupController extends BaseController
     *         ),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
+    *   @OA\Response(response=200, description="Contacts supprimés avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -551,7 +551,7 @@ class GroupController extends BaseController
     *          )
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Contact enregisté avec succès."),
+    *   @OA\Response(response=200, description="Contact enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
@@ -624,7 +624,7 @@ class GroupController extends BaseController
     *         ),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="Contacts supprimés avec succès."),
+    *   @OA\Response(response=200, description="Contacts supprimés avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )

@@ -41,6 +41,7 @@ return [
     'passworderr' => "Incorrect old password.",
 
     // SMS
+    'listsms' => "SMS list.",
     'addsms' => "SMS successfully registered.",
     'limitsms' => "You have no more SMS credits. Please recharge your account.",
     'editsms' => "SMS successfully modified.",

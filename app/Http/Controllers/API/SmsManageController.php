@@ -10,6 +10,71 @@ use App\Http\Controllers\API\BaseController as BaseController;
 
 class SmsManageController extends BaseController
 {
+    //Historique des SMS
+    /**
+    * @OA\Get(
+    *   path="/api/sms/list?page=1&limit=10&search=''",
+    *   tags={"SMS"},
+    *   operationId="listSMS",
+    *   description="Historique des SMS.",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Historique des SMS."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function index(Request $request): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        try {
+            $page = $request->page ?? 1;
+            $limit = $request->limit ?? 10;
+            $search = $request->search ?? '';
+            // Code to list contacts
+            $sms = BodySms::select(
+                'id',
+                'uuid',
+                'sender',
+                'message',
+                'volume',
+                'sending_at',
+                'created_at'
+            )
+            ->with(['smstype'])
+            ->withCount('numbers')
+            ->when($search != '', fn($q) => $q->where('message', 'LIKE', "%{$search}%"))
+            ->where('status', 1)
+            ->where('smstype_id', '!=', 1)
+            ->where('user_id', Auth::id())
+            ->orderBy('sending_at', 'desc')
+            ->paginate($limit, ['*'], 'page', $page);
+            // Vérifier si les données existent
+            if ($sms->isEmpty()) {
+                Log::warning("SmsManage::index - Aucun SMS trouvé.");
+                return $this->sendSuccess(__('message.nodata'));
+            }
+            // Transformer les données
+            $data = $sms->map(fn($data) => [
+                'uuid' => $data->uuid,
+                'smstype' => $data->smstype->label,
+                'message' => $data->message,
+                'sender' => $data->sender,
+                'volume' => $data->volume,
+                'contacts' => $data->numbers_count,
+                'sending_at' => $data->sending_at != null ? Carbon::parse($data->sending_at)->format('d/m/Y H:i:s'):'',
+                'created_at' => $data->created_at != null ? Carbon::parse($data->created_at)->format('d/m/Y H:i:s'):'',
+            ]);
+            return $this->sendSuccess(__('message.listsms'), [
+                'lists' => $data,
+                'current_page' => $sms->currentPage(),
+                'last_page' => $sms->lastPage(),
+                'total'  => $sms->total(),
+            ]);
+        } catch (\Exception $e) {
+            Log::warning("SmsManage::index - Erreur : {$e->getMessage()}");
+            return $this->sendError(__('message.error'));
+        }
+    }
     // Enregistrement d'un SMS
     /**
     * @OA\Post(
@@ -25,16 +90,16 @@ class SmsManageController extends BaseController
     *         @OA\Property(property="smstype_id", type="integer"),
     *         @OA\Property(property="sender", type="string"),
     *         @OA\Property(property="message", type="string"),
-    *         @OA\Property(property="sending_at", type="string", format="date"),
+    *         @OA\Property(property="sending_at", type="string", format="date-time"),
     *         @OA\Property(property="contacts", type="array", @OA\Items(type="string")),
     *      )
     *   ),
-    *   @OA\Response(response=201, description="SMS enregisté avec succès."),
+    *   @OA\Response(response=200, description="SMS enregisté avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function sendsms(Request $request, SmsCounter $counter): JsonResponse
+    public function store(Request $request, SmsCounter $counter): JsonResponse
     {
         // Language
         App::setLocale(Auth::user()->lg);
@@ -42,9 +107,9 @@ class SmsManageController extends BaseController
             'smstype_id' => ['required', 'integer', 'exists:sms_type,id'],
             'sender'     => ['required', 'string', 'max:11'],
             'message'    => ['required', 'string'],
-            'sending_at' => ['required', 'date_format:Y-m-d'],
+            'sending_at' => ['required', 'date_format:Y-m-d H:i:s'],
             'contacts'   => ['required', 'array', 'min:1'],
-            'contacts.*' => ['required', 'distinct', 'digits_between:8,15'],
+            'contacts.*' => ['required', 'distinct', 'digits:9', 'numeric'],
         ]);
 
         if ($validator->fails()) {
