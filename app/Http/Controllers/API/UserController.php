@@ -157,6 +157,7 @@ class UserController extends BaseController
             return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
+            /*
             // Paramètre de Recapcha
             $url = 'https://www.google.com/recaptcha/api/siteverify';
             $data = [
@@ -183,6 +184,7 @@ class UserController extends BaseController
                 Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
                 return $this->sendError(__('message.recaptcha'));
             }
+            */
             $credentialNum = [
                 'number' => $request->login,
                 'password' => $request->password,
