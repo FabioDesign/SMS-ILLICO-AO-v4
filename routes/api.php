@@ -96,7 +96,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('contacts/{uuid}', 'contacts');
     Route::post('blacklist/{uuid}', 'blacklist');
     Route::post('addcontact/{uuid}', 'addcontact');
-    Route::post('delcontact/{uuid}', 'delcontact');
+    Route::post('addsupcont/{uuid}', 'addsupcont');
     Route::get('contactlist/{uuid}', 'contactlist');
   });
   // Route pour les Publipostages

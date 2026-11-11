@@ -463,9 +463,9 @@ class GroupController extends BaseController
     // Ajout/Suppression de Contact dans un Groupe
     /**
     *   @OA\Post(
-    *   path="/api/groups/delcontact/{uuid}",
+    *   path="/api/groups/addsupcont/{uuid}",
     *   tags={"Groups"},
-    *   operationId="delContactGroup",
+    *   operationId="addSupContGroup",
     *   description="Ajout/Suppression d'un ou de plusieurs contacts dans un groupe.",
     *   security={{"bearer":{}}},
     *   @OA\RequestBody(
@@ -479,12 +479,12 @@ class GroupController extends BaseController
     *         ),
     *      )
     *   ),
-    *   @OA\Response(response=200, description="Contacts supprimés avec succès."),
+    *   @OA\Response(response=200, description="Contacts ajoutés/supprimés avec succès."),
     *   @OA\Response(response=400, description="Serveur indisponible."),
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function delcontact(Request $request, string $uuid): JsonResponse {
+    public function addsupcont(Request $request, string $uuid): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -495,13 +495,12 @@ class GroupController extends BaseController
         ]);
         // Error field
         if ($validator->fails()) {
-            Log::warning("Group::contacts - Validator : {$validator->errors()->first()} - " . json_encode($request->all())
-            );
+            Log::warning("Group::addsupcont - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         $groups = Group::where('uuid', $uuid)->first();
         if (!$groups) {
-            Log::warning("Group::contacts - Aucun Groupe trouvé pour l'UUID : {$uuid}");
+            Log::warning("Group::addsupcont - Aucun Groupe trouvé pour l'UUID : {$uuid}");
             return $this->sendSuccess(__('message.nodata'));
         }
         try {
@@ -513,7 +512,7 @@ class GroupController extends BaseController
                 ->pluck('id');
             if ($contacts->isEmpty()) {
                 DB::rollBack();
-                Log::warning("Group::contacts - Aucun Contacts trouvés : " . json_encode($request->contacts));
+                Log::warning("Group::addsupcont - Aucun Contacts trouvés : " . json_encode($request->contacts));
                 return $this->sendSuccess(__('message.nodata'));
             }
             if ($request->status == 1) {
@@ -537,8 +536,7 @@ class GroupController extends BaseController
             return $this->sendSuccess($msg);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::warning("Group::contacts - Erreur : {$e->getMessage()} " . json_encode($request->all())
-            );
+            Log::warning("Group::addsupcont - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));
         }
     }

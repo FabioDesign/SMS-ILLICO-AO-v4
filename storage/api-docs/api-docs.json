@@ -483,13 +483,13 @@
                 ]
             }
         },
-        "/api/groups/delcontact/{uuid}": {
+        "/api/groups/addsupcont/{uuid}": {
             "post": {
                 "tags": [
                     "Groups"
                 ],
                 "description": "Ajout/Suppression d'un ou de plusieurs contacts dans un groupe.",
-                "operationId": "delContactGroup",
+                "operationId": "addSupContGroup",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -517,7 +517,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Contacts supprimés avec succès."
+                        "description": "Contacts ajoutés/supprimés avec succès."
                     },
                     "400": {
                         "description": "Serveur indisponible."
