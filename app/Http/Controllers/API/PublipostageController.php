@@ -375,7 +375,7 @@ class PublipostageController extends BaseController
                 'imported' => $import->getImportedCount(),
                 'total' => $import->getTotalRows(),
                 'errors' => $import->getErrors(),
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             Log::warning("Publipostage::imports - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'), [], 400);

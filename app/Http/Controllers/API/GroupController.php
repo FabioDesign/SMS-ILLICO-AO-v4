@@ -44,7 +44,11 @@ class GroupController extends BaseController
             $data = $groups->map(fn($data) => [
                 'uuid' => $data->uuid,
                 'label' => $data->label,
-                'total' => GroupContact::where('group_id', $data->id)->where('blacklist', 0)->count(),
+                'total' => GroupContact::where('group_id', $data->id)
+                ->where('group_contact.blacklist', 0)
+                ->where('contacts.publipostage', 0)
+                ->where('contacts.blacklist', 0)
+                ->count(),
             ]);
             return $this->sendSuccess(__('message.listgroup'), $data);
         } catch (\Exception $e) {
@@ -599,7 +603,7 @@ class GroupController extends BaseController
                 'imported' => $import->getImportedCount(),
                 'total' => $import->getTotalRows(),
                 'errors' => $import->getErrors(),
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             Log::warning("Group::imports - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.fielderr'), [], 400);

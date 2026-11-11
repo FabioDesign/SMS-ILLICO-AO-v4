@@ -217,7 +217,7 @@ class UserController extends BaseController
                         'login_at' => now(),
                         'lg' => $request->lg,
                     ]);
-                    return $this->sendSuccess(__('message.authsucc'), $data, 201);
+                    return $this->sendSuccess(__('message.authsucc'), $data, 200);
                 } catch (\Exception $e) {
                     Log::warning("User::login - Echec de connexion : {$e->getMessage()}");
                     return $this->sendError(__('message.error'));
@@ -389,7 +389,7 @@ class UserController extends BaseController
                     'number' => $request->number,
                     'email' => $email,
                 ];
-                return $this->sendSuccess(__('message.usersucc'), $data, 201);
+                return $this->sendSuccess(__('message.usersucc'), $data, 200);
             } catch (\Exception $e) {
                 DB::rollBack(); // Annuler la transaction en cas d'erreur
                 Log::warning("User::store - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -481,7 +481,7 @@ class UserController extends BaseController
             // Création de l'utilisateur
             User::findOrFail(Auth::id())->update($set);
             DB::commit(); // Valider la transaction
-            return $this->sendSuccess(__('message.profilsucc'), $set, 201);
+            return $this->sendSuccess(__('message.profilsucc'), $set, 200);
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
             Log::warning("User::profiles - Erreur : {$e->getMessage()} " . json_encode($request->all()));
@@ -542,7 +542,7 @@ class UserController extends BaseController
             $data = [
                 'avatar' => env('APP_URL') . '/assets/avatars/' . $avatar,
             ];
-            return $this->sendSuccess(__('message.photosucc'), $data, 201);
+            return $this->sendSuccess(__('message.photosucc'), $data, 200);
         } catch(\Exception $e) {
             Log::warning("User::avatars - Erreur : {$e->getMessage()} " . json_encode($request->all()));
             return $this->sendError(__('message.error'));

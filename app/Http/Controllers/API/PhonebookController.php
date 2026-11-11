@@ -396,7 +396,7 @@ class PhonebookController extends BaseController
                 'imported' => $import->getImportedCount(),
                 'total' => $import->getTotalRows(),
                 'errors' => $import->getErrors(),
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             Log::warning("Phonebook::imports - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.fielderr'), [], 400);
