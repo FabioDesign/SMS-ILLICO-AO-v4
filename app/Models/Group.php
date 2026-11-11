@@ -12,6 +12,11 @@ class Group extends Model
 
     protected $guarded = [];
 
+    public function groupContacts()
+    {
+        return $this->hasMany(GroupContact::class, 'group_id');
+    }
+
     // Génération de UUID unique
     protected static function boot()
     {

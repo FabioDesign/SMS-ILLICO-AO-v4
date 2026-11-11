@@ -31,24 +31,29 @@ class GroupController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Code to list groupes
-            $groups = Group::select('id', 'uuid', 'label')
+            $groups = Group::query()
             ->where('user_id', Auth::id())
+            ->withCount([
+                'groupContacts as total' => function ($query) {
+                    $query->where('blacklist', 0)
+                        ->whereHas('contact', function ($contact) {
+                            $contact->where('publipostage', 0)
+                                ->where('blacklist', 0);
+                        });
+                },
+            ])
             ->orderBy('label')
-            ->get();
+            ->get(['id', 'uuid', 'label']);
+
             // Vérifier si les données existent
             if ($groups->isEmpty()) {
                 Log::warning("Group::index - Aucun Groupe trouvé.");
                 return $this->sendSuccess(__('message.nodata'));
             }
-            // Transformer les données
-            $data = $groups->map(fn($data) => [
-                'uuid' => $data->uuid,
-                'label' => $data->label,
-                'total' => GroupContact::where('group_id', $data->id)
-                ->where('group_contact.blacklist', 0)
-                ->where('contacts.publipostage', 0)
-                ->where('contacts.blacklist', 0)
-                ->count(),
+            $data = $groups->map(fn ($group) => [
+                'uuid'  => $group->uuid,
+                'label' => $group->label,
+                'total' => $group->total,
             ]);
             return $this->sendSuccess(__('message.listgroup'), $data);
         } catch (\Exception $e) {
