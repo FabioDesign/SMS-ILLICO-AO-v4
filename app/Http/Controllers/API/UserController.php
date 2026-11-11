@@ -85,31 +85,34 @@ class UserController extends BaseController
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Data to save
+            $accountType = $user->lg === 'en'
+            ? $user->accountType->en
+            : $user->accountType->pt;
             $data = [
-                'lastname'  => Auth::user()->lastname,
-                'firstname' => Auth::user()->firstname,
-                'number'    => Auth::user()->number,
-                'email'     => Auth::user()->email,
-                'company'   => Auth::user()->company,
-                'nif'       => Auth::user()->nif,
-                'address'   => Auth::user()->address,
-                'website'   => Auth::user()->website,
-                'volume_sms' => Auth::user()->volume_sms,
-                'towns' => Auth::user()->town ? [
-                    'id'    => Auth::user()->town->id,
-                    'label' => Auth::user()->town->label,
+                'lastname'  => $user->lastname,
+                'firstname' => $user->firstname,
+                'number'    => $user->number,
+                'email'     => $user->email,
+                'company'   => $user->company,
+                'nif'       => $user->nif,
+                'address'   => $user->address,
+                'website'   => $user->website,
+                'volume_sms' => $user->volume_sms,
+                'towns' => $user->town ? [
+                    'id'    => $user->town->id,
+                    'label' => $user->town->label,
                 ] : null,
-                'account_type' => Auth::user()->accountType ? [
-                    'id'    => Auth::user()->accountType->id,
-                    'label' => Auth::user()->lg === 'en' ? Auth::user()->accountType->en : Auth::user()->accountType->fr,
+                'account_type' => $user->accountType ? [
+                    'id'    => $user->accountType->id,
+                    'label' => $accountType,
                 ] : null,
-                'status' => match((int) Auth::user()->status) {
+                'status' => match((int) $user->status) {
                     0 => __('message.inactive'),
                     1 => __('message.active'),
                     2 => __('message.blocked'),
                 },
-                'created_at' => Auth::user()->created_at->format('d/m/Y H:i'),
-                'avatar' => asset('assets/avatars/' . (Auth::user()->avatar ?? 'avatar.jpg')),
+                'created_at' => $user->created_at->format('d/m/Y H:i'),
+                'avatar' => asset('assets/avatars/' . ($user->avatar ?? 'avatar.jpg')),
             ];
             return $this->sendSuccess(__('message.detailuser'), $data);
         } catch (\Exception $e) {
@@ -154,7 +157,6 @@ class UserController extends BaseController
             return $this->sendSuccess(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         try {
-            /*
             // Paramètre de Recapcha
             $url = 'https://www.google.com/recaptcha/api/siteverify';
             $data = [
@@ -177,11 +179,10 @@ class UserController extends BaseController
             }
             curl_close($curl);
             $resultJson = json_decode($result);
-            if ($resultJson->success == false || $resultJson->score < 0.5) {
+            if ($resultJson->success === false || $resultJson->score < 0.5) {
                 Log::warning("User::login - Recaptcha : " . json_encode($resultJson));
                 return $this->sendError(__('message.recaptcha'));
             }
-            */
             $credentialNum = [
                 'number' => $request->login,
                 'password' => $request->password,
@@ -195,10 +196,11 @@ class UserController extends BaseController
             if ((Auth::attempt($credentialNum))||(Auth::attempt($credentialEml))) {
                 try {
                     // Test si la photo est vide
-                    if (Auth::user()->avatar != '')
+                    if (Auth::user()->avatar != '') {
                         $avatar = Auth::user()->avatar;
-                    else
+                    } else {
                         $avatar = 'avatar.jpg';
+                    }
                     // Ajouter les informations de l'utilisateur et du profil dans la réponse
                     $data = [
                         'access_token' =>  Auth::user()->createToken('MyApp')->accessToken,
@@ -315,7 +317,7 @@ class UserController extends BaseController
             }
             curl_close($curl);
             $resultJson = json_decode($result);
-            if ($resultJson->success == false || $resultJson->score < 0.5) {
+            if ($resultJson->success === false || $resultJson->score < 0.5) {
                 Log::warning("User::store - Recaptcha : " . json_encode($resultJson));
                 return $this->sendError(__('message.recaptcha'));
             }

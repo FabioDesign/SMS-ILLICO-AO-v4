@@ -11,8 +11,9 @@ use App\Http\Controllers\API\{
   PasswordController,
   PhonebookController,
   PublipostageController,
-  SmsManageController,
   SenderController,
+  SmsManageController,
+  StatsController,
   UserController,
 };
 
@@ -58,6 +59,12 @@ Route::controller(ListsController::class)->group(function () {
 });
 
 Route::middleware(['auth:api'])->group(function () {
+  // Route pour les bills
+  Route::controller(BillController::class)
+    ->prefix('bills')
+    ->group(function () {
+    Route::post('validated', 'validated');
+  });
   // Route pour la modification du profil utilisateur
   Route::controller(UserController::class)
     ->prefix('users')
@@ -67,7 +74,11 @@ Route::middleware(['auth:api'])->group(function () {
       Route::post('logout', 'logout')->name('logout');
   });
   // Route pour les mots de passe
-  Route::put('password/editpass', [PasswordController::class, 'editpass']);
+  Route::controller(PasswordController::class)
+    ->prefix('password')
+    ->group(function () {
+    Route::put('editpass', 'editpass');
+  });
   // Route pour les contacts
   Route::controller(PhonebookController::class)
     ->prefix('phonebooks')
@@ -89,35 +100,32 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('contactlist/{uuid}', 'contactlist');
   });
   // Route pour les Publipostages
-  Route::controller(PublipostageController::class)->group(function () {
-    // Route pour importation
-    Route::post('publipostage/imports', 'imports');
-  });
-  // Route pour les senders
-  Route::post('senders/validated', [SenderController::class, 'validated']);
-  // Route pour les bills
-  Route::post('bills/validated', [BillController::class, 'validated']);
-  // Route pour les transactions
-  Route::controller(TransactionController::class)
-    ->prefix('transactions')
+  Route::controller(PublipostageController::class)
+    ->prefix('publipostage')
     ->group(function () {
-    Route::get('list', 'list');
-    Route::post('add', 'add');
-    Route::post('edit', 'edit');
-    Route::post('delete', 'delete');
+    // Route pour importation
+    Route::post('imports', 'imports');
   });
   // Route pour les sms
   Route::controller(SmsManageController::class)
     ->prefix('sms')
     ->group(function () {
-    Route::get('history', 'index');
     Route::post('send', 'store');
+    Route::get('history', 'index');
   });
   // Route pour les senders
   Route::controller(SenderController::class)
     ->prefix('senders')
     ->group(function () {
     Route::get('list', 'list');
+    Route::post('validated', 'validated');
+  });
+  // Route pour les statistiques
+  Route::controller(StatsController::class)
+    ->prefix('stats')
+    ->group(function () {
+    Route::get('sms', 'sms');
+    Route::get('users', 'users');
   });
   // Route pour les models
   Route::resources([
