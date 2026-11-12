@@ -44,8 +44,8 @@ class SmsManageController extends BaseController
             $page = $request->page ?? 1;
             $limit = $request->limit ?? 10;
             $typesms = $request->typesms ?? '';
-            $start_date = $request->start_date != '' ? $request->start_date : date('Y-m-d');
-            $end_date = $request->end_date != '' ? $request->end_date : date('Y-m-d');
+            $start_date = $request->start_date ?? '';
+            $end_date = $request->end_date ?? '';
             // Code to list SMS
             $sms = BodySms::select(
                 'uuid',
@@ -63,10 +63,8 @@ class SmsManageController extends BaseController
                 fn($q) => $q->where('smstype_id', $typesms),
                 fn($q) => $q->where('smstype_id', '!=', 1)
             )
-            ->whereBetween('sending_at', [
-                $start_date . ' 00:00:00',
-                $end_date . ' 23:59:59',
-            ])
+            ->when($start_date != '', fn($q) => $q->where('sending_at', '>=', $start_date . ' 00:00:00'))
+            ->when($end_date != '', fn($q) => $q->where('sending_at', '<=', $end_date . ' 23:59:59'))
             ->where('status', 1)
             ->where('user_id', Auth::id())
             ->orderBy('sending_at', 'desc')
