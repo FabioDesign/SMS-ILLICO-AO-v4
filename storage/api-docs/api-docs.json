@@ -1891,7 +1891,7 @@
                 ]
             }
         },
-        "/api/sms/history?page=1&limit=10&search=''": {
+        "/api/sms/history?page=1&limit=10&typesms=&start_date=Y-m-d&end_date=Y-m-d": {
             "get": {
                 "tags": [
                     "SMS"

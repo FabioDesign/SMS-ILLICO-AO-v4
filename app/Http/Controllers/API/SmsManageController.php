@@ -31,7 +31,7 @@ class SmsManageController extends BaseController
         $validator = Validator::make($request->all(), [
             'page' => 'nullable|integer|min:1',
             'limit' => 'nullable|integer|min:1',
-            'typesms' => 'nullable|integer|exists:sms_type,id',
+            'typesms' => 'nullable|integer|in:2,3,4',
             'start_date' => 'nullable|date_format:Y-m-d',
             'end_date' => 'nullable|date_format:Y-m-d|after_or_equal:start_date',
         ]);
