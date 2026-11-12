@@ -14,7 +14,7 @@ class SmsManageController extends BaseController
     //Historique des SMS
     /**
     * @OA\Get(
-    *   path="/api/sms/history?page=1&limit=10&search=''",
+    *   path="/api/sms/history?page=1&limit=10&typesms=&start_date=Y-m-d&end_date=Y-m-d",
     *   tags={"SMS"},
     *   operationId="historySMS",
     *   description="Historique des SMS.",
@@ -27,11 +27,26 @@ class SmsManageController extends BaseController
     public function index(Request $request): JsonResponse {
         // Language
         App::setLocale(Auth::user()->lg);
+        // Validation des paramètres
+        $validator = Validator::make($request->all(), [
+            'page' => 'nullable|integer|min:1',
+            'limit' => 'nullable|integer|min:1',
+            'typesms' => 'nullable|integer|exists:sms_type,id',
+            'start_date' => 'nullable|date_format:Y-m-d',
+            'end_date' => 'nullable|date_format:Y-m-d|after_or_equal:start_date',
+        ]);
+        // Error field
+        if ($validator->fails()) {
+            Log::warning("SmsManage::index - Validator : {$validator->errors()->first()} - " . json_encode($request->all()));
+            return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
+        }
         try {
             $page = $request->page ?? 1;
             $limit = $request->limit ?? 10;
-            $search = $request->search ?? '';
-            // Code to list contacts
+            $typesms = $request->typesms ?? '';
+            $start_date = $request->start_date != '' ? $request->start_date : date('Y-m-d');
+            $end_date = $request->end_date != '' ? $request->end_date : date('Y-m-d');
+            // Code to list SMS
             $sms = BodySms::select(
                 'uuid',
                 'volume',
@@ -43,9 +58,16 @@ class SmsManageController extends BaseController
             )
             ->with(['smstype'])
             ->withCount('numbers')
-            ->when($search != '', fn($q) => $q->where('message', 'LIKE', "%{$search}%"))
+            ->when(
+                $typesms != '',
+                fn($q) => $q->where('smstype_id', $typesms),
+                fn($q) => $q->where('smstype_id', '!=', 1)
+            )
+            ->whereBetween('sending_at', [
+                $start_date . ' 00:00:00',
+                $end_date . ' 23:59:59',
+            ])
             ->where('status', 1)
-            ->where('smstype_id', '!=', 1)
             ->where('user_id', Auth::id())
             ->orderBy('sending_at', 'desc')
             ->paginate($limit, ['*'], 'page', $page);
@@ -62,8 +84,8 @@ class SmsManageController extends BaseController
                 'sender' => $data->sender,
                 'volume' => $data->volume,
                 'contacts' => $data->numbers_count,
-                'sending_at' => $data->sending_at != null ? Carbon::parse($data->sending_at)->format('d/m/Y H:i:s'):'',
-                'created_at' => $data->created_at != null ? Carbon::parse($data->created_at)->format('d/m/Y H:i:s'):'',
+                'sending_at' => Carbon::parse($data->sending_at)->format('d/m/Y H:i:s'),
+                'created_at' => Carbon::parse($data->created_at)->format('d/m/Y H:i:s'),
             ]);
             return $this->sendSuccess(__('message.listsms'), [
                 'lists' => $data,
