@@ -32,11 +32,11 @@ class SmsManageController extends BaseController
             $search = $request->search ?? '';
             // Code to list contacts
             $sms = BodySms::select(
-                'id',
                 'uuid',
+                'volume',
                 'sender',
                 'message',
-                'volume',
+                'smstype_id',
                 'sending_at',
                 'created_at'
             )
