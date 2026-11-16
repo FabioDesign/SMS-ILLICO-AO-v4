@@ -151,10 +151,12 @@ class SmsManageController extends BaseController
         $smstype_id = $request->input('smstype_id');
         $data = $counter->volume($message, $contacts);
 
-        $volume = Auth::user()->volume - $data['total_sms'];
-        if ($volume < 0) {
-            Log::warning("SmsManage::sendsms - Volume restant : {$volume} - " . json_encode($request->all()));
-            return $this->sendError(__('message.limitsms'), ['volume' => $volume], 400);
+        if ($smstype_id != 1) {
+            $volume = Auth::user()->volume - $data['total_sms'];
+            if ($volume < 0) {
+                Log::warning("SmsManage::sendsms - Volume restant : {$volume} - " . json_encode($request->all()));
+                return $this->sendError(__('message.limitsms'), ['volume' => $volume], 400);
+            }
         }
         // Data to save
         $set = [

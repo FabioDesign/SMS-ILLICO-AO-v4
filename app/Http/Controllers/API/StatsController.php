@@ -78,7 +78,8 @@ class StatsController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Code to list statistics
-            $statistics = StatisticUser::select('stocksms', 'contacts', 'groups', 'sendsms')
+            $statistics = StatisticUser::select('contacts', 'groups', 'volume as stocksms', 'sendsms')
+            ->join('users', 'users.id', '=', 'statistic_users.user_id')
             ->where('user_id', Auth::id())
             ->first();
             // Vérifier si les données existent
