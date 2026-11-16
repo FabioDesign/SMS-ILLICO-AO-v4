@@ -1929,14 +1929,14 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "smstype_id",
+                                    "smstype",
                                     "sender",
                                     "message",
                                     "contacts",
                                     "sending_at"
                                 ],
                                 "properties": {
-                                    "smstype_id": {
+                                    "smstype": {
                                         "type": "integer"
                                     },
                                     "sender": {

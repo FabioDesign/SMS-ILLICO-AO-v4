@@ -106,8 +106,8 @@ class SmsManageController extends BaseController
     *   @OA\RequestBody(
     *      required=true,
     *      @OA\JsonContent(
-    *         required={"smstype_id", "sender", "message", "contacts", "sending_at"},
-    *         @OA\Property(property="smstype_id", type="integer"),
+    *         required={"smstype", "sender", "message", "contacts", "sending_at"},
+    *         @OA\Property(property="smstype", type="integer"),
     *         @OA\Property(property="sender", type="string"),
     *         @OA\Property(property="message", type="string"),
     *         @OA\Property(property="sending_at", type="string", format="date-time"),
