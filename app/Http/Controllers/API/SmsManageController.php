@@ -120,7 +120,6 @@ class SmsManageController extends BaseController
             }
             $numbers = NumberSms::select('number', 'volume', 'sending_at')
             ->where('bodysms_id', $sms->id)
-            ->where('user_id', Auth::id())
             ->where('status', 1)
             ->get();
             return $this->sendSuccess(__('message.detsms'), $numbers);

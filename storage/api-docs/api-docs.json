@@ -1916,6 +1916,31 @@
                 ]
             }
         },
+        "/api/sms/detail/{uuid}": {
+            "get": {
+                "tags": [
+                    "SMS"
+                ],
+                "description": "Détail d'un SMS.",
+                "operationId": "detailSMS",
+                "responses": {
+                    "200": {
+                        "description": "Détail d'un SMS."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/api/sms/send": {
             "post": {
                 "tags": [
