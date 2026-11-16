@@ -47,7 +47,6 @@ class SendSMS extends Command
                 $ids = NumberSms::query()
                     ->select('numbersms.id')
                     ->join('bodysms', 'bodysms.id', '=', 'numbersms.bodysms_id')
-                    ->where('bodysms.status', 1)
                     ->where('bodysms.smstype_id', '!=', 1)
                     ->where('bodysms.sending_at', '<', now())
                     ->where('numbersms.status', self::STATUS_PENDING)
@@ -101,7 +100,6 @@ class SendSMS extends Command
             ->join('bodysms', 'bodysms.id', '=', 'numbersms.bodysms_id')
             ->whereIn('numbersms.id', $ids)
             ->where('numbersms.status', self::STATUS_PROCESSING)
-            ->where('bodysms.status', 1)
             ->orderBy('numbersms.id')
             ->get();
 

@@ -21,7 +21,6 @@ return new class extends Migration
             $table->decimal('chars', 10, 0);
             $table->decimal('pages', 10, 0);
             $table->timestamp('sending_at');
-            $table->tinyInteger('status')->default('0');
             $table->timestamps();
             $table->integer('smstype_id');
             $table->bigInteger('user_id');

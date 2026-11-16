@@ -78,8 +78,8 @@ class StatsController extends BaseController
         App::setLocale(Auth::user()->lg);
         try {
             // Code to list statistics
-            $statistics = StatisticUser::select('contacts', 'groups', 'volume')
-            ->where('user_id', Auth::id())            ->orderBy('month')
+            $statistics = StatisticUser::select('stocksms', 'contacts', 'groups', 'sendsms')
+            ->where('user_id', Auth::id())
             ->first();
             // Vérifier si les données existent
             if (!$statistics) {
@@ -87,12 +87,7 @@ class StatsController extends BaseController
                 return $this->sendSuccess(__('message.nodata'));
             }
             // Transformer les données
-            $data = [
-                'contacts' => $statistics->contacts,
-                'groups' => $statistics->groups,
-                'volume' => $statistics->volume,
-            ];
-            return $this->sendSuccess(__('message.statistics'), $data);
+            return $this->sendSuccess(__('message.statistics'), $statistics);
         } catch (\Exception $e) {
             Log::warning("Stats::users - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));

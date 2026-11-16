@@ -16,7 +16,7 @@ return new class extends Migration
             $table->increments('id');
             $table->decimal('contacts', 10, 0)->default(0);
             $table->decimal('groups', 10, 0)->default(0);
-            $table->decimal('volume', 10, 0)->default(0);
+            $table->decimal('sendsms', 10, 0)->default(0);
             $table->timestamps();
             $table->bigInteger('user_id');
         });

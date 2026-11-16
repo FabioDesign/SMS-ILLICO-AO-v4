@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API;
 use Carbon\Carbon;
 use App\Services\SmsCounter;
 use Illuminate\Http\{Request, JsonResponse};
+use App\Models\{BodySms, NumberSms, Prefix, User};
 use Illuminate\Support\Facades\{App, Auth, DB, Log, Validator};
-use App\Models\{BodySms, NumberSms, Prefix, StatisticSms, User};
 use App\Http\Controllers\API\BaseController as BaseController;
 
 class SmsManageController extends BaseController
@@ -65,7 +65,6 @@ class SmsManageController extends BaseController
             )
             ->when($start_date != '', fn($q) => $q->where('sending_at', '>=', $start_date . ' 00:00:00'))
             ->when($end_date != '', fn($q) => $q->where('sending_at', '<=', $end_date . ' 23:59:59'))
-            ->where('status', 1)
             ->where('user_id', Auth::id())
             ->orderBy('sending_at', 'desc')
             ->paginate($limit, ['*'], 'page', $page);
@@ -159,7 +158,6 @@ class SmsManageController extends BaseController
         }
         // Data to save
         $set = [
-            'status' => 1,
             'sender' => $sender,
             'message' => $message,
             'user_id' => Auth::id(),
@@ -175,14 +173,6 @@ class SmsManageController extends BaseController
                 User::findOrFail(Auth::id())->update([
                     'volume' => $volume,
                 ]);
-                // Statistiques
-                $statistic = StatisticSms::firstOrNew([
-                    'year' => now()->year,
-                    'month' => now()->month,
-                    'user_id' => Auth::id(),
-                ]);
-                $statistic->volume = ($statistic->exists ? $statistic->volume : 0) + $data['total_sms'];
-                $statistic->save();
             }
             $bodysms = BodySms::create($set);
             foreach ($contacts as $contact) :
