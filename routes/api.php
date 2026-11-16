@@ -112,6 +112,7 @@ Route::middleware(['auth:api'])->group(function () {
     ->group(function () {
     Route::post('send', 'store');
     Route::get('history', 'index');
+    Route::get('detail/{uuid}', 'detail');
   });
   // Route pour les senders
   Route::controller(SenderController::class)

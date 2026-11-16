@@ -95,6 +95,40 @@ class SmsManageController extends BaseController
             return $this->sendError(__('message.error'));
         }
     }
+    // Détail d'un SMS
+    /**
+    * @OA\Get(
+    *   path="/api/sms/detail/{uuid}",
+    *   tags={"SMS"},
+    *   operationId="detailSMS",
+    *   description="Détail d'un SMS.",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Détail d'un SMS."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function detail(string $uuid): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        try {
+            // Eager Loading (1 seule requête optimisée)
+            $sms = BodySms::where('uuid', $uuid)->first();
+            if (!$sms) {
+                Log::warning("SmsManage::detail - Aucun SMS trouvé pour l'UUID : {$uuid}");
+                return $this->sendSuccess(__('message.nodata'));
+            }
+            $numbers = NumberSms::select('number', 'volume', 'sending_at')
+            ->where('bodysms_id', $sms->id)
+            ->where('user_id', Auth::id())
+            ->where('status', 1)
+            ->get();
+            return $this->sendSuccess(__('message.detsms'), $numbers);
+        } catch (\Exception $e) {
+            Log::warning("SmsManage::detail - Erreur : {$e->getMessage()}");
+            return $this->sendError(__('message.error'));
+        }
+    }
     // Enregistrement d'un SMS
     /**
     * @OA\Post(
