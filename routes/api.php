@@ -103,7 +103,7 @@ Route::middleware(['auth:api'])->group(function () {
   Route::controller(PublipostageController::class)
     ->prefix('publipostage')
     ->group(function () {
-    // Route pour importation
+    Route::get('list', 'list');
     Route::post('imports', 'imports');
   });
   // Route pour les sms

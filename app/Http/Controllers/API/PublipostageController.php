@@ -381,4 +381,48 @@ class PublipostageController extends BaseController
             return $this->sendError(__('message.error'), [], 400);
         }
     }
+    // Liste des contacts d'un publipostage
+    /**
+    * @OA\Get(
+    *   path="/api/publipostage/list",
+    *   tags={"Publipostage"},
+    *   operationId="listPub",
+    *   description="Liste des contacts d'un publipostage.",
+    *   security={{"bearer":{}}},
+    *   @OA\Response(response=200, description="Liste des contacts d'un publipostage."),
+    *   @OA\Response(response=400, description="Serveur indisponible."),
+    *   @OA\Response(response=404, description="Page introuvable.")
+    * )
+    */
+    public function list(): JsonResponse {
+        // Language
+        App::setLocale(Auth::user()->lg);
+        try {
+            // Code to list contact list
+            $listpub = Contact::select('label', 'number', 'gender', 'date_at', 'field1', 'field2', 'field3')
+            ->where('user_id', Auth::id())
+            ->where('publipostage', 1)
+            ->orderBy('label')
+            ->get();
+            // Vérifier si les données existent
+            if ($listpub->isEmpty()) {
+                Log::warning("Publipostage::list - Aucun contact trouvé");
+                return $this->sendSuccess(__('message.nodata'));
+            };
+            // Transformer les données
+            $data = $listpub->map(fn($data) => [
+                'label' => $data->label,
+                'number' => $data->number,
+                'gender' => $data->gender ?? '',
+                'date_at' => $data->date_at != null ? Carbon::parse($data->date_at)->format('d/m/Y'):'',
+                'field1' => $data->field1 ?? '',
+                'field2' => $data->field2 ?? '',
+                'field3' => $data->field3 ?? '',
+            ]);
+            return $this->sendSuccess(__('message.listcontact'), $data);
+        } catch (\Exception $e) {
+            Log::warning("Publipostage::list - Erreur : {$e->getMessage()}");
+            return $this->sendError(__('message.error'));
+        }
+    }
 }
