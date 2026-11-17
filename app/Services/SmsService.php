@@ -12,8 +12,8 @@ class SmsService
      * Envoie un SMS via la passerelle SMS.
      */
     public function sendSms(
-        string $expediteur,
-        string $numeros,
+        string $sender,
+        string $number,
         string $message,
         string $idsms
     ): array {
@@ -29,8 +29,8 @@ class SmsService
                 ->get($url, [
                     'username' => config('services.sms.username'),
                     'password' => config('services.sms.password'),
-                    'from' => $expediteur,
-                    'to' => '+244' . $numeros,
+                    'from' => $sender,
+                    'to' => '+244' . $number,
                     'text' => $message,
                     'coding' => 2,
                     'charset' => 'UTF-8',

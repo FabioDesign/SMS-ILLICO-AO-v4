@@ -110,8 +110,8 @@ class SendSMS extends Command
         foreach ($smsList as $sms) {
             try {
                 $result = $smsService->sendSms(
-                    expediteur: $sms->sender,
-                    numeros: $sms->number,
+                    sender: $sms->sender,
+                    number: $sms->number,
                     message: $sms->message,
                     idsms: (string) $sms->numbersms_id
                 );

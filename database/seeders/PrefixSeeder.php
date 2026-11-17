@@ -34,11 +34,11 @@ class PrefixSeeder extends Seeder
             ["network_id" => 2]
         );
         Prefix::firstOrCreate(
-            ["label" => 95],
-            ["network_id" => 3]
+            ["label" => 97],
+            ["network_id" => 2]
         );
         Prefix::firstOrCreate(
-            ["label" => 97],
+            ["label" => 95],
             ["network_id" => 3]
         );
     }
