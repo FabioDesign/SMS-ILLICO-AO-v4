@@ -79,7 +79,7 @@ return new class extends Migration
                 UPDATE statistic_users s
                   JOIN statistic_users_pending p
                     ON p.user_id = s.user_id AND p.type = 'contacts' AND p.changed_at <= v_cut
-                   SET s.contacts   = (SELECT COUNT(*) FROM contacts c WHERE c.user_id = s.user_id),
+                   SET s.contacts   = (SELECT COUNT(*) FROM contacts c WHERE c.user_id = s.user_id AND c.publipostage = 0),
                        s.updated_at = NOW();
 
                 -- statistic_users.groups = nombre de lignes de groups
