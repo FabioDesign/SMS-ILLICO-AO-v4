@@ -108,21 +108,38 @@ class SmsManageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function detail(string $uuid): JsonResponse {
-        // Language
+    public function detail(string $uuid): JsonResponse
+    {
         App::setLocale(Auth::user()->lg);
+
         try {
-            // Eager Loading (1 seule requête optimisée)
-            $sms = BodySms::where('uuid', $uuid)->first();
-            if (!$sms) {
+            $smsId = BodySms::where('uuid', $uuid)->value('id');
+
+            if (!$smsId) {
                 Log::warning("SmsManage::detail - Aucun SMS trouvé pour l'UUID : {$uuid}");
                 return $this->sendSuccess(__('message.nodata'));
             }
+
+            // Table de correspondance préfixe => réseau (7 lignes, 1 seule requête)
+            // Ex : ['91' => 'Movicel', '99' => 'Movicel', '92' => 'Unitel', ...]
+            $networks = Prefix::join('networks', 'networks.id', '=', 'prefix.network_id')
+                ->pluck('networks.label', 'prefix.label');
+
             $numbers = NumberSms::select('number', 'volume', 'sending_at')
-            ->where('bodysms_id', $sms->id)
-            ->where('status', 1)
-            ->get();
-            return $this->sendSuccess(__('message.detsms'), $numbers);
+                ->where('bodysms_id', $smsId)
+                ->where('status', '!=', 0)
+                ->get();
+
+            $data = $numbers->map(fn ($row) => [
+                'network'    => $networks[substr((string) $row->number, 0, 2)] ?? '-',
+                'number'     => $row->number,
+                'volume'     => $row->volume,
+                'sending_at' => $row->sending_at
+                    ? Carbon::parse($row->sending_at)->format('d/m/Y H:i:s')
+                    : null,
+            ]);
+
+            return $this->sendSuccess(__('message.detsms'), $data);
         } catch (\Exception $e) {
             Log::warning("SmsManage::detail - Erreur : {$e->getMessage()}");
             return $this->sendError(__('message.error'));
