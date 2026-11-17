@@ -1394,7 +1394,7 @@
                     "Publipostage"
                 ],
                 "description": "Liste des contacts.",
-                "operationId": "listPub",
+                "operationId": "indexPub",
                 "responses": {
                     "200": {
                         "description": "Liste des contacts."
@@ -1637,6 +1637,31 @@
                 "responses": {
                     "200": {
                         "description": "Contact enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/publipostage/list": {
+            "get": {
+                "tags": [
+                    "Publipostage"
+                ],
+                "description": "Liste des contacts d'un publipostage.",
+                "operationId": "listPub",
+                "responses": {
+                    "200": {
+                        "description": "Liste des contacts d'un publipostage."
                     },
                     "400": {
                         "description": "Serveur indisponible."

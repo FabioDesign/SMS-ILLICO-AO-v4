@@ -18,7 +18,7 @@ class PublipostageController extends BaseController
     * @OA\Get(
     *   path="/api/publipostage?page=1&limit=10&search=''",
     *   tags={"Publipostage"},
-    *   operationId="listPub",
+    *   operationId="indexPub",
     *   description="Liste des contacts.",
     *   security={{"bearer":{}}},
     *   @OA\Response(response=200, description="Liste des contacts."),
