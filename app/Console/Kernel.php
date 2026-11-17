@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('sms:send')->everyMinute();
+        // $schedule->command('sms:send')->everyMinute();
+        $schedule->command('statistics:refresh-users')->everyMinute()->withoutOverlapping();
     }
 
     /**
