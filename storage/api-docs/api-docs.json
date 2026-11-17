@@ -1916,16 +1916,16 @@
                 ]
             }
         },
-        "/api/sms/history?page=1&limit=10&typesms=&start_date=Y-m-d&end_date=Y-m-d": {
+        "/api/sms": {
             "get": {
                 "tags": [
                     "SMS"
                 ],
-                "description": "Historique des SMS.",
-                "operationId": "historySMS",
+                "description": "Historique des SMS de brouillon.",
+                "operationId": "draftSMS",
                 "responses": {
                     "200": {
-                        "description": "Historique des SMS."
+                        "description": "Historique des SMS de brouillon."
                     },
                     "400": {
                         "description": "Serveur indisponible."
@@ -1939,40 +1939,13 @@
                         "bearer": []
                     }
                 ]
-            }
-        },
-        "/api/sms/detail/{uuid}": {
-            "get": {
-                "tags": [
-                    "SMS"
-                ],
-                "description": "Détail d'un SMS.",
-                "operationId": "detailSMS",
-                "responses": {
-                    "200": {
-                        "description": "Détail d'un SMS."
-                    },
-                    "400": {
-                        "description": "Serveur indisponible."
-                    },
-                    "404": {
-                        "description": "Page introuvable."
-                    }
-                },
-                "security": [
-                    {
-                        "bearer": []
-                    }
-                ]
-            }
-        },
-        "/api/sms/send": {
+            },
             "post": {
                 "tags": [
                     "SMS"
                 ],
                 "description": "Enregistrement d'un SMS.",
-                "operationId": "sendSMS",
+                "operationId": "storeSMS",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -2014,6 +1987,156 @@
                 "responses": {
                     "200": {
                         "description": "SMS enregisté avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/sms/history?page=1&limit=10&typesms=&start_date=Y-m-d&end_date=Y-m-d": {
+            "get": {
+                "tags": [
+                    "SMS"
+                ],
+                "description": "Historique des SMS.",
+                "operationId": "historySMS",
+                "responses": {
+                    "200": {
+                        "description": "Historique des SMS."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/sms/{uuid}": {
+            "get": {
+                "tags": [
+                    "SMS"
+                ],
+                "description": "Afficher un SMS.",
+                "operationId": "showSMS",
+                "responses": {
+                    "200": {
+                        "description": "Afficher un SMS."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "SMS"
+                ],
+                "description": "Modification d'un SMS.",
+                "operationId": "updateSMS",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "sender",
+                                    "message",
+                                    "contacts"
+                                ],
+                                "properties": {
+                                    "sender": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "contacts": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "SMS modifié avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "SMS"
+                ],
+                "description": "Suppression d'un SMS.",
+                "operationId": "destroySMS",
+                "responses": {
+                    "201": {
+                        "description": "SMS supprimé avec succès."
+                    },
+                    "400": {
+                        "description": "Serveur indisponible."
+                    },
+                    "404": {
+                        "description": "Page introuvable."
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
+        "/api/sms/detail/{uuid}": {
+            "get": {
+                "tags": [
+                    "SMS"
+                ],
+                "description": "Détail d'un SMS.",
+                "operationId": "detailSMS",
+                "responses": {
+                    "200": {
+                        "description": "Détail d'un SMS."
                     },
                     "400": {
                         "description": "Serveur indisponible."

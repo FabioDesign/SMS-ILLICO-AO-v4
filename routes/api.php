@@ -110,8 +110,7 @@ Route::middleware(['auth:api'])->group(function () {
   Route::controller(SmsManageController::class)
     ->prefix('sms')
     ->group(function () {
-    Route::post('send', 'store');
-    Route::get('history', 'index');
+    Route::get('history', 'history');
     Route::get('detail/{uuid}', 'detail');
   });
   // Route pour les senders
@@ -134,6 +133,7 @@ Route::middleware(['auth:api'])->group(function () {
     'users' => UserController::class,
     'groups' => GroupController::class,
     'models' => ModelController::class,
+    'sms' => SmsManageController::class,
     'senders' => SenderController::class,
     'phonebooks' => PhonebookController::class,
     'publipostage' => PublipostageController::class,
