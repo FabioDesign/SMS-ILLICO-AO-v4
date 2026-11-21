@@ -28,7 +28,8 @@ class StatsController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function sms(Request $request): JsonResponse {
+    public function sms(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         $validator = Validator::make($request->all(), [
@@ -73,7 +74,8 @@ class StatsController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function users(Request $request): JsonResponse {
+    public function users(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {

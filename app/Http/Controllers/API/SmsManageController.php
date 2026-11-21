@@ -26,7 +26,8 @@ class SmsManageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function index(Request $request): JsonResponse {
+    public function index(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -80,7 +81,8 @@ class SmsManageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function history(Request $request): JsonResponse {
+    public function history(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validation des paramètres
@@ -440,7 +442,8 @@ class SmsManageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(string $uuid): JsonResponse {
+    public function destroy(string $uuid): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {

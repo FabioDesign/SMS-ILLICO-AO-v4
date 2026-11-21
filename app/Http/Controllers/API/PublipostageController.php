@@ -26,7 +26,8 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function index(Request $request): JsonResponse {
+    public function index(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -80,7 +81,8 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uuid): JsonResponse {
+    public function show(string $uuid): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -132,7 +134,8 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function store(Request $request): JsonResponse {
+    public function store(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -214,7 +217,8 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, string $uuid): JsonResponse {
+    public function update(request $request, string $uuid): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -298,7 +302,8 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(Request $request): JsonResponse {
+    public function destroy(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator        
@@ -356,7 +361,8 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function imports(Request $request): JsonResponse {
+    public function imports(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -394,7 +400,8 @@ class PublipostageController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function list(): JsonResponse {
+    public function list(): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {

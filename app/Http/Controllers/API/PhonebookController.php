@@ -26,7 +26,8 @@ class PhonebookController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function index(Request $request): JsonResponse {
+    public function index(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -134,7 +135,8 @@ class PhonebookController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function store(Request $request): JsonResponse {
+    public function store(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -214,7 +216,8 @@ class PhonebookController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, string $uuid): JsonResponse {
+    public function update(request $request, string $uuid): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -359,7 +362,8 @@ class PhonebookController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function imports(Request $request): JsonResponse {
+    public function imports(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -408,7 +412,8 @@ class PhonebookController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function blacklist(request $request): JsonResponse {
+    public function blacklist(request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -458,7 +463,8 @@ class PhonebookController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function contacts(Request $request): JsonResponse {
+    public function contacts(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {

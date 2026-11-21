@@ -23,7 +23,8 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function index(): JsonResponse {
+    public function index(): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -65,7 +66,8 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uuid): JsonResponse {
+    public function show(string $uuid): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -111,7 +113,8 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function store(Request $request): JsonResponse {
+    public function store(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         //Validator
@@ -174,7 +177,8 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function update(request $request, string $uuid): JsonResponse {
+    public function update(request $request, string $uuid): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         //Validator
@@ -232,7 +236,8 @@ class ModelController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function destroy(string $uuid): JsonResponse {
+    public function destroy(string $uuid): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {

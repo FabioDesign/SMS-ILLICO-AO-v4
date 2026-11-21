@@ -21,7 +21,8 @@ class ListsController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function towns($lg): JsonResponse {
+    public function towns($lg): JsonResponse
+    {
 		App::setLocale($lg);
         try {
             $towns = Town::select('id', 'label')->get();
@@ -48,7 +49,8 @@ class ListsController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function accountyp($lg): JsonResponse {
+    public function accountyp($lg): JsonResponse
+    {
 		App::setLocale($lg);
         try {
             $accountyps = AccountType::select('id', "$lg as label")->get();

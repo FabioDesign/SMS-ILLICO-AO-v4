@@ -24,7 +24,8 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function index(Request $request): JsonResponse {
+    public function index(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -72,7 +73,8 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function show(string $uuid): JsonResponse {
+    public function show(string $uuid): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         try {
@@ -142,13 +144,13 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function login(Request $request): JsonResponse {
+    public function login(Request $request): JsonResponse
+    {
         // Validator
         $validator = Validator::make($request->all(), [
           'lg' => 'required',
           'login' => 'required',
           'password' => 'required',
-        //   'g_recaptcha_response' => 'required',
         ]);
 		App::setLocale($request->lg);
         // Error field
@@ -235,7 +237,8 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable."),
     * )
     */
-    public function store(Request $request): JsonResponse {
+    public function store(Request $request): JsonResponse
+    {
         // Validator
         $validator = Validator::make($request->all(), [
             'lg' => 'required|in:en,pt',
@@ -403,7 +406,8 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function profiles(Request $request): JsonResponse {
+    public function profiles(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -485,7 +489,8 @@ class UserController extends BaseController
      *   @OA\Response(response=404, description="Page introuvable."),
      * )
      */
-    public function avatars(Request $request): JsonResponse {
+    public function avatars(Request $request): JsonResponse
+    {
         // Language
         App::setLocale(Auth::user()->lg);
         // Validator
@@ -534,7 +539,8 @@ class UserController extends BaseController
     *   @OA\Response(response=404, description="Page introuvable.")
     * )
     */
-    public function logout(Request $request): JsonResponse {
+    public function logout(Request $request): JsonResponse
+    {
         try {
             $request->user()->token()->revoke();
             return $this->sendSuccess(__('message.logoutsucc'));
