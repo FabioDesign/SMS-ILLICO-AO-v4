@@ -225,7 +225,7 @@ class SmsManageController extends BaseController
             // Table de correspondance préfixe => réseau
             $networks = Prefix::join('networks', 'networks.id', '=', 'prefix.network_id')
             ->pluck('networks.label', 'prefix.label');
-
+            dd($networks->toArray());
             // Récupération des numéros
             $numbers = NumberSms::select('number', 'volume', 'sending_at')
             ->where('bodysms_id', $smsId)
