@@ -329,7 +329,11 @@ class SenderController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'UUID est présent et valide
-        $senders = Sender::where('uuid', $request->uuid)->first();
+        $senders = Sender::with('user')->where('uuid', $request->uuid)->first();
+        if (!$senders) {
+            Log::warning("Sender::validated - Aucun expéditeur trouvé pour l'UUID : {$request->uuid}");
+            return $this->sendSuccess(__('message.nodata'));
+        }
         // Data to save
         DB::beginTransaction(); // Démarrer une transaction
         try {
@@ -339,7 +343,7 @@ class SenderController extends BaseController
             // Valider la transaction
             DB::commit();
             // Username
-            $username = Auth::user()->firstname . " " . Auth::user()->lastname;
+            $username = $senders->user->firstname . " " . $senders->user->lastname;
             // Subject
             $subject = "Sender name";
             // Send SMS to LogicMind
@@ -347,13 +351,13 @@ class SenderController extends BaseController
             Dear Sir,<br /><br />
             The user <b>{$username}</b> has submitted a new sender name for approval.</b><br />
             Sender name : <b>{$senders->label}</b><br /><br />
-            <a href='" . env('URL_BACKOFFICE') . "'>Connection to Management Plateforme</a><br /><br />
+            <a href='" . config('services.url.site') . "'>Connection to Management Plateforme</a><br /><br />
             <hr style='color:#156082;'>"
             . __('message.bestregard')
-            . env('MAIL_SIGNATURE')
+            . config('services.mail.signature')
             . "</div>";
             // Envoi de l'email
-            $this->sendMail(env('MAIL_FROM_ADDRESS'), Auth::user()->email, $username, env('MAIL_CC'), $subject, $message);
+            $this->sendMail($senders->user->email, config('services.mail.from_address'), config('services.mail.from_name'), $subject, $message);
             return $this->sendSuccess(__('message.sendsender'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur

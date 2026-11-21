@@ -41,7 +41,7 @@ class BaseController extends Controller
     return response()->json($response, $status);
   }
   //Send mail
-  public function sendMail($to, $emlfrom, $usrfrom, $cc, $subject, $message) {
+  public function sendMail($to, $emlfrom, $usrfrom, $subject, $message) {
     require base_path("vendor/autoload.php");
     $mail = new PHPMailer(true);   // Passing `true` enables exceptions
     $mail->CharSet = "UTF-8";
@@ -49,18 +49,18 @@ class BaseController extends Controller
       // Email server settings
       $mail->SMTPDebug = 0;
       $mail->isSMTP();
-      $mail->Host = env('MAIL_HOST');           	// smtp host
+      $mail->Host = config('services.mail.host');           	// smtp host
       $mail->SMTPAuth = true;
-      $mail->Username = env('MAIL_USERNAME');   		// sender username
-      $mail->Password = env('MAIL_PASSWORD');    // sender password
-      $mail->SMTPSecure = "ssl";              // encryption - ssl/tls
-      $mail->Port = env('MAIL_PORT');            // port - 587/465
+      $mail->Username = config('services.mail.username');   		// sender username
+      $mail->Password = config('services.mail.password');    // sender password
+      $mail->SMTPSecure = config('services.mail.encryption');              // encryption - ssl/tls
+      $mail->Port = config('services.mail.port');            // port - 587/465
       $mail->timeout = null;
       $mail->Encoding = 'base64';
 
       $mail->setFrom($emlfrom, $usrfrom); // sender email and name
       $mail->addAddress($to);
-      $mail->AddCC($cc);
+      $mail->AddCC(config('services.mail.cc')); // cc
       $mail->addReplyTo($emlfrom, $usrfrom); // sender email and name);
       $mail->SMTPOptions = [
         'ssl' => [

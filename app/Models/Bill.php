@@ -23,4 +23,9 @@ class Bill extends Model
             }
         });
     }
+    // Relation with User
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

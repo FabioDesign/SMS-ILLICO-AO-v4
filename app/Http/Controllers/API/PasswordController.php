@@ -59,11 +59,11 @@ class PasswordController extends BaseController
         . __('message.otp') . " : <b>{$otp}</b><br><br>
         <hr style='color:#156082;'>"
         . __('message.bestregard') . " !<br>"
-        . env('MAIL_SIGNATURE')
+        . config('services.mail.signature')
         . "</div>";
         try {
             // Envoi de l'email
-            $this->sendMail($request->email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
+            $this->sendMail($request->email, config('services.mail.from_address'), config('services.mail.from_name'), $subject, $message);
             // Mettre à jour l'utilisateur avec l'OTP et l'horodatage
             $user->update([
                 'otp' => str_replace(' ', '', $otp),

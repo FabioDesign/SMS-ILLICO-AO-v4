@@ -298,7 +298,11 @@ class BillController extends BaseController
             return $this->sendError(__('message.fielderr'), $validator->errors()->first(), 422);
         }
         // Vérifier si l'UUID est présent et valide
-        $bills = Bill::where('uuid', $request->uuid)->first();
+        $bills = Bill::with('user')->where('uuid', $request->uuid)->first();
+        if (!$bills) {
+            Log::warning("Bill::validated - Aucune facture trouvée pour l'UUID : {$request->uuid}");
+            return $this->sendSuccess(__('message.nodata'));
+        }
         // Data to save
         DB::beginTransaction(); // Démarrer une transaction
         try {
@@ -308,7 +312,7 @@ class BillController extends BaseController
             // Valider la transaction
             DB::commit();
             // Username
-            $username = Auth::user()->firstname . " " . Auth::user()->lastname;
+            $username = $bills->user->firstname . " " . $bills->user->lastname;
             // Subject
             $subject = "Volume SMS";
             // Send SMS to LogicMind
@@ -317,13 +321,13 @@ class BillController extends BaseController
             The user <b>{$username}</b> has placed an order of SS.</b><br />M
             Reference : <b>{$bills->reference }</b><br />
             Volume SMS : <b>{$bills->volume2}</b><br /><br />
-            <a href='" . env('URL_BACKOFFICE') . "'>Connection to Management Plateforme</a><br /><br />
+            <a href='" . config('services.url.site') . "'>Connection to Management Plateforme</a><br /><br />
             <hr style='color:#156082;'>"
             . __('message.bestregard')
-            . env('MAIL_SIGNATURE')
+            . config('services.mail.signature')
             . "</div>";
             // Envoi de l'email
-            $this->sendMail(env('MAIL_FROM_ADDRESS'), Auth::user()->email, $username, env('MAIL_CC'), $subject, $message);
+            $this->sendMail($bills->user->email, config('services.mail.from_address'), config('services.mail.from_name'), $subject, $message);
             return $this->sendSuccess(__('message.editbill'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur

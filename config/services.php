@@ -30,7 +30,6 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
     
     'sms' => [
         'url' => env('SMS_GTW_URL'),
@@ -39,4 +38,24 @@ return [
         'dlr_url' => env('SMS_DLR_URL'),
     ],
 
+    'mail' => [
+        'host' => env('MAIL_HOST'),
+        'port' => env('MAIL_PORT'),
+        'username' => env('MAIL_USERNAME'),
+        'password' => env('MAIL_PASSWORD'),
+        'encryption' => env('MAIL_ENCRYPTION'),
+        'from_address' => env('MAIL_FROM_ADDRESS'),
+        'from_name' => env('MAIL_FROM_NAME'),
+        'cc' => env('MAIL_CC'),
+        'signature' => env('MAIL_SIGNATURE'),
+    ],
+
+    'url' => [
+        'site' => env('URL_SITE'),
+    ],
+
+    'recaptcha' => [
+        'sitekey' => env('RECAPTCHA_SITEKEY'),
+        'secretkey' => env('RECAPTCHA_SECRETKEY'),
+    ],
 ];

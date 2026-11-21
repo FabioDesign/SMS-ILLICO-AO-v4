@@ -276,7 +276,7 @@ class UserController extends BaseController
             $url = 'https://www.google.com/recaptcha/api/siteverify';
             $data = [
                 'remoteip' => $request->ip(),
-                'secret' => env('RECAPTCHAV3_SECRET'),
+                'secret' => config('services.recaptcha.secretkey'),
                 'response' => $request->input('g_recaptcha_response'),
             ];
             // Initialiser cURL
@@ -335,10 +335,10 @@ class UserController extends BaseController
                 $message .=  "<br />
                 <hr style='color:#156082;'>"
                 . __('message.bestregard')
-                . env('MAIL_SIGNATURE')
+                . config('services.mail.signature')
                 . "</div>";
                 // Envoi de l'email
-                $this->sendMail(env('MAIL_FROM_ADDRESS'), $email, $username, env('MAIL_CC'), $subject, $message);
+                $this->sendMail(config('services.mail.from_address'), $email, $username, $subject, $message);
                 // Send SMS to Customer
                 if ($request->lg == 'en') {
                     $content = "Dear M./Mrs. {$username}<br /><br />
@@ -355,10 +355,10 @@ class UserController extends BaseController
                 " . $content
                 . "<hr style='color:#156082;'>"
                 . __('message.bestregard')
-                . env('MAIL_SIGNATURE')
+                . config('services.mail.signature')
                 . "</div>";
                 // Envoi de l'email
-                $this->sendMail($email, env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'), env('MAIL_CC'), $subject, $message);
+                $this->sendMail($email, config('services.mail.from_address'), config('services.mail.from_name'), $subject, $message);
                 // Retourner les données de l'utilisateur
                 $data = [
                     'lastname' => $request->lastname,
