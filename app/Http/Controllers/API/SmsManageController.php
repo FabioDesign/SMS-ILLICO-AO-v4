@@ -222,21 +222,24 @@ class SmsManageController extends BaseController
 
             // Table de correspondance préfixe => réseau (7 lignes, 1 seule requête)
             // Ex : ['91' => 'Movicel', '99' => 'Movicel', '92' => 'Unitel', ...]
+            // Table de correspondance préfixe => réseau
             $networks = Prefix::join('networks', 'networks.id', '=', 'prefix.network_id')
-                ->pluck('networks.label', 'prefix.label');
+            ->pluck('networks.label', 'prefix.label');
 
+            // Récupération des numéros
             $numbers = NumberSms::select('number', 'volume', 'sending_at')
-                ->where('bodysms_id', $smsId)
-                ->where('status', '!=', 0)
-                ->get();
+            ->where('bodysms_id', $smsId)
+            ->where('status', '!=', 0)
+            ->get();
 
+            // Transformation des données
             $data = $numbers->map(fn ($row) => [
-                'network'    => $networks->get(substr((string) $row->number, 0, 2), '-'),
-                'number'     => $row->number,
-                'volume'     => $row->volume,
-                'sending_at' => $row->sending_at
-                    ? Carbon::parse($row->sending_at)->format(self::DATE_FORMAT)
-                    : null,
+            'network'    => $networks->get(substr((string) $row->number, 0, 2), '-'),
+            'number'     => $row->number,
+            'volume'     => $row->volume,
+            'sending_at' => $row->sending_at
+                ? Carbon::parse($row->sending_at)->format(self::DATE_FORMAT)
+                : null,
             ]);
 
             return $this->sendSuccess(__('message.detsms'), $data);
