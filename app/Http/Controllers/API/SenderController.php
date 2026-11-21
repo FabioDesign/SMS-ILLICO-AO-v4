@@ -343,13 +343,14 @@ class SenderController extends BaseController
             // Valider la transaction
             DB::commit();
             // Username
+            $admin = Auth::user()->firstname . " " . Auth::user()->lastname;
             $username = $senders->user->firstname . " " . $senders->user->lastname;
             // Subject
             $subject = "Sender name";
             // Send SMS to LogicMind
             $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
             Dear Sir,<br /><br />
-            The user <b>{$username}</b> has submitted a new sender name for approval.</b><br />
+            The user <b>{$admin}</b> has submitted a new sender name for approval.</b><br />
             Sender name : <b>{$senders->label}</b><br /><br />
             <a href='" . config('services.url.site') . "'>Connection to Management Plateforme</a><br /><br />
             <hr style='color:#156082;'>"
@@ -357,7 +358,7 @@ class SenderController extends BaseController
             . config('services.mail.signature')
             . "</div>";
             // Envoi de l'email
-            $this->sendMail($senders->user->email, config('services.mail.from_address'), config('services.mail.from_name'), $subject, $message);
+            $this->sendMail(Auth::user()->email, $senders->user->email, $username, $subject, $message);
             return $this->sendSuccess(__('message.sendsender'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur

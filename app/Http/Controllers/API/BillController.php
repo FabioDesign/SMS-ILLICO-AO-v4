@@ -312,13 +312,15 @@ class BillController extends BaseController
             // Valider la transaction
             DB::commit();
             // Username
+            $admin = Auth::user()->firstname . " " . Auth::user()->lastname;
             $username = $bills->user->firstname . " " . $bills->user->lastname;
+
             // Subject
             $subject = "Volume SMS";
             // Send SMS to LogicMind
             $message = "<div style='color:#156082;font-size:11pt;line-height:1.5em;font-family:Century Gothic'>
             Dear Sir,<br /><br />
-            The user <b>{$username}</b> has placed an order of SS.</b><br />M
+            The user <b>{$admin}</b> has placed an order of SS.</b><br />M
             Reference : <b>{$bills->reference }</b><br />
             Volume SMS : <b>{$bills->volume2}</b><br /><br />
             <a href='" . config('services.url.site') . "'>Connection to Management Plateforme</a><br /><br />
@@ -327,7 +329,7 @@ class BillController extends BaseController
             . config('services.mail.signature')
             . "</div>";
             // Envoi de l'email
-            $this->sendMail($bills->user->email, config('services.mail.from_address'), config('services.mail.from_name'), $subject, $message);
+            $this->sendMail(Auth::user()->email, $bills->user->email, $username, $subject, $message);
             return $this->sendSuccess(__('message.editbill'));
         } catch (\Exception $e) {
             DB::rollBack(); // Annuler la transaction en cas d'erreur
