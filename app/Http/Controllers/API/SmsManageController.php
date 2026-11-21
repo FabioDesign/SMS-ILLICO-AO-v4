@@ -227,7 +227,7 @@ class SmsManageController extends BaseController
             ->select('prefix.label as prefix', 'networks.label as network')
             ->get()
             ->pluck('network', 'prefix');
-            dd($networks->toArray());
+            
             // Récupération des numéros
             $numbers = NumberSms::select('number', 'volume', 'sending_at')
             ->where('bodysms_id', $smsId)
