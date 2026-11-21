@@ -276,7 +276,7 @@ class UserController extends BaseController
             $url = 'https://www.google.com/recaptcha/api/siteverify';
             $data = [
                 'remoteip' => $request->ip(),
-                'secret' => config('services.recaptcha.secretkey'),
+                'secret' => config('services.recaptcha.secret'),
                 'response' => $request->input('g_recaptcha_response'),
             ];
             // Initialiser cURL
