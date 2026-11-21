@@ -231,7 +231,7 @@ class SmsManageController extends BaseController
                 ->get();
 
             $data = $numbers->map(fn ($row) => [
-                'network'    => $networks[substr((string) $row->number, 0, 2)] ?? '-',
+                'network'    => $networks->get(substr((string) $row->number, 0, 2), '-'),
                 'number'     => $row->number,
                 'volume'     => $row->volume,
                 'sending_at' => $row->sending_at
